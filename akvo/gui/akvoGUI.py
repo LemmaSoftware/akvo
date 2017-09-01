@@ -58,12 +58,12 @@ class AkvoYamlNode(yaml.YAMLObject):
     def __init__(self):
         self.Akvo_VERSION = version
         self.Import = {}
-        self.dataProcessing = {}
+        self.Processing = {}
         #self.data = {}
     # For going the other way, data import based on Yaml serialization, 
     def __repr__(self):
-        return "%s(name=%r, hp=%r, ac=%r, attacks=%r)" % (
-            self.__class__.__name__, self.name, self.hp, self.ac, self.attacks, self.thingy)
+        return "%s(name=%r, Akvo_VESION=%r, Import=%r, Processing=%r)" % (
+            self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing) #self.name, self.hp, self.ac, self.attacks, self.thingy)
     
 try:    
     import thread 
@@ -492,11 +492,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             yaml.dump(INFO, outfile, default_flow_style=False)   
  
     def SavePreprocess(self):
-        
-        self.Log( ["Saved:" + datetime.datetime.now().isoformat()] )
-        
+     
+        if "Saved" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Saved"] = []
+        self.YamlNode.Processing["Saved"].append(datetime.datetime.now().isoformat()) 
+        self.Log()
+ 
         import pickle, os 
-
         try:
             with open('.akvo.last.path') as f: 
                 fpath = f.readline()  
@@ -525,7 +527,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["deadTime"] = self.RAWDataProc.deadTime
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["headerstr"] = str(self.headerstr)
-        INFO["log"] = self.logText  #MAK 20170127
+        INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
 
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
@@ -581,13 +583,23 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
         #To keep backwards compatibility with prior saved pickles
         try:
-            self.logText = self.RAWDataProc.DATADICT["INFO"]["log"]
-            for a in self.logText:
-                self.ui.logTextBrowser.append(str(a))
+            self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
+            #self.ui.logTextBrowser.clear() 
+            #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
+            #for a in self.logText:
+            #    self.ui.logTextBrowser.append(str(a))
+            #self.ui.logTextBrowser
+            #self.ui.logTextBrowser.clear()
+            #print ( self.RAWDataProc.DATADICT["INFO"]["log"] )
+            #self.YamlNode = yaml.load( self.logText ) 
+            #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         except KeyError:
             pass
-        
-        self.Log( ["Loaded:" + datetime.datetime.now().isoformat()] )
+       
+        if "Loaded" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Loaded"] = []
+        self.YamlNode.Processing["Loaded"].append(datetime.datetime.now().isoformat()) 
+        self.Log()
  
         # If we got this far, enable all the widgets
         self.ui.lcdNumberTauPulse1.setEnabled(True)
@@ -719,19 +731,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
                  str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
                 1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
-        
-        nlogText = []
-        nlogText.append( "!<AkvoData>" )
-        nlogText.append( "Akvo_VERSION: " + str(1.0))
-        nlogText.append( "Import: " )
-        nlogText.append( "  GMR Header: " + self.headerstr )
-        nlogText.append( "  opened: " + datetime.datetime.now().isoformat() )
-        nlogText.append( "  pulse Type: " + str(self.RAWDataProc.pulseType) )
-        nlogText.append( "  stacks: " + str(self.procStacks) )
-        nlogText.append( "  data channels: " +  str(self.dataChan) ) 
-        nlogText.append( "  reference channels: " + str(self.refChan) )
-        nlogText.append( "  pulse records: " + str(self.ui.FIDProcComboBox.currentText()) ) 
-        nlogText.append( "  instrument dead time: " + str(1e-3 * self.ui.DeadTimeSpinBox.value( )) )   
+
         self.YamlNode.Import["GMR Header"] = self.headerstr
         self.YamlNode.Import["opened"] = datetime.datetime.now().isoformat() 
         self.YamlNode.Import["pulse Type"] = str(self.RAWDataProc.pulseType) 
@@ -741,7 +741,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.YamlNode.Import["pulse records"] = str(self.ui.FIDProcComboBox.currentText())  
         self.YamlNode.Import["instrument dead time"] = (1e-3 * self.ui.DeadTimeSpinBox.value( ))    
 
-        self.Log ( nlogText )     
+        self.Log (  )     
 
         # should be already done
 #        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("updateProgress(int)"), self.updateProgressBar)
@@ -763,7 +763,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.mpl_toolbar = NavigationToolbar2QT(self.ui.mplwidget, self.ui.mplwidget)
         self.ui.mplwidget.draw()
 
-    def Log(self, nlogText):
+    def Log(self):
         #for line in yaml.dump(self.YamlNode, default_flow_style=False):
         #for line in nlogText: 
         #    self.ui.logTextBrowser.append( line )
