@@ -26,12 +26,13 @@ import os
 from copy import deepcopy
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT #as NavigationToolbar
 import datetime, time
-import yaml
+
 
 from akvo.tressel import mrsurvey 
 import pkg_resources  # part of setuptools
 version = pkg_resources.require("Akvo")[0].version
 
+import yaml
 # Writes out numpy arrays into Eigen vectors as serialized by Lemma
 class MatrixXr(yaml.YAMLObject):
     yaml_tag = u'!MatrixXr'
@@ -51,6 +52,18 @@ class VectorXr(yaml.YAMLObject):
     def __repr__(self):
         # Converts to numpy array on import 
         return "np.array(%r)" % (self.data)
+
+class AkvoYamlNode(yaml.YAMLObject):
+    yaml_tag = u'!AkvoData'
+    def __init__(self):
+        self.Akvo_VERSION = version
+        self.Import = {}
+        self.dataProcessing = {}
+        #self.data = {}
+    # For going the other way, data import based on Yaml serialization, 
+    def __repr__(self):
+        return "%s(name=%r, hp=%r, ac=%r, attacks=%r)" % (
+            self.__class__.__name__, self.name, self.hp, self.ac, self.attacks, self.thingy)
     
 try:    
     import thread 
@@ -89,7 +102,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 warn.write("Gui files were not compiled locally using pyuic! Further warnings have been supressed")
                 warn.close()
         self.RAWDataProc = None 
-            
+
+        self.YamlNode = AkvoYamlNode()           
+ 
         # initialise some stuff
         self.ui.lcdNumberTauPulse2.setEnabled(0)
         self.ui.lcdNumberTauPulse1.setEnabled(0)
@@ -717,6 +732,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         nlogText.append( "  reference channels: " + str(self.refChan) )
         nlogText.append( "  pulse records: " + str(self.ui.FIDProcComboBox.currentText()) ) 
         nlogText.append( "  instrument dead time: " + str(1e-3 * self.ui.DeadTimeSpinBox.value( )) )   
+        self.YamlNode.Import["GMR Header"] = self.headerstr
+        self.YamlNode.Import["opened"] = datetime.datetime.now().isoformat() 
+        self.YamlNode.Import["pulse Type"] = str(self.RAWDataProc.pulseType) 
+        self.YamlNode.Import["stacks"] = self.procStacks.tolist() 
+        self.YamlNode.Import["data channels"] = self.dataChan.tolist()  
+        self.YamlNode.Import["reference channels"] = self.refChan.tolist() 
+        self.YamlNode.Import["pulse records"] = str(self.ui.FIDProcComboBox.currentText())  
+        self.YamlNode.Import["instrument dead time"] = (1e-3 * self.ui.DeadTimeSpinBox.value( ))    
 
         self.Log ( nlogText )     
 
@@ -741,9 +764,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.mplwidget.draw()
 
     def Log(self, nlogText):
-        for line in nlogText: 
-            self.ui.logTextBrowser.append( line )
-            self.logText.append( line ) 
+        #for line in yaml.dump(self.YamlNode, default_flow_style=False):
+        #for line in nlogText: 
+        #    self.ui.logTextBrowser.append( line )
+        #    self.logText.append( line ) 
+            
+        self.ui.logTextBrowser.clear() 
+        self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
 
     def disable(self):
         self.ui.BandPassBox.setEnabled(False)
