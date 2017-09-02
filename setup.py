@@ -34,7 +34,7 @@ except ImportError:
 #from distutils.core import setup
 
 setup(name='Akvo',
-      version='1.0.4',
+      version='1.0.5',
       description='Surface nuclear magnetic resonance workbench',
       author='Trevor P. Irons',
       author_email='Trevor.Irons@lemmasoftware.org',

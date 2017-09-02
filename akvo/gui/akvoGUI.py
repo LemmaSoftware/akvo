@@ -528,7 +528,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["headerstr"] = str(self.headerstr)
         INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
-
+        
+        print ("YAML NODE", yaml.dump( self.YamlNode ) )
+    
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
         pickle.dump(self.RAWDataProc.DATADICT, save)
@@ -581,20 +583,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
 
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
-        #To keep backwards compatibility with prior saved pickles
-        try:
-            self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
-            #self.ui.logTextBrowser.clear() 
+        # Keep backwards compatibility with prior saved pickles???
+        #self.ui.logTextBrowser.clear() 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
             #for a in self.logText:
             #    self.ui.logTextBrowser.append(str(a))
             #self.ui.logTextBrowser
             #self.ui.logTextBrowser.clear()
             #print ( self.RAWDataProc.DATADICT["INFO"]["log"] )
-            #self.YamlNode = yaml.load( self.logText ) 
+        
+        self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
+        self.YamlNode = yaml.load( self.logText ) 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
-        except KeyError:
-            pass
+        #except KeyError:
+        #    pass
        
         if "Loaded" not in self.YamlNode.Processing.keys():
             self.YamlNode.Processing["Loaded"] = []
