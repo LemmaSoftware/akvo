@@ -53,17 +53,28 @@ class VectorXr(yaml.YAMLObject):
         # Converts to numpy array on import 
         return "np.array(%r)" % (self.data)
 
+from collections import OrderedDict
+def represent_ordereddict(dumper, data):
+    value = []
+    for item_key, item_value in data.items():
+        node_key = dumper.represent_data(item_key)
+        node_value = dumper.represent_data(item_value)
+        value.append((node_key, node_value))
+    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
+yaml.add_representer(OrderedDict, represent_ordereddict)
+
 class AkvoYamlNode(yaml.YAMLObject):
     yaml_tag = u'!AkvoData'
     def __init__(self):
         self.Akvo_VERSION = version
         self.Import = {}
-        self.Processing = {}
+        self.Processing = OrderedDict() 
+        #self.ProcessingFlow = []
         #self.data = {}
     # For going the other way, data import based on Yaml serialization, 
     def __repr__(self):
         return "%s(name=%r, Akvo_VESION=%r, Import=%r, Processing=%r)" % (
-            self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing) #self.name, self.hp, self.ac, self.attacks, self.thingy)
+            self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(dict(self.Processing)) ) 
     
 try:    
     import thread 
@@ -416,7 +427,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.FIDProcComboBox.setCurrentIndex (0)
     
     def ExportPreprocess(self):
-
+        """ This method export to YAML 
+        """
         try:
             with open('.akvo.last.yaml.path') as f: 
                 fpath = f.readline()  
@@ -443,8 +455,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #INFO["deadTime"] = self.RAWDataProc.deadTime
         INFO["transFreq"] = self.RAWDataProc.transFreq.tolist()
         INFO["processed"] = "Akvo v. 1.0, on " + time.strftime("%d/%m/%Y")
-        #INFO["log"] = self.logText   #MAK 20170128 # TI moved to direct write, this is already YAML compliant 
-
         # Pulse current info
         ip = 0
         INFO["Pulses"] = {}
@@ -875,35 +885,56 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def calcQ(self):
+        if "Calc Q" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Calc Q"] = True
+            self.Log()
+        else:
+            err_msg = "Q values have already been calculated"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+
         self.lock("pulse moment calculation")
         thread.start_new_thread(self.RAWDataProc.effectivePulseMoment, \
                 (self.ui.CentralVSpinBox.value(), \
                 self.ui.mplwidget_2))
 
     def FDSmartStack(self):
+
+        if "TD stack" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["TD stack"] = {}
+            self.YamlNode.Processing["TD stack"]["outlier"] = str( self.ui.outlierTestCB.currentText() ) 
+            self.YamlNode.Processing["TD stack"]["cutoff"] = str( self.ui.MADCutoff.value() )
+            self.Log()
+        else:
+            err_msg = "TD noise cancellation has already been applied!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
         
         self.lock("time-domain smart stack")
-        nlogText = []
-        nlogText.append("TD_stack: ") 
-        nlogText.append("  outlier: " + str( self.ui.outlierTestCB.currentText() ) ) 
-        nlogText.append("  cutoff: " + str( self.ui.MADCutoff.value()  ) ) 
-        self.Log(nlogText)
-        
         thread.start_new_thread(self.RAWDataProc.TDSmartStack, \
                 (str(self.ui.outlierTestCB.currentText()), \
                 self.ui.MADCutoff.value(),
                 self.ui.mplwidget_2))
 
     def adaptFilter(self):
+
+        if "TD noise cancellation" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["TD noise cancellation"] = {}
+            self.YamlNode.Processing["TD noise cancellation"]["n_Taps"] = str(self.ui.MTapsSpinBox.value())
+            self.YamlNode.Processing["TD noise cancellation"]["lambda"] = str(self.ui.adaptLambdaSpinBox.value())
+            self.YamlNode.Processing["TD noise cancellation"]["truncate"] = str(self.ui.adaptTruncateSpinBox.value())
+            self.YamlNode.Processing["TD noise cancellation"]["mu"] = str(self.ui.adaptMuSpinBox.value()) 
+            self.YamlNode.Processing["TD noise cancellation"]["PCA"] = str(self.ui.PCAComboBox.currentText())
+            self.Log()
+        else:
+            err_msg = "TD noise cancellation has already been applied!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+        
         self.lock("TD noise cancellation filter")
-        nlogText = []
-        nlogText.append("TD_noise_cancellation: ") 
-        nlogText.append("  n_Taps: " + str(self.ui.MTapsSpinBox.value()) ) 
-        nlogText.append("  lambda: " + str(self.ui.adaptLambdaSpinBox.value()) ) 
-        nlogText.append("  truncate: " + str(self.ui.adaptTruncateSpinBox.value()) ) 
-        nlogText.append("  mu: " + str(self.ui.adaptMuSpinBox.value()) ) 
-        nlogText.append("  PCA: " + str(self.ui.PCAComboBox.currentText()) ) 
-        self.Log(nlogText)
         thread.start_new_thread(self.RAWDataProc.adaptiveFilter, \
                 (self.ui.MTapsSpinBox.value(), \
                 self.ui.adaptLambdaSpinBox.value(), \
@@ -913,11 +944,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def sumDataChans(self): 
+
+        if "Data sum" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Data sum"] = True
+            self.Log()
+        else:
+            err_msg = "Data channels have already been summed!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+
         self.lock("Summing data channels")
-        nlogText = []
-        nlogText.append("Data_sum: ") 
-        nlogText.append( "  summed_channel: " +  str(self.dataChan[0]) ) 
-        self.Log(nlogText)
         self.dataChan = [self.dataChan[0]]
         self.ui.sumDataBox.setEnabled(False)    
         thread.start_new_thread( self.RAWDataProc.sumData, ( self.ui.mplwidget, 7 ) )
@@ -931,17 +968,21 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def bandPassFilter(self):
-        self.lock("bandpass filter")
-        nlogText = []
-        nlogText.append("bandpass_filter: ") 
-        nlogText.append("  central_nu: "+str(self.ui.CentralVSpinBox.value()))
-        nlogText.append("  passband: "+str(self.ui.passBandSpinBox.value()) )
-        nlogText.append("  stopband: "+str(self.ui.stopBandSpinBox.value()) )
-        nlogText.append("  gpass: "+str(self.ui.gpassSpinBox.value()) )
-        nlogText.append("  gstop: "+str(self.ui.gstopSpinBox.value()) )
-        nlogText.append("  type: "+str(self.ui.fTypeComboBox.currentText()) )
-        self.Log(nlogText) 
-        
+        if "Bandpass filter" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Bandpass filter"] = {}
+            self.YamlNode.Processing["Bandpass filter"]["central_nu"] = str(self.ui.CentralVSpinBox.value())
+            self.YamlNode.Processing["Bandpass filter"]["passband"] = str(self.ui.passBandSpinBox.value())
+            self.YamlNode.Processing["Bandpass filter"]["stopband"] = str(self.ui.stopBandSpinBox.value()) 
+            self.YamlNode.Processing["Bandpass filter"]["gpass"] = str(self.ui.gpassSpinBox.value())
+            self.YamlNode.Processing["Bandpass filter"]["gstop"] = str(self.ui.gstopSpinBox.value())
+            self.YamlNode.Processing["Bandpass filter"]["type"] = str(self.ui.fTypeComboBox.currentText())
+            self.Log()
+        else:
+            err_msg = "Bandpass filter has already been applied!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+        self.lock("bandpass filter")        
         nv = self.ui.lcdTotalDeadTime.value( ) + self.ui.lcdNumberFTauDead.value()
         self.ui.lcdTotalDeadTime.display( nv )
         thread.start_new_thread(self.RAWDataProc.bandpassFilter, \
@@ -949,23 +990,33 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def downsample(self):
         self.lock("resampling")
-        nlogText = list(['Resample: '])
-        nlogText.append("  downsample_factor: " + str(self.ui.downSampleSpinBox.value() ) )
-        nlogText.append("  truncate_length: " + str( self.ui.truncateSpinBox.value() ) )
-        self.Log(nlogText)
+        
+        if "Resample" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Resample"] = {}
+            self.YamlNode.Processing["Resample"]["downsample factor"] = [] 
+            self.YamlNode.Processing["Resample"]["truncate length"] = []  
+        self.YamlNode.Processing["Resample"]["downsample factor"].append( str(self.ui.downSampleSpinBox.value() ) )
+        self.YamlNode.Processing["Resample"]["truncate length"].append(  str( self.ui.truncateSpinBox.value() ) )
+        self.Log( )
+        
         thread.start_new_thread(self.RAWDataProc.downsample, \
                 (self.ui.truncateSpinBox.value(), \
                 self.ui.downSampleSpinBox.value(),
                 self.ui.mplwidget))
 
     def quadDet(self):
-        self.lock("quadrature detection")
-        nlogText = []
-        nlogText.append("quadrature_detection: ") 
-        nlogText.append("  trim: " + str( self.ui.trimSpin.value() )) 
-        #nlogText.append("  representation:" + str(  self.ui.QDType.currentText() )) 
-        self.Log(nlogText)
 
+        if "Quadrature detection" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Quadrature detection"] = {}
+            self.YamlNode.Processing["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
+            self.Log()
+        else:
+            err_msg = "Quadrature detection has already been done!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+
+        self.lock("quadrature detection")
         thread.start_new_thread(self.RAWDataProc.quadDet, \
                 (self.ui.trimSpin.value(), int(self.ui.QDType.currentIndex()), self.ui.mplwidget_2))
 
@@ -979,12 +1030,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
 
     def gateIntegrate(self):
-        self.lock("gate integration")
-        nlogText = []
-        nlogText.append("gate_integrate: ") 
-        nlogText.append("  gpd: " + str(self.ui.GPDspinBox.value( ) )) 
-        self.Log(nlogText)
+        
+        if "Gate integrate" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Gate integrate"] = {}
+        self.YamlNode.Processing["Gate integrate"]["gpd"] = str(self.ui.GPDspinBox.value( ) )
+        self.Log()
  
+        self.lock("gate integration")
         thread.start_new_thread(self.RAWDataProc.gateIntegrate, \
                 (self.ui.GPDspinBox.value(), self.ui.trimSpin.value(), self.ui.mplwidget_2))
         
@@ -1013,13 +1065,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #   self.ui.lcdNumberTauPulse2.display(1e3*self.RAWDataProc.pulseLength[1])
     
     def windowFilter(self):
+        
+        if "Window filter" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Window filter"] = {}
+            self.YamlNode.Processing["Window filter"]["type"] = str(self.ui.windowTypeComboBox.currentText()) 
+            self.YamlNode.Processing["Window filter"]["width"] = str(self.ui.windowBandwidthSpinBox.value()) 
+            self.YamlNode.Processing["Window filter"]["centre"] = str(self.ui.CentralVSpinBox.value() )
+            self.Log()
+        else:
+            err_msg = "FD window has already been applied!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+
         self.lock("window filter")
-        nlogText = []
-        nlogText.append("FD_window: ") 
-        nlogText.append("  type: " + str(self.ui.windowTypeComboBox.currentText()) )
-        nlogText.append("  width: " + str(self.ui.windowBandwidthSpinBox.value()) )  
-        nlogText.append("  centre: " + str(self.ui.CentralVSpinBox.value() ))
-        self.Log(nlogText)
         thread.start_new_thread(self.RAWDataProc.windowFilter, \
                 (str(self.ui.windowTypeComboBox.currentText()), \
                 self.ui.windowBandwidthSpinBox.value(), \

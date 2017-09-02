@@ -73,8 +73,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>982</width>
-         <height>921</height>
+         <width>966</width>
+         <height>919</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1297,6 +1297,9 @@ background: dark grey;
                <width>101</width>
                <height>25</height>
               </rect>
+             </property>
+             <property name="minimum">
+              <number>1</number>
              </property>
              <property name="maximum">
               <number>5</number>
@@ -3124,7 +3127,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>19</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
