@@ -3,20 +3,21 @@ import sys
 
 # optionally use qt4
 # if sys.argv[1] == "build_ui":
-#     try:
-#         from pyqt_distutils.build_ui import build_ui
+try:
+    from pyqt_distutils.build_ui import build_ui
 #         cmdclass = {'build_ui': build_ui}
-#     except ImportError:
-#         build_ui = None  # user won't have pyqt_distutils when deploying
+except ImportError:
+    build_ui = None  # user won't have pyqt_distutils when deploying
 #         cmdclass = {}
 # else:
 #     build_ui = None  # user won't have pyqt_distutils when deploying
 #     cmdclass = {}
 
+
 # Require PyQt5 and compiltion of GUI files via pyuic 
 from setuptools import setup, Extension
 from setuptools.command.build_py import build_py
-from pyqt_distutils.build_ui import build_ui
+#from pyqt_distutils.build_ui import build_ui
 
 class custom_build_py(build_py):
     def run(self):
@@ -42,7 +43,7 @@ setup(name='Akvo',
       #setup_requires=['PyQt5'],
       setup_requires=[
         # Setuptools 18.0 properly handles Cython extensions.
-        'PyQt5','setuptools>=18.0',
+        'PyQt5', 'pyqt_distutils','setuptools>=18.0',
       ],
 #      ext_modules = cythonise("akvo/tressel/*.pyx"), 
 #      build_requires=['cython'],
