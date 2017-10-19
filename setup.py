@@ -7,7 +7,9 @@ from setuptools.command.build_py import build_py
 try:
     from pyqt_distutils.build_ui import build_ui
 except:
-    from thirdparty import buuild_ui
+    print("Please install pyqt_distutils")
+    print( "(sudo) pip(3) install pyqt-distutils")
+    exit()
 
 class custom_build_py(build_py):
     def run(self):
@@ -24,7 +26,9 @@ setup(name='Akvo',
       setup_requires=[
         # Setuptools 18.0 properly handles Cython extensions.
         #'PyQt', 
-        'pyqt_distutils','setuptools>=18.0',
+        'pyqt_distutils',
+        'PyQt5',
+        'setuptools>=18.0',
       ],
 #      ext_modules = cythonise("akvo/tressel/*.pyx"), 
 #      build_requires=['cython'],
@@ -34,7 +38,7 @@ setup(name='Akvo',
           'matplotlib',
           'scipy',
           'numpy',
-#          'PyQt5',
+          'PyQt5',
           'pyyaml',
           'pyqt-distutils',
           'cmocean'
@@ -46,6 +50,7 @@ setup(name='Akvo',
                   'akvo = akvo.gui.akvoGUI:main',                  
               ],              
           },
+      #cmdclass = cmdclass,
       # for forced build of pyuic
       cmdclass={
           'build_ui': build_ui,
