@@ -3,7 +3,11 @@
 # Requires PyQt5 and compiltion of GUI files via pyuic 
 from setuptools import setup, Extension
 from setuptools.command.build_py import build_py
-from pyqt_distutils.build_ui import build_ui
+
+try:
+    from pyqt_distutils.build_ui import build_ui
+except:
+    from thirdparty import buuild_ui
 
 class custom_build_py(build_py):
     def run(self):
