@@ -1,6 +1,6 @@
 #/usr/bin/env python 
 import sys
-import readline
+#import readline
 try: 
     from akvo.gui.main_ui import Ui_MainWindow
     uicerr = False
