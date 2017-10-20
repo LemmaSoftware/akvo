@@ -35,14 +35,13 @@ version = pkg_resources.require("Akvo")[0].version
 import yaml
 # Writes out numpy arrays into Eigen vectors as serialized by Lemma
 class MatrixXr(yaml.YAMLObject):
-    yaml_tag = u'!MatrixXr'
-    def __init__(self, name, hp, ac, attacks):
-        self.name = name
-        self.hp = hp
-        self.ac = ac
-        self.attacks = attacks
-        def __repr__(self):
-            return "%s(name=%r, hp=%r, ac=%r, attacks=%r)" % (self.__class__.__name__, self.name, self.hp, self.ac, self.attacks)
+    yaml_tag = u'MatrixXr'
+    def __init__(self, rows, cols, data):
+        self.rows = rows
+        self.cols = cols
+        self.data = np.zeros((rows,cols))
+    def __repr__(self):
+        return "%s(rows=%r, cols=%r, data=%r)" % (self.__class__.__name__, self.rows, self.cols, self.data) 
 
 class VectorXr(yaml.YAMLObject):
     yaml_tag = r'VectorXr'
@@ -70,7 +69,7 @@ class AkvoYamlNode(yaml.YAMLObject):
         self.Import = {}
         self.Processing = OrderedDict() 
         #self.ProcessingFlow = []
-        #self.data = {}
+        #self.Data = {}
     # For going the other way, data import based on Yaml serialization, 
     def __repr__(self):
         return "%s(name=%r, Akvo_VESION=%r, Import=%r, Processing=%r)" % (
@@ -453,7 +452,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #INFO["samp"] = self.RAWDataProc.samp
         INFO["nPulseMoments"] = self.RAWDataProc.nPulseMoments
         #INFO["deadTime"] = self.RAWDataProc.deadTime
-        INFO["transFreq"] = self.RAWDataProc.transFreq.tolist()
         INFO["processed"] = "Akvo v. 1.0, on " + time.strftime("%d/%m/%Y")
         # Pulse current info
         ip = 0
@@ -503,10 +501,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
  
     def SavePreprocess(self):
      
-        if "Saved" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Saved"] = []
-        self.YamlNode.Processing["Saved"].append(datetime.datetime.now().isoformat()) 
-        self.Log()
+        #if "Saved" not in self.YamlNode.Processing.keys():
+        #    self.YamlNode.Processing["Saved"] = []
+        #self.YamlNode.Processing["Saved"].append(datetime.datetime.now().isoformat()) 
+        #self.Log()
  
         import pickle, os 
         try:
@@ -608,10 +606,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #except KeyError:
         #    pass
        
-        if "Loaded" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Loaded"] = []
-        self.YamlNode.Processing["Loaded"].append(datetime.datetime.now().isoformat()) 
-        self.Log()
+        # Remove "Saved" and "Loaded" from processing flow 
+        #if "Loaded" not in self.YamlNode.Processing.keys():
+        #    self.YamlNode.Processing["Loaded"] = []
+        #self.YamlNode.Processing["Loaded"].append(datetime.datetime.now().isoformat()) 
+        #self.Log()
  
         # If we got this far, enable all the widgets
         self.ui.lcdNumberTauPulse1.setEnabled(True)
