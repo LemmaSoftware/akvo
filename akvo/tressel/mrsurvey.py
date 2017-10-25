@@ -209,13 +209,13 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         #######################################################
         # Circuit gain
-        # proprietary of VC. 
+        # From MRSMatlab 
         w = 2*np.pi*self.transFreq
         # 1e6 due to uF of reported capacitance
         L_coil = 1e6/(self.TuneCapacitance*(w**2))
         R_coil = 1.
         Z1_in = .5 + 1j*.5*w
-        Z2_in = 1./(1j*w*.0000016) #1616 in notes, but this is what MRSMatlab uses
+        Z2_in = 1./(1j*w*.000001616) 
         Z_eq_inv = (1./Z1_in) + (1./Z2_in)
         Zeq = 1./Z_eq_inv
         Zsource = R_coil + 1j*w*L_coil
@@ -226,9 +226,9 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         ######################################################
         # PreAmp gain
-        if self.nTransVersion >= 4:
+        if self.nTransVersion == 4:
             self.PreAmpGain = 1000.
-        elif self.nTransVersion == 1 or self.nTransVersion == 2 or self.nTransVersion == 3:
+        elif self.nTransVersion == 1 or self.nTransVersion == 2 or self.nTransVersion == 3 or self.nTransVersion == 6:
             self.PreAmpGain = 500.
         else:
             print ("unsupported transmitter version")
@@ -1811,7 +1811,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                         self.DATADICT[pulse]["CURRENT"][ipm][istack] = np.zeros(3) 
 
         ##############################################
-        # Read in binary (.npy) data
+        # Read in binary (.lvm) data
         iistack = 0
         hack = False
         for istack in procStacks:
