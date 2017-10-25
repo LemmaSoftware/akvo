@@ -73,8 +73,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>966</width>
-         <height>919</height>
+         <width>982</width>
+         <height>921</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1572,6 +1572,9 @@ background: dark grey;
              </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Perform priciple component analysis on the reference channels? If &lt;span style=&quot; font-weight:600;&quot;&gt;yes&lt;/span&gt;, PCA will performed on the reference channels and the rotated channels will be used for noise cancelation rather than the raw noise channels. In the case of multiple noise sources where one dominantes across channels, better performance can be realized.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="currentIndex">
+              <number>1</number>
              </property>
              <item>
               <property name="text">
@@ -3127,7 +3130,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

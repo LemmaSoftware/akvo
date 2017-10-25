@@ -226,7 +226,7 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         ######################################################
         # PreAmp gain
-        if self.nTransVersion == 4:
+        if self.nTransVersion >= 4:
             self.PreAmpGain = 1000.
         elif self.nTransVersion == 1 or self.nTransVersion == 2 or self.nTransVersion == 3:
             self.PreAmpGain = 500.
