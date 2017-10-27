@@ -1099,7 +1099,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     canvas.ax1.set_xlabel(r"$\nu$ [Hz]", fontsize=8)
                     canvas.ax1.set_ylabel(r"$q_{eff}$ [A$\cdot$sec]", fontsize=8)
                     if nstack > 1:
-                        canvas.ax1.plot(v, qeff, color=scolours+istack*np.array((0,1/nstack,-1/nstack) )) # eff current
+                        canvas.ax1.plot(v, qeff, color=scolours+istack*np.array((0.,1./(nstack+1.),-1./(nstack+1.)) )) # eff current
                     else:
                         canvas.ax1.plot(v, qeff, color=scolours) # eff current
                     self.DATADICT[pulse]["qeff"][ipm][istack] = qeff
@@ -1139,7 +1139,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                         ilabel = False
                     else:    
                         ax.scatter(ipm, self.DATADICT[pulse]["qeff"][ipm][stack][icv], facecolors='none', edgecolors=scolours)
-                    scolours += np.array((0,1/nstack,-1/nstack))
+                    scolours += np.array((0,1./(nstack+1),-1/(nstack+1.)))
 
                     percent = int(1e2* (float)((istack)+ipm*self.DATADICT["nPulseMoments"]) / 
                                        (float)(len(self.DATADICT["PULSES"])*self.DATADICT["nPulseMoments"]*nstack))
