@@ -1,4 +1,4 @@
-Akvo is a surface NMR (sNMR) processing utility. Currently preprocessing is supported, but we are adding inversion capabilities. 
+Akvo is a surface NMR (sNMR) processing utility. Currently preprocessing is supported, but we are adding inversion capabilities. Let us know if you are looking for something. 
 
 Installation is done in the typical python fashion
 
