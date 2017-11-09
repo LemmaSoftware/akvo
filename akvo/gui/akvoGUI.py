@@ -172,13 +172,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.mplwidget_navigator_2.setCanvas(self.ui.mplwidget_2)
 
         ##########################################################################
-        # modelling Table 
+        # Loop Table 
         self.ui.loopTableWidget.setRowCount(80)       
         self.ui.loopTableWidget.setColumnCount(6)      
-        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", "Northing [m]","Easting [m]","Height [m]", "Radius","Tx"] )
+        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", \
+            "Northing [m]","Easting [m]","Height [m]", "Radius","Tx"] )
         
-        for ir in range(1, self.ui.loopTableWidget.rowCount() ):
-            for ic in range( self.ui.loopTableWidget.columnCount() ):
+        for ir in range(0, self.ui.loopTableWidget.rowCount() ):
+            for ic in range(1, self.ui.loopTableWidget.columnCount() ):
                 pCell = QtWidgets.QTableWidgetItem()
                 #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                 pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
@@ -189,7 +190,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.loopTableWidget.setDragDropOverwriteMode(False)
         self.ui.loopTableWidget.setDragEnabled(True)
         self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        
+
+        self.loops = {}        
+
         ##########################################################################
         # layer Table 
         self.ui.layerTableWidget.setRowCount(80)       
@@ -204,8 +207,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
         pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
         self.ui.layerTableWidget.setItem(0, 1, pCell)
-        for ir in range(1, 80):
-            for ic in range(0, 3):
+        for ir in range(1, self.ui.layerTableWidget.rowCount() ):
+            for ic in range(0, self.ui.layerTableWidget.columnCount() ):
                 pCell = QtWidgets.QTableWidgetItem()
                 #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                 pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
@@ -283,35 +286,33 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
 
     def loopCellChanged(self):
-        # TODO consider building the model whenever this is called. Would be nice to be able to 
-        # do that. Would require instead dist of T2 I guess. 
+       
+        self.ui.loopTableWidget.cellChanged.disconnect(self.loopCellChanged) 
+        
         jj = self.ui.loopTableWidget.currentColumn()
         ii = self.ui.loopTableWidget.currentRow()
-            
-        #if self.ui.loopTableWidget.item(ii, jj) == None:
-        #    return
 
-        if jj == 5:
-            pass
-            #pCell = QtWidgets.QTableWidgetItem()
-            #pCell.setFlags(QtCore.Qt.ItemIsEnabled)
-            #pCell.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
-            #self.ui.loopTableWidget.setItem(ii, jj, pCell)
-            #pCell4 = self.ui.layerTableWidget.item(ii, jj)
-            #print(pCell4)
-            #pCell4.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
-            #pCell4.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
-#         try:
-#             eval (str( self.ui.loopTableWidget.item(ii, jj).text() ))
-#         except:
-#             if jj != 0:
-#                 Error = QtWidgets.QMessageBox()
-#                 Error.setWindowTitle("Error!")
-#                 Error.setText("Non-numeric value encountered")
-#                 Error.setDetailedText("Modelling parameters must be able to be cast into numeric values.")
-#                 Error.exec_()
-            
+        if jj == 0: # ch. tag modified
+
+            for jjj in range(jj+1,jj+5): 
+                pCell = self.ui.loopTableWidget.item(ii, jjj)
+                pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
+                pCell.setBackground( QtGui.QColor("lightblue") )
+            if self.ui.loopTableWidget.item(ii, jj).text() not in self.loops.keys():
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ] = {}
+                print (self.loops.keys())
+                # Transmitter cell 
+                pCell = self.ui.loopTableWidget.item(ii, jj+5)
+                pCell.setCheckState(QtCore.Qt.Unchecked);
+                pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled )
+                pCell.setBackground( QtGui.QColor("lightblue") ) 
+            else:
+                pCell = self.ui.loopTableWidget.item(ii, jj+5)
+                pCell.setCheckState(QtCore.Qt.Unchecked);
+                #pCell.setFlags( )
+                pCell.setBackground( QtGui.QColor("lightblue") ) 
         self.plotLoops()
+        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
 
     def plotLoops(self):
                
