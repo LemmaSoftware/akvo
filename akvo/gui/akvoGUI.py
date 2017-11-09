@@ -173,11 +173,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         ##########################################################################
         # modelling Table 
-        self.ui.loopTableWidget.setRowCount(40)       
-        self.ui.loopTableWidget.setColumnCount(5)      
-        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", "Northing [m]","Easting [m]","Height [m]", "Radius"] )
-        self.ui.loopTableWidget.cellChanged.connect(self.cellChanged) 
+        self.ui.loopTableWidget.setRowCount(80)       
+        self.ui.loopTableWidget.setColumnCount(6)      
+        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", "Northing [m]","Easting [m]","Height [m]", "Radius","Tx"] )
+        
+        for ir in range(1, self.ui.loopTableWidget.rowCount() ):
+            for ic in range( self.ui.loopTableWidget.columnCount() ):
+                pCell = QtWidgets.QTableWidgetItem()
+                #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+                pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+                pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+                self.ui.loopTableWidget.setItem(ir, ic, pCell)
 
+        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
         self.ui.loopTableWidget.setDragDropOverwriteMode(False)
         self.ui.loopTableWidget.setDragEnabled(True)
         self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
@@ -188,15 +196,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.layerTableWidget.setColumnCount(3)      
         self.ui.layerTableWidget.setHorizontalHeaderLabels( [r"top [m]", r"bottom [m]", "σ [ Ωm]" ] )
 
-
         self.ui.layerTableWidget.setDragDropOverwriteMode(False)
         self.ui.layerTableWidget.setDragEnabled(True)
         self.ui.layerTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         
         pCell = QtWidgets.QTableWidgetItem()
-        #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
-        #pCell.setBackground( QtGui.QColor("lightblue").lighter(125) )
         pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
         self.ui.layerTableWidget.setItem(0, 1, pCell)
         for ir in range(1, 80):
@@ -259,7 +264,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
                     return
 
-            print("I'm here joey")
             # enable next layer
             pCell4 = self.ui.layerTableWidget.item(ii+1, jj)
             pCell4.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
@@ -278,7 +282,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
 
 
-    def cellChanged(self):
+    def loopCellChanged(self):
         # TODO consider building the model whenever this is called. Would be nice to be able to 
         # do that. Would require instead dist of T2 I guess. 
         jj = self.ui.loopTableWidget.currentColumn()
@@ -287,15 +291,25 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #if self.ui.loopTableWidget.item(ii, jj) == None:
         #    return
 
-        try:
-            eval (str( self.ui.loopTableWidget.item(ii, jj).text() ))
-        except:
-            if jj != 0:
-                Error = QtWidgets.QMessageBox()
-                Error.setWindowTitle("Error!")
-                Error.setText("Non-numeric value encountered")
-                Error.setDetailedText("Modelling parameters must be able to be cast into numeric values.")
-                Error.exec_()
+        if jj == 5:
+            pass
+            #pCell = QtWidgets.QTableWidgetItem()
+            #pCell.setFlags(QtCore.Qt.ItemIsEnabled)
+            #pCell.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
+            #self.ui.loopTableWidget.setItem(ii, jj, pCell)
+            #pCell4 = self.ui.layerTableWidget.item(ii, jj)
+            #print(pCell4)
+            #pCell4.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
+            #pCell4.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
+#         try:
+#             eval (str( self.ui.loopTableWidget.item(ii, jj).text() ))
+#         except:
+#             if jj != 0:
+#                 Error = QtWidgets.QMessageBox()
+#                 Error.setWindowTitle("Error!")
+#                 Error.setText("Non-numeric value encountered")
+#                 Error.setDetailedText("Modelling parameters must be able to be cast into numeric values.")
+#                 Error.exec_()
             
         self.plotLoops()
 
@@ -310,8 +324,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for ii in range( self.ui.loopTableWidget.rowCount() ):
             for jj in range( self.ui.loopTableWidget.columnCount() ):
                 tp = type(self.ui.loopTableWidget.item(ii, jj))
-                if str(tp) == "<class 'NoneType'>":  # ugly hack needed by PySide for some strange reason.
-                    pass #print ("NONE")
+                if str(tp) == "<class 'NoneType'>":  
+                    pass 
+                elif not len(self.ui.loopTableWidget.item(ii, jj).text()): 
+                    pass
                 else:
                     if jj == 0: 
                         idx = self.ui.loopTableWidget.item(ii, 0).text()
@@ -331,6 +347,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget_3.ax1.plot(  np.array(nor[ii]), np.array(eas[ii])  )
             except:
                 pass 
+        #self.ui.mplwidget_3.figure.axes().set
+        plt.gca().set_aspect('equal') #, adjustable='box')
         self.ui.mplwidget_3.draw()
 
     def about(self):

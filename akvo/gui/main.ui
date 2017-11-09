@@ -73,8 +73,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>982</width>
-         <height>921</height>
+         <width>967</width>
+         <height>922</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -96,7 +96,7 @@
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tab">
            <property name="minimumSize">
@@ -801,7 +801,7 @@ background: dark grey;
               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:8pt; font-weight:400; font-style:italic;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:italic;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Serif'; font-size:9pt;&quot;&gt;Load supported RAW Dataset header from file menu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
@@ -854,7 +854,7 @@ p, li { white-space: pre-wrap; }
               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:italic;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:italic;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'DejaVu Serif'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
@@ -2489,7 +2489,7 @@ background: dark grey;
                 <rect>
                  <x>20</x>
                  <y>37</y>
-                 <width>111</width>
+                 <width>121</width>
                  <height>16</height>
                 </rect>
                </property>
@@ -2513,8 +2513,8 @@ background: dark grey;
               <widget class="QLabel" name="label_36">
                <property name="geometry">
                 <rect>
-                 <x>560</x>
-                 <y>40</y>
+                 <x>10</x>
+                 <y>190</y>
                  <width>61</width>
                  <height>16</height>
                 </rect>
@@ -2526,113 +2526,11 @@ background: dark grey;
               <widget class="QLineEdit" name="locEdit">
                <property name="geometry">
                 <rect>
-                 <x>560</x>
-                 <y>60</y>
-                 <width>351</width>
-                 <height>81</height>
+                 <x>10</x>
+                 <y>210</y>
+                 <width>441</width>
+                 <height>51</height>
                 </rect>
-               </property>
-              </widget>
-              <widget class="QDoubleSpinBox" name="decSpinBox">
-               <property name="geometry">
-                <rect>
-                 <x>420</x>
-                 <y>70</y>
-                 <width>101</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="decimals">
-                <number>1</number>
-               </property>
-               <property name="minimum">
-                <double>-90.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>90.000000000000000</double>
-               </property>
-               <property name="value">
-                <double>0.000000000000000</double>
-               </property>
-              </widget>
-              <widget class="QDoubleSpinBox" name="incSpinBox">
-               <property name="geometry">
-                <rect>
-                 <x>420</x>
-                 <y>30</y>
-                 <width>101</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="decimals">
-                <number>1</number>
-               </property>
-               <property name="minimum">
-                <double>-90.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>90.000000000000000</double>
-               </property>
-               <property name="value">
-                <double>45.000000000000000</double>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_37">
-               <property name="geometry">
-                <rect>
-                 <x>300</x>
-                 <y>30</y>
-                 <width>111</width>
-                 <height>20</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>B Inclination [°]</string>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_38">
-               <property name="geometry">
-                <rect>
-                 <x>300</x>
-                 <y>75</y>
-                 <width>111</width>
-                 <height>20</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>B Declination [°] </string>
-               </property>
-              </widget>
-              <widget class="QDoubleSpinBox" name="intensitySpinBox">
-               <property name="geometry">
-                <rect>
-                 <x>420</x>
-                 <y>110</y>
-                 <width>101</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="decimals">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <double>80000.000000000000000</double>
-               </property>
-               <property name="value">
-                <double>50000.000000000000000</double>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_51">
-               <property name="geometry">
-                <rect>
-                 <x>300</x>
-                 <y>115</y>
-                 <width>111</width>
-                 <height>20</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>B Intensity [nT]</string>
                </property>
               </widget>
               <widget class="Line" name="line">
@@ -2640,7 +2538,7 @@ background: dark grey;
                 <rect>
                  <x>20</x>
                  <y>160</y>
-                 <width>901</width>
+                 <width>371</width>
                  <height>16</height>
                 </rect>
                </property>
@@ -2651,8 +2549,8 @@ background: dark grey;
               <widget class="QLabel" name="label_52">
                <property name="geometry">
                 <rect>
-                 <x>10</x>
-                 <y>180</y>
+                 <x>0</x>
+                 <y>260</y>
                  <width>191</width>
                  <height>31</height>
                 </rect>
@@ -2664,10 +2562,10 @@ background: dark grey;
               <widget class="QTextBrowser" name="txtComments">
                <property name="geometry">
                 <rect>
-                 <x>30</x>
-                 <y>220</y>
-                 <width>881</width>
-                 <height>631</height>
+                 <x>10</x>
+                 <y>300</y>
+                 <width>441</width>
+                 <height>221</height>
                 </rect>
                </property>
                <property name="readOnly">
@@ -2677,7 +2575,7 @@ background: dark grey;
               <widget class="QTimeEdit" name="timeEdit">
                <property name="geometry">
                 <rect>
-                 <x>140</x>
+                 <x>150</x>
                  <y>110</y>
                  <width>118</width>
                  <height>29</height>
@@ -2690,7 +2588,7 @@ background: dark grey;
               <widget class="QDateEdit" name="dateEdit">
                <property name="geometry">
                 <rect>
-                 <x>140</x>
+                 <x>150</x>
                  <y>70</y>
                  <width>112</width>
                  <height>29</height>
@@ -2716,7 +2614,7 @@ background: dark grey;
               <widget class="QDoubleSpinBox" name="tempSpinBox">
                <property name="geometry">
                 <rect>
-                 <x>140</x>
+                 <x>150</x>
                  <y>30</y>
                  <width>111</width>
                  <height>29</height>
@@ -2724,6 +2622,182 @@ background: dark grey;
                </property>
                <property name="value">
                 <double>20.000000000000000</double>
+               </property>
+              </widget>
+              <widget class="QTableWidget" name="loopTableWidget">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>560</y>
+                 <width>641</width>
+                 <height>291</height>
+                </rect>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This table is used to enter coil geometries the format is as follows: each row specifies a single point on a coil. The first column is the coil index (using the GMR channel is useful), the next three colums specify the point in Northing, Easting, and Elevation. These can either be local coordinates or global ones. The final column specifies the loop radius if it is a circle or figure 8, for non circular or figure 8 loops leave this column blank. For figure-8 loops the coils do not need to be touching (see Irons and Kass, 2017). If a given index has 1 row it will be a circular loop, two rows will be a figure 8, and more than that will be a polygonal representation of the points, linearlly interpolated between them. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_54">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>540</y>
+                 <width>91</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Surface loops</string>
+               </property>
+              </widget>
+              <widget class="MyDynamicMplCanvas" name="mplwidget_3" native="true">
+               <property name="geometry">
+                <rect>
+                 <x>460</x>
+                 <y>0</y>
+                 <width>500</width>
+                 <height>500</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>500</width>
+                 <height>500</height>
+                </size>
+               </property>
+              </widget>
+              <widget class="QDoubleSpinBox" name="intensitySpinBox">
+               <property name="geometry">
+                <rect>
+                 <x>790</x>
+                 <y>675</y>
+                 <width>101</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>80000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>50000.000000000000000</double>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_38">
+               <property name="geometry">
+                <rect>
+                 <x>670</x>
+                 <y>640</y>
+                 <width>111</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>B Declination [°] </string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_37">
+               <property name="geometry">
+                <rect>
+                 <x>670</x>
+                 <y>600</y>
+                 <width>111</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>B Inclination [°]</string>
+               </property>
+              </widget>
+              <widget class="QDoubleSpinBox" name="decSpinBox">
+               <property name="geometry">
+                <rect>
+                 <x>790</x>
+                 <y>635</y>
+                 <width>101</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="minimum">
+                <double>-90.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>90.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.000000000000000</double>
+               </property>
+              </widget>
+              <widget class="QDoubleSpinBox" name="incSpinBox">
+               <property name="geometry">
+                <rect>
+                 <x>790</x>
+                 <y>595</y>
+                 <width>101</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="minimum">
+                <double>-90.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>90.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>45.000000000000000</double>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_51">
+               <property name="geometry">
+                <rect>
+                 <x>670</x>
+                 <y>680</y>
+                 <width>111</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>B Intensity [nT]</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_57">
+               <property name="geometry">
+                <rect>
+                 <x>670</x>
+                 <y>560</y>
+                 <width>121</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Magnetic field</string>
+               </property>
+              </widget>
+              <widget class="Line" name="line_3">
+               <property name="geometry">
+                <rect>
+                 <x>670</x>
+                 <y>540</y>
+                 <width>251</width>
+                 <height>20</height>
+                </rect>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
               </widget>
              </widget>
@@ -2734,19 +2808,6 @@ background: dark grey;
            <attribute name="title">
             <string>Kernel calc</string>
            </attribute>
-           <widget class="QTableWidget" name="loopTableWidget">
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>70</y>
-              <width>441</width>
-              <height>271</height>
-             </rect>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This table is used to enter coil geometries the format is as follows: each row specifies a single point on a coil. The first column is the coil index (using the GMR channel is useful), the next three colums specify the point in Northing, Easting, and Elevation. These can either be local coordinates or global ones. The final column specifies the loop radius if it is a circle or figure 8, for non circular or figure 8 loops leave this column blank. For figure-8 loops the coils do not need to be touching (see Irons and Kass, 2017). If a given index has 1 row it will be a circular loop, two rows will be a figure 8, and more than that will be a polygonal representation of the points, linearlly interpolated between them. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
            <widget class="Line" name="line_2">
             <property name="geometry">
              <rect>
@@ -2760,20 +2821,7 @@ background: dark grey;
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
-           <widget class="QLabel" name="label_54">
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>40</y>
-              <width>91</width>
-              <height>16</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Surface loops</string>
-            </property>
-           </widget>
-           <widget class="MyDynamicMplCanvas" name="mplwidget_3" native="true">
+           <widget class="MyDynamicMplCanvas" name="mplwidget_4" native="true">
             <property name="geometry">
              <rect>
               <x>480</x>
@@ -3098,8 +3146,8 @@ background: red;
              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;All processing steps are recorded here for your records&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;All processing steps are recorded here for your records&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
            <widget class="QLabel" name="label_53">
@@ -3130,7 +3178,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
