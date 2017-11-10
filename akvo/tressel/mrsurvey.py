@@ -5,6 +5,7 @@ import pylab
 import sys
 import scipy
 import copy
+import struct
 from scipy.io.matlab import mio
 from numpy import pi
 from math import floor
@@ -183,13 +184,14 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.transFreq       = HEADER[1]
         self.maxBusV         = HEADER[2]
         self.pulseLength     = pulseLengthDict.get((int)(HEADER[0]))(1e-3*HEADER[3])
-        self.interpulseDelay = 1e-3*HEADER[4]   # for T2, Spin Echo
-        self.repetitionDelay = HEADER[5]        # delay between first pulse
-        self.nPulseMoments   = (int)(HEADER[6]) # Number of pulse moments per stack
-        self.TuneCapacitance = HEADER[7]        # tuning capacitance in uF
-        self.nTransVersion   = HEADER[8]        # Transmitter version
-        self.nDAQVersion     = HEADER[9]        # DAQ software version 
-        self.nInterleaves    = HEADER[10]       # num interleaves
+        self.interpulseDelay = 1e-3*HEADER[4]      # for T2, Spin Echo
+        self.repetitionDelay = HEADER[5]           # delay between first pulse
+        self.nPulseMoments   = (int)(HEADER[6])    # Number of pulse moments per stack
+        self.TuneCapacitance = HEADER[7]           # tuning capacitance in uF
+        self.nTransVersion   = HEADER[8]           # Transmitter version
+        self.nDAQVersion     = HEADER[9]           # DAQ software version 
+        self.nInterleaves    = HEADER[10]          # num interleaves
+
         self.gain()
         
         # default 
@@ -198,7 +200,9 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         # newer header files contain 64 entries
         if self.nDAQVersion >= 2:
-            #print "new file format"
+           #self.deadtime       = HEADER[11]
+           #self.unknown        = HEADER[12]
+           #self.PreAmpGain     = HEADER[13]
             self.samp           = HEADER[14]     # sampling frequency
             self.dt             = 1./self.samp   # sampling rate 
             self.deadTime       = .0055          # instrument dead time before measurement
@@ -241,7 +245,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         # Current gain
         if floor(self.nDAQVersion) == 1:
             self.CurrentGain = 150.
-        elif floor(self.nDAQVersion) ==2:
+        elif floor(self.nDAQVersion) == 2:
             self.CurrentGain = 180.
 
     def updateProgress(self):
@@ -1754,11 +1758,61 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.doneTrigger.emit() 
         self.updateProcTrigger.emit()  
 
+    def loadGMRBinaryFID( self, rawfname ):
+        """ Reads a single binary GMR file and fills into DATADICT
+        """
+
+        #################################################################################
+        # figure out key data indices
+        # Pulse        
+        nps  = (int)((self.prePulseDelay)*self.samp)
+        npul   = (int)(self.pulseLength[0]*self.samp) #+ 100 
+
+        # Data 
+        nds  = nps+npul+(int)((self.deadTime)*self.samp);        # indice pulse 1 data starts 
+        nd1 = (int)(1.*self.samp)                                # samples in first pulse
+
+        invGain = 1./self.RxGain        
+        invCGain = self.CurrentGain        
+
+        pulse = "Pulse 1"
+        chan = self.DATADICT[pulse]["chan"] 
+        rchan = self.DATADICT[pulse]["rchan"] 
+        
+        rawFile = open( rawfname, 'rb')
+
+        buf1 = rawFile.read(4)
+        buf2 = rawFile.read(4)
+                
+        N_chan = struct.unpack('>i', buf1 )[0]
+        N_samp = struct.unpack('>i', buf2 )[0]
+ 
+        T = N_samp * self.dt 
+        TIMES = np.arange(0, T, self.dt) - .0002 # small offset in GMR DAQ?
+
+        DATA = np.zeros([N_samp, N_chan+1])
+        for ichan in range(N_chan):
+            DATADUMP = rawFile.read(4*N_samp)
+            for irec in range(N_samp):
+                DATA[irec,ichan] = struct.unpack('>f', DATADUMP[irec*4:irec*4+4])[0]
+                           
+        # Save into Data Cube 
+        for ichan in chan:
+            self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,eval(ichan)+3][nds:nds+nd1] * invGain 
+            self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
+            self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] = DATA[:,1][nps:nps+npul] * invCGain
+            self.DATADICT["Pulse 1"]["PULSE_TIMES"] = TIMES[nps:nps+npul] 
+
+        # plot reference channels?
+        for ichan in rchan:
+            self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,eval(ichan)+3][nds:nds+nd1] * invGain 
+            self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
+
     def loadFIDData(self, base, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, plot):
         '''
-            Loads a GMR FID dataset, reads OLD ASCII files
+            Loads a GMR FID dataset, reads binary format files 
         '''
-        import struct
+
         canvas.reAx3(True,False)
 
         chan = []
@@ -1774,18 +1828,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.deadTime       = deadTime       # instrument dead time before measurement
         self.samp = 50000.                   # in case this is a reproc, these might have 
         self.dt   = 1./self.samp             # changed
-        invGain = 1./self.RxGain        
-        invCGain = self.CurrentGain        
 
-        #################################################################################
-        # figure out key data indices
-        # Pulse        
-        nps  = (int)((self.prePulseDelay)*self.samp)
-        npul   = (int)(self.pulseLength[0]*self.samp) #+ 100 
-
-        # Data 
-        nds  = nps+npul+(int)((self.deadTime)*self.samp);        # indice pulse 1 data starts 
-        nd1 = (int)(1.*self.samp)                              # samples in first pulse
 
         #################################################################################
         # Data structures     
@@ -1813,83 +1856,28 @@ class GMRDataProcessor(SNMRDataProcessor):
         ##############################################
         # Read in binary (.lvm) data
         iistack = 0
-        hack = False
         for istack in procStacks:
-            rawFile = open(base + "_" + str(istack) + ".lvm", 'rb')
-            if hack:
-                subFile = open(base + "sub" + "_" + str(istack) + ".lvm", 'wb')
-            for ipm in range(self.nPulseMoments):
-                
-                # frequency cycing modulation
-                #mod = (-1)**(ipm%2) * (-1)**(istack%2)
-                
-                buf1 = rawFile.read(4)
-                buf2 = rawFile.read(4)
-                
-                if hack:
-                    # hack to do some data analysis
-                    subFile.write(buf1)
-                    subFile.write(buf2)
-                    # end hack
-                
-                #N_chan = struct.unpack('>i', rawFile.read(4))[0]
-                #N_samp = struct.unpack('>i', rawFile.read(4))[0]
-                
-                N_chan = struct.unpack('>i', buf1 )[0]
-                N_samp = struct.unpack('>i', buf2 )[0]
-        
- 
-                T = N_samp * self.dt 
-                TIMES = np.arange(0, T, self.dt) - .0002 # small offset in GMR DAQ?
+            
+            if self.nDAQVersion < 2.3:
+                rawfname = base + "_" + str(istack) 
+            else:
+                self.loadGMRBinaryFID( base + "_" + str(istack) + ".lvm" )
 
-                DATA = np.zeros([N_samp, N_chan+1])
-                for ichan in range(N_chan):
-                    DATADUMP = rawFile.read(4*N_samp)
-                    #subFile.write(DATADUMP)
-                    for irec in range(N_samp):
-                        DATA[irec,ichan] = struct.unpack('>f', DATADUMP[irec*4:irec*4+4])[0]
+            # Plotting
+            if plot: 
+                canvas.ax1.clear()
+                canvas.ax2.clear()
+                canvas.ax3.clear()
 
-                if hack:                       
-                    # hack to do some data analysis (array survey)
-                    for ichan in range(5):
-                        for irec in range(N_samp): 
-                            bdata = struct.pack( '>f', DATA[irec,ichan] )               
-                            subFile.write(bdata)
-                    for ichan in range(5,6):
-                        for irec in range(N_samp): 
-                            bdata = struct.pack( '>f', DATA[irec,ichan] + DATA[irec,ichan+2] )               
-                            #bdata = struct.pack( '>f', .23 )               
-                            subFile.write(bdata)
-                    for ichan in range(6,N_chan):
-                        for irec in range(N_samp): 
-                            bdata = struct.pack( '>f', DATA[irec,ichan] )               
-                            subFile.write(bdata)
-
-                if plot: 
-                    canvas.ax1.clear()
-                    canvas.ax2.clear()
-                    canvas.ax3.clear()
+                for ipm in range(self.nPulseMoments):
                            
-                # Save into Data Cube 
-                for ichan in chan:
-                    self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,eval(ichan)+3][nds:nds+nd1] * invGain 
-                    self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
-                    self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] = DATA[:,1][nps:nps+npul] * invCGain
-                    self.DATADICT["Pulse 1"]["PULSE_TIMES"] = TIMES[nps:nps+npul] 
-                    if plot:
-                        #canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
+                    for ichan in chan:
                         canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
                         canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
-                        #canvas.draw()
 
-                # plot reference channels?
-                for ichan in rchan:
-                    self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,eval(ichan)+3][nds:nds+nd1] * invGain 
-                    self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
-                    if plot:
+                    for ichan in rchan:
                         canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
 
-                if plot:
                     canvas.ax3.legend(prop={'size':6})
                     canvas.ax2.legend(prop={'size':6})
                     
@@ -1906,16 +1894,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                     canvas.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
 
                     canvas.draw()
+
                 percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
-                #self.progressTrigger.emit(percent) 
                 self.progressTrigger.emit(percent) 
 
             iistack += 1
 
-
         self.enableDSP()    
         self.doneTrigger.emit()
-
     
     def load4PhaseT1Data(self, base, procStacks, chan, rchan, FIDProc, canvas, deadTime, plot): 
 

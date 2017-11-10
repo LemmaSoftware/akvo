@@ -192,8 +192,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #self.ui.loopTableWidget.cellPressed.connect(self.loopCellClicked) 
 
         self.ui.loopTableWidget.setDragDropOverwriteMode(False)
-        self.ui.loopTableWidget.setDragEnabled(True)
-        self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+        self.ui.loopTableWidget.setDragEnabled(False)
+        #self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
         self.loops = {}        
 
@@ -203,6 +203,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.layerTableWidget.setColumnCount(3)      
         self.ui.layerTableWidget.setHorizontalHeaderLabels( [r"top [m]", r"bottom [m]", "σ [ Ωm]" ] )
 
+        # do we want this
         self.ui.layerTableWidget.setDragDropOverwriteMode(False)
         self.ui.layerTableWidget.setDragEnabled(True)
         self.ui.layerTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
@@ -422,7 +423,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.updateProcTrigger.connect(self.updateProc)
 
     def openGMRRAWDataset(self):
-
+        """ Opens a GMR header file
+        """
         try:
             with open('.gmr.last.path') as f: 
                 fpath = f.readline()  
@@ -612,7 +614,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     # Export XML file suitable for USGS ScienceBase Data Release
     def ExportXML(self):
-
+        """ This is a filler function for use by USGS collaborators 
+        """
         return 42
 
     def OpenPreprocess(self):
