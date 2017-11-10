@@ -186,7 +186,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
                 self.ui.loopTableWidget.setItem(ir, ic, pCell)
 
-        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
+        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged)
+        #self.ui.loopTableWidget.cellPressed.connect(self.loopCellChanged) 
+        self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
+        #self.ui.loopTableWidget.cellPressed.connect(self.loopCellClicked) 
+
         self.ui.loopTableWidget.setDragDropOverwriteMode(False)
         self.ui.loopTableWidget.setDragEnabled(True)
         self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
@@ -215,6 +219,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
                 self.ui.layerTableWidget.setItem(ir, ic, pCell)
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
+
 
     def sigmaCellChanged(self):
         self.ui.layerTableWidget.cellChanged.disconnect(self.sigmaCellChanged) 
@@ -284,35 +289,77 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
 
+    def loopCellClicked(self, item):
+        print("checkstate", item.checkState(),item.row())
+
+        #self.ui.loopTableWidget.itemClicked.disconnect(self.loopCellClicked)
+        jj = item.column() 
+        ii = item.row()
+        tp = type(self.ui.loopTableWidget.item(ii, 0))
+        print("tp", tp, ii, jj)
+        if str(tp) == "<class 'NoneType'>": 
+            return 
+        #print("Clicked", ii, jj)
+        if jj == 5 and self.ui.loopTableWidget.item(ii, 0).text() in self.loops.keys():
+            #print("jj=5")
+            self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"] = self.ui.loopTableWidget.item(ii, 5).checkState()
+            # update surrogates  
+            print("updating surrogates")
+            for point in self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["points"][1:]:
+                pCell = self.ui.loopTableWidget.item(point, 5)
+                if self.ui.loopTableWidget.item(ii, 5).checkState():
+                    pCell.setCheckState(QtCore.Qt.Checked);
+                else:
+                    pCell.setCheckState(QtCore.Qt.Unchecked);
+ 
+            #print( "loops",  self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"]) 
+         
+        #self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
 
     def loopCellChanged(self):
-       
         self.ui.loopTableWidget.cellChanged.disconnect(self.loopCellChanged) 
         
         jj = self.ui.loopTableWidget.currentColumn()
         ii = self.ui.loopTableWidget.currentRow()
 
-        if jj == 0: # ch. tag modified
-
+        if jj == 0 and len( self.ui.loopTableWidget.item(ii, jj).text().strip()) == 0:
+            for jjj in range(jj+1,jj+6): 
+                pCell = self.ui.loopTableWidget.item(ii, jjj)
+                pCell.setBackground( QtGui.QColor("white") )
+                pCell.setFlags( QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsUserCheckable   ) # not selectable 
+        elif jj == 0 and len( self.ui.loopTableWidget.item(ii, jj).text().strip() ): # ch. tag modified
             for jjj in range(jj+1,jj+5): 
                 pCell = self.ui.loopTableWidget.item(ii, jjj)
                 pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
                 pCell.setBackground( QtGui.QColor("lightblue") )
             if self.ui.loopTableWidget.item(ii, jj).text() not in self.loops.keys():
+                # This is a new loop ID 
                 self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ] = {}
-                print (self.loops.keys())
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["Tx"] = self.ui.loopTableWidget.item(ii, 5).checkState()
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["points"] = [ii] 
                 # Transmitter cell 
                 pCell = self.ui.loopTableWidget.item(ii, jj+5)
-                pCell.setCheckState(QtCore.Qt.Unchecked);
-                pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled )
+                pCell.setCheckState(QtCore.Qt.Unchecked)
+                pCell.setFlags( QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled  )
                 pCell.setBackground( QtGui.QColor("lightblue") ) 
             else:
+                # This is an existing loop ID 
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["points"].append( ii ) 
                 pCell = self.ui.loopTableWidget.item(ii, jj+5)
-                pCell.setCheckState(QtCore.Qt.Unchecked);
+                pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+                if self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"]:
+                    pCell.setCheckState(QtCore.Qt.Checked);
+                else:
+                    pCell.setCheckState(QtCore.Qt.Unchecked);
                 #pCell.setFlags( )
-                pCell.setBackground( QtGui.QColor("lightblue") ) 
+                pCell.setBackground( QtGui.QColor("lightblue") )
+
+
+            
+ 
         self.plotLoops()
         self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
+
 
     def plotLoops(self):
                
