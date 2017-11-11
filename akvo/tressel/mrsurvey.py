@@ -1808,10 +1808,55 @@ class GMRDataProcessor(SNMRDataProcessor):
             for ichan in rchan:
                 self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,eval(ichan)+3][nds:nds+nd1] * invGain 
                 self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
+    
+    def loadGMRASCIIFID( self, rawfname, istack ):
+        """Based on the geoMRI instrument manufactured by VistaClara. Imports 
+        a suite of raw .lvm files with the following format (on one line)
+
+        time(s) DC_Bus/100(V) Current+/75(A)  Curr-/75(A)  Voltage+/200(V) \  
+        Ch1(V) Ch2(V) Ch3(V) Ch4(V)
+
+        Sampling rate is assumed at 50 kHz 
+        """
+        import pandas as pd 
+        #################################################################################
+        # figure out key data indices
+        # Pulse        
+        nps  = (int)((self.prePulseDelay)*self.samp)
+        npul   = (int)(self.pulseLength[0]*self.samp) #+ 100 
+
+        # Data 
+        nds  = nps+npul+(int)((self.deadTime)*self.samp);        # indice pulse 1 data starts 
+        nd1 = (int)(1.*self.samp) - nds                          # samples in first pulse
+        ndr = (int)(1.*self.samp)                                # samples in record 
+
+        invGain = 1./self.RxGain        
+        invCGain = self.CurrentGain        
+
+        pulse = "Pulse 1"
+        chan = self.DATADICT[pulse]["chan"] 
+        rchan = self.DATADICT[pulse]["rchan"] 
+            
+        T = 1.5 #N_samp * self.dt 
+        TIMES = np.arange(0, T, self.dt) - .0002 # small offset in GMR DAQ?
+        
+        self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
+        self.DATADICT["Pulse 1"]["PULSE_TIMES"] = TIMES[nps:nps+npul]
+
+        # pandas is much faster than numpy for io
+        #DATA = np.loadtxt(rawfname)
+        DATA = pd.read_csv(rawfname, header=None, sep="\t").values
+        for ipm in range(self.nPulseMoments):
+            for ichan in np.append(chan,rchan):
+                self.DATADICT["Pulse 1"][ichan][ipm][istack] =  DATA[:, eval(ichan)+4][nds:(nds+nd1)] * invGain
+                self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] = DATA[:,2][nps:nps+npul] * invCGain
+            nds += ndr
+            nps += ndr 
+
 
     def loadFIDData(self, base, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, plot):
         '''
-            Loads a GMR FID dataset, reads binary format files 
+            Loads a GMR FID dataset, reads binary and ASCII format files 
         '''
 
         canvas.reAx3(True,False)
@@ -1860,7 +1905,8 @@ class GMRDataProcessor(SNMRDataProcessor):
         for istack in procStacks:
             
             if self.nDAQVersion < 2.3:
-                rawfname = base + "_" + str(istack) 
+                #rawfname = base + "_" + str(istack) 
+                self.loadGMRASCIIFID( base + "_" + str(istack), istack )
             else:
                 self.loadGMRBinaryFID( base + "_" + str(istack) + ".lvm", istack )
 
@@ -1868,7 +1914,6 @@ class GMRDataProcessor(SNMRDataProcessor):
             if plot: 
 
                 for ipm in range(self.nPulseMoments):
-
                     canvas.ax1.clear()
                     canvas.ax2.clear()
                     canvas.ax3.clear()
