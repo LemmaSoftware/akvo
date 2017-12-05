@@ -53,27 +53,37 @@ class VectorXr(yaml.YAMLObject):
         return "np.array(%r)" % (self.data)
 
 from collections import OrderedDict
-def represent_ordereddict(dumper, data):
-    value = []
-    for item_key, item_value in data.items():
-        node_key = dumper.represent_data(item_key)
-        node_value = dumper.represent_data(item_value)
-        value.append((node_key, node_value))
-    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
-yaml.add_representer(OrderedDict, represent_ordereddict)
+#def represent_ordereddict(dumper, data):
+#    print("representing IN DA HOUSE!!!!!!!!!!!!!!!!!!!!!")
+#    value = []
+#    for item_key, item_value in data.items():
+#        node_key = dumper.represent_data(item_key)
+#        node_value = dumper.represent_data(item_value)
+#        value.append((node_key, node_value))
+#    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
+#yaml.add_representer(OrderedDict, represent_ordereddict)
+
+def setup_yaml():
+    """ https://stackoverflow.com/a/8661021 """
+    represent_dict_order = lambda self, data:  self.represent_mapping('tag:yaml.org,2002:map', data.items())
+    yaml.add_representer(OrderedDict, represent_dict_order)    
+setup_yaml()
 
 class AkvoYamlNode(yaml.YAMLObject):
     yaml_tag = u'!AkvoData'
     def __init__(self):
         self.Akvo_VERSION = version
-        self.Import = {}
+        self.Import = OrderedDict() # {}
         self.Processing = OrderedDict() 
-        #self.ProcessingFlow = []
-        #self.Data = {}
-    # For going the other way, data import based on Yaml serialization, 
+    #def __init__(self, node):
+    #    self.Akvo_VERSION = node["version"]
+    #    self.Import = OrderedDict( node["Import"] ) # {}
+    #    self.Processing = OrderedDict( node["Processing"] ) 
     def __repr__(self):
         return "%s(name=%r, Akvo_VESION=%r, Import=%r, Processing=%r)" % (
-            self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(dict(self.Processing)) ) 
+            #self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing )
+            self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
+            #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing)) 
     
 try:    
     import thread 
@@ -563,8 +573,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             # Window centres 
 
         with open(SaveStr, 'w') as outfile:
-            for line in self.logText:
-                outfile.write(line+"\n")
+            #for line in self.logText:
+            #    outfile.write(line+"\n")
+            yaml.dump(self.YamlNode, outfile)   
             yaml.dump(INFO, outfile, default_flow_style=False)   
  
     def SavePreprocess(self):
@@ -604,8 +615,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["headerstr"] = str(self.headerstr)
         INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
-        
-        print ("YAML NODE", yaml.dump( self.YamlNode ) )
     
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
@@ -670,7 +679,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             #print ( self.RAWDataProc.DATADICT["INFO"]["log"] )
         
         self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
-        self.YamlNode = yaml.load( self.logText ) 
+
+        self.YamlNode = AkvoYamlNode( )  #self.logText )
+        self.YamlNode.Akvo_VERSION = (yaml.load( self.logText )).Akvo_VERSION
+        self.YamlNode.Import = OrderedDict((yaml.load( self.logText )).Import)
+        self.YamlNode.Processing = OrderedDict((yaml.load( self.logText )).Processing)
+        #self.YamlNode.Akvo_VERSION =  2 #yaml.load( self.logText )["Akvo_VERSION"] #, Loader=yaml.RoundTripLoader) # offending line! 
+        #self.YamlNode = AkvoYamlNode( self.logText ) # offending line! 
+        #print("import type", type( self.YamlNode.Processing ))
+        self.Log() 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         #except KeyError:
         #    pass
@@ -848,8 +865,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #for line in nlogText: 
         #    self.ui.logTextBrowser.append( line )
         #    self.logText.append( line ) 
-            
-        self.ui.logTextBrowser.clear() 
+        self.ui.logTextBrowser.clear()
         self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
 
     def disable(self):
@@ -954,7 +970,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def calcQ(self):
         if "Calc Q" not in self.YamlNode.Processing.keys():
+            print("In CalcQ", yaml.dump(self.YamlNode.Processing)  )
             self.YamlNode.Processing["Calc Q"] = True
+            print( yaml.dump(self.YamlNode.Processing)  )
             self.Log()
         else:
             err_msg = "Q values have already been calculated"
