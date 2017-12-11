@@ -70,7 +70,7 @@ def setup_yaml():
 setup_yaml()
 
 class AkvoYamlNode(yaml.YAMLObject):
-    yaml_tag = u'!AkvoData'
+    yaml_tag = u'AkvoData'
     def __init__(self):
         self.Akvo_VERSION = version
         self.Import = OrderedDict() # {}

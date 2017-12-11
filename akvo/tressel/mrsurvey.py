@@ -34,6 +34,48 @@ plt.register_cmap(name='inferno_r', cmap=cmaps.inferno_r)
 plt.register_cmap(name='magma', cmap=cmaps.magma)
 plt.register_cmap(name='magma_r', cmap=cmaps.magma_r)
 
+
+def loadGMRBinaryFID( rawfname, istack, info ):
+    """ Reads a single binary GMR file and fills into DATADICT
+    """
+
+    #################################################################################
+    # figure out key data indices
+    # Pulse        
+    nps  = (int)((info["prePulseDelay"])*info["samp"])
+    npul   = (int)(self.pulseLength[0]*self.samp) #+ 100 
+
+    # Data 
+    nds  = nps+npul+(int)((self.deadTime)*self.samp);        # indice pulse 1 data starts 
+    nd1 = (int)(1.*self.samp)                                # samples in first pulse
+
+    invGain = 1./self.RxGain        
+    invCGain = self.CurrentGain        
+
+    pulse = "Pulse 1"
+    chan = self.DATADICT[pulse]["chan"] 
+    rchan = self.DATADICT[pulse]["rchan"] 
+        
+    rawFile = open( rawfname, 'rb')
+        
+    T = N_samp * self.dt 
+    TIMES = np.arange(0, T, self.dt) - .0002 # small offset in GMR DAQ?
+
+    for ipm in range(self.nPulseMoments):
+        buf1 = rawFile.read(4)
+        buf2 = rawFile.read(4)
+                
+        N_chan = struct.unpack('>i', buf1 )[0]
+        N_samp = struct.unpack('>i', buf2 )[0]
+
+        DATA = np.zeros([N_samp, N_chan+1])
+        for ichan in range(N_chan):
+            DATADUMP = rawFile.read(4*N_samp)
+            for irec in range(N_samp):
+                DATA[irec,ichan] = struct.unpack('>f', DATADUMP[irec*4:irec*4+4])[0]
+        
+    return DATA, TIMES
+
 class SNMRDataProcessor(QObject):
     """ Revised class for preprocessing sNMR Data. 
         Derived types can read GMR files  
@@ -724,49 +766,49 @@ class GMRDataProcessor(SNMRDataProcessor):
                 for ipm in range(0, self.DATADICT["nPulseMoments"]):
 
                     # Time since pulse rather than since record starts...
-                    if clip > 0:
-                        time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"][clip-1::] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
-                    else:
-                        time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
+                    #if clip > 0:
+                    #    time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"][clip:] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
+                    #else:
+                    time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
 
                     #GT, GD, GTT, sig_stack, isum      = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
                     #GT2, GP, GTT, sig_stack_err, isum = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 ) 
                     
-                    GT, GCA, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GNR, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GRE, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["RE"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GIM, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IM"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GIP, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IP"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
+                    GT, GCA, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
+                    GT, GNR, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
+                    GT, GRE, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["RE"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
+                    GT, GIM, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IM"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
+                    GT, GIP, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IP"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
                     
                     if ipm == 0:
                     #    self.GATED[chan]["DATA"]  = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
                     #    self.GATED[chan]["ERR"]   = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
                     #    self.GATED[chan]["SIGMA"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
-                        self.GATED[chan]["CA"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
-                        self.GATED[chan]["NR"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
-                        self.GATED[chan]["RE"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
-                        self.GATED[chan]["IM"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
-                        self.GATED[chan]["IP"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
+                        self.GATED[chan]["CA"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
+                        self.GATED[chan]["NR"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
+                        self.GATED[chan]["RE"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
+                        self.GATED[chan]["IM"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
+                        self.GATED[chan]["IP"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
                         self.GATED[chan]["isum"] = isum
 
                     #self.GATED[chan]["DATA"][ipm] = GD.real
-                    self.GATEDABSCISSA = GT
-                    self.GATEDWINDOW = GTT
+                    self.GATEDABSCISSA = GT[clip:]
+                    self.GATEDWINDOW = GTT[clip:]
                     #self.GATED[chan]["SIGMA"][ipm] =  sig_stack #_err # GP.real
                     #self.GATED[chan]["ERR"][ipm] =  GP.real
                     
-                    self.GATED[chan]["CA"][ipm] = GCA.real
-                    self.GATED[chan]["NR"][ipm] = GNR.real
-                    self.GATED[chan]["RE"][ipm] = GRE.real
-                    self.GATED[chan]["IM"][ipm] = GIM.real
-                    self.GATED[chan]["IP"][ipm] = GIP.real
+                    self.GATED[chan]["CA"][ipm] = GCA.real[clip:]
+                    self.GATED[chan]["NR"][ipm] = GNR.real[clip:]
+                    self.GATED[chan]["RE"][ipm] = GRE.real[clip:]
+                    self.GATED[chan]["IM"][ipm] = GIM.real[clip:]
+                    self.GATED[chan]["IP"][ipm] = GIP.real[clip:]
                     
                     percent = int(1e2* (float)((ipm)+ichan*self.DATADICT["nPulseMoments"]) / 
                                        (float)(self.DATADICT["nPulseMoments"] * len(self.DATADICT[pulse]["chan"])))
                     self.progressTrigger.emit(percent)
 
-                self.GATED[chan]["GTT"] = GTT
-                self.GATED[chan]["GT"] = GT
+                self.GATED[chan]["GTT"] = GTT[clip:]
+                self.GATED[chan]["GT"] = GT[clip:]
                 self.GATED[chan]["QQ"] = QQ
                 ichan += 1
         self.doneTrigger.emit() 
@@ -1911,17 +1953,29 @@ class GMRDataProcessor(SNMRDataProcessor):
         ##############################################
         # Read in binary (.lvm) data
         iistack = 0
+        fnames = []
         for istack in procStacks:
-            
             if self.nDAQVersion < 2.3:
                 #rawfname = base + "_" + str(istack) 
                 self.loadGMRASCIIFID( base + "_" + str(istack), istack )
             else:
                 self.loadGMRBinaryFID( base + "_" + str(istack) + ".lvm", istack )
+                #fnames.append( base + "_" + str(istack) + ".lvm" )
+                
+            percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
+            self.progressTrigger.emit(percent) 
+            iistack += 1
 
-            # Plotting
-            if plot: 
+        # multiprocessing load data
+        #info = {}
+        #info["prePulseDelay"] = self.prePulseDelay
+        #with multiprocessing.Pool() as pool: 
+        #    results = pool.starmap( loadGMRBinaryFID, zip(itertools.repeat(self), fnames, info ) ) # zip(np.tile(vc, (ns, 1)), np.tile(vgc, (ns,1)), itertools.repeat(sys.argv[1]), itertools.repeat(sys.argv[2]), EPS_CMR))
 
+        # Plotting
+        if plot: 
+            iistack = 0
+            for istack in procStacks:
                 for ipm in range(self.nPulseMoments):
                     canvas.ax1.clear()
                     canvas.ax2.clear()
@@ -1948,13 +2002,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                     canvas.ax2.set_xlabel("time [s]", fontsize=8)
                     canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
                     canvas.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-
                     canvas.draw()
 
                 percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
                 self.progressTrigger.emit(percent) 
-
-            iistack += 1
+                iistack += 1
 
         self.enableDSP()    
         self.doneTrigger.emit()
