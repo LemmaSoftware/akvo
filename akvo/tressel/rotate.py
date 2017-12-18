@@ -25,7 +25,7 @@ def quadrature(T, vL, wL, dt, xn, DT, t):
         # decimate
     # blind decimation
     # 1 instead of T 
-    irsamp = (T) * int(  (1./vL) / dt) # real 
+    irsamp = int(T) * int(  (1./vL) / dt) # real 
     iisamp =       int(  ((1./vL)/ dt) * ( .5*np.pi / (2.*np.pi) ) ) # imaginary
    
 
@@ -78,7 +78,7 @@ def quadrature(T, vL, wL, dt, xn, DT, t):
     #############################################################
     ## In-phase 
     #2*np.cos(wL*t)  
-    dw = -2.*np.pi*2
+    dw = 0 # -2.*np.pi*2
     Q = signal.filtfilt(b, a, xn*2*np.cos((wL+dw)*t))  # X
     I = signal.filtfilt(b, a, xn*2*np.sin((wL+dw)*t))  # Y
 

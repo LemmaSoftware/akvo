@@ -296,10 +296,10 @@ def quadratureDetect2(X, Y, tt, x0="None"):
     if x0=="None":
         x0 = np.array( [1., 0., 0., .2] )
         res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss='cauchy', f_scale=1.0,\
-            bounds=( [1., 0, -13, .005] , [1000., 2*np.pi, 13, .800] ))
+            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ))
     else:
         res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss='cauchy', f_scale=1.0,\
-            bounds=( [1., 0, -13, .005] , [1000., 2*np.pi, 13, .800] ))
+            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ))
 
         #bounds=( [0., 0, -20, .0] , [1., np.pi, 20, .6] ))
 
