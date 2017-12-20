@@ -7,5 +7,8 @@ Akvo is developed by several teams including the University of Utah.
 ## Capabilities 
 Akvo currently has preprocessing capabilities for VistaClara GMR data. 
 
+## Benefits 
+Processing steps are retained and logged in the processed file header.
+
 ## Languages
 Akvo is written primarily in Python 3, but has components written in R as well. The graphical user unterface is written in PyQt5.  An interface to modelling software written in C++ is in development. 
