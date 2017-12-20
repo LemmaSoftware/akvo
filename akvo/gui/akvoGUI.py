@@ -53,27 +53,37 @@ class VectorXr(yaml.YAMLObject):
         return "np.array(%r)" % (self.data)
 
 from collections import OrderedDict
-def represent_ordereddict(dumper, data):
-    value = []
-    for item_key, item_value in data.items():
-        node_key = dumper.represent_data(item_key)
-        node_value = dumper.represent_data(item_value)
-        value.append((node_key, node_value))
-    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
-yaml.add_representer(OrderedDict, represent_ordereddict)
+#def represent_ordereddict(dumper, data):
+#    print("representing IN DA HOUSE!!!!!!!!!!!!!!!!!!!!!")
+#    value = []
+#    for item_key, item_value in data.items():
+#        node_key = dumper.represent_data(item_key)
+#        node_value = dumper.represent_data(item_value)
+#        value.append((node_key, node_value))
+#    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
+#yaml.add_representer(OrderedDict, represent_ordereddict)
+
+def setup_yaml():
+    """ https://stackoverflow.com/a/8661021 """
+    represent_dict_order = lambda self, data:  self.represent_mapping('tag:yaml.org,2002:map', data.items())
+    yaml.add_representer(OrderedDict, represent_dict_order)    
+setup_yaml()
 
 class AkvoYamlNode(yaml.YAMLObject):
-    yaml_tag = u'!AkvoData'
+    yaml_tag = u'AkvoData'
     def __init__(self):
         self.Akvo_VERSION = version
-        self.Import = {}
+        self.Import = OrderedDict() # {}
         self.Processing = OrderedDict() 
-        #self.ProcessingFlow = []
-        #self.Data = {}
-    # For going the other way, data import based on Yaml serialization, 
+    #def __init__(self, node):
+    #    self.Akvo_VERSION = node["version"]
+    #    self.Import = OrderedDict( node["Import"] ) # {}
+    #    self.Processing = OrderedDict( node["Processing"] ) 
     def __repr__(self):
         return "%s(name=%r, Akvo_VESION=%r, Import=%r, Processing=%r)" % (
-            self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(dict(self.Processing)) ) 
+            #self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing )
+            self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
+            #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing)) 
     
 try:    
     import thread 
@@ -172,41 +182,55 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.mplwidget_navigator_2.setCanvas(self.ui.mplwidget_2)
 
         ##########################################################################
-        # modelling Table 
-        self.ui.loopTableWidget.setRowCount(40)       
-        self.ui.loopTableWidget.setColumnCount(5)      
-        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", "Northing [m]","Easting [m]","Height [m]", "Radius"] )
-        self.ui.loopTableWidget.cellChanged.connect(self.cellChanged) 
+        # Loop Table 
+        self.ui.loopTableWidget.setRowCount(80)       
+        self.ui.loopTableWidget.setColumnCount(6)      
+        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", \
+            "Northing [m]","Easting [m]","Height [m]", "Radius","Tx"] )
+        
+        for ir in range(0, self.ui.loopTableWidget.rowCount() ):
+            for ic in range(1, self.ui.loopTableWidget.columnCount() ):
+                pCell = QtWidgets.QTableWidgetItem()
+                #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+                pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+                pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+                self.ui.loopTableWidget.setItem(ir, ic, pCell)
+
+        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged)
+        #self.ui.loopTableWidget.cellPressed.connect(self.loopCellChanged) 
+        self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
+        #self.ui.loopTableWidget.cellPressed.connect(self.loopCellClicked) 
 
         self.ui.loopTableWidget.setDragDropOverwriteMode(False)
-        self.ui.loopTableWidget.setDragEnabled(True)
-        self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        
+        self.ui.loopTableWidget.setDragEnabled(False)
+        #self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+
+        self.loops = {}        
+
         ##########################################################################
         # layer Table 
         self.ui.layerTableWidget.setRowCount(80)       
         self.ui.layerTableWidget.setColumnCount(3)      
         self.ui.layerTableWidget.setHorizontalHeaderLabels( [r"top [m]", r"bottom [m]", "σ [ Ωm]" ] )
 
-
+        # do we want this
         self.ui.layerTableWidget.setDragDropOverwriteMode(False)
         self.ui.layerTableWidget.setDragEnabled(True)
         self.ui.layerTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         
         pCell = QtWidgets.QTableWidgetItem()
-        #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
-        #pCell.setBackground( QtGui.QColor("lightblue").lighter(125) )
         pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
         self.ui.layerTableWidget.setItem(0, 1, pCell)
-        for ir in range(1, 80):
-            for ic in range(0, 3):
+        for ir in range(1, self.ui.layerTableWidget.rowCount() ):
+            for ic in range(0, self.ui.layerTableWidget.columnCount() ):
                 pCell = QtWidgets.QTableWidgetItem()
                 #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                 pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
                 pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
                 self.ui.layerTableWidget.setItem(ir, ic, pCell)
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
+
 
     def sigmaCellChanged(self):
         self.ui.layerTableWidget.cellChanged.disconnect(self.sigmaCellChanged) 
@@ -259,7 +283,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
                     return
 
-            print("I'm here joey")
             # enable next layer
             pCell4 = self.ui.layerTableWidget.item(ii+1, jj)
             pCell4.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
@@ -277,27 +300,77 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
 
+    def loopCellClicked(self, item):
+        print("checkstate", item.checkState(),item.row())
 
-    def cellChanged(self):
-        # TODO consider building the model whenever this is called. Would be nice to be able to 
-        # do that. Would require instead dist of T2 I guess. 
+        #self.ui.loopTableWidget.itemClicked.disconnect(self.loopCellClicked)
+        jj = item.column() 
+        ii = item.row()
+        tp = type(self.ui.loopTableWidget.item(ii, 0))
+        print("tp", tp, ii, jj)
+        if str(tp) == "<class 'NoneType'>": 
+            return 
+        #print("Clicked", ii, jj)
+        if jj == 5 and self.ui.loopTableWidget.item(ii, 0).text() in self.loops.keys():
+            #print("jj=5")
+            self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"] = self.ui.loopTableWidget.item(ii, 5).checkState()
+            # update surrogates  
+            print("updating surrogates")
+            for point in self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["points"][1:]:
+                pCell = self.ui.loopTableWidget.item(point, 5)
+                if self.ui.loopTableWidget.item(ii, 5).checkState():
+                    pCell.setCheckState(QtCore.Qt.Checked);
+                else:
+                    pCell.setCheckState(QtCore.Qt.Unchecked);
+ 
+            #print( "loops",  self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"]) 
+         
+        #self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
+
+    def loopCellChanged(self):
+        self.ui.loopTableWidget.cellChanged.disconnect(self.loopCellChanged) 
+        
         jj = self.ui.loopTableWidget.currentColumn()
         ii = self.ui.loopTableWidget.currentRow()
-            
-        #if self.ui.loopTableWidget.item(ii, jj) == None:
-        #    return
 
-        try:
-            eval (str( self.ui.loopTableWidget.item(ii, jj).text() ))
-        except:
-            if jj != 0:
-                Error = QtWidgets.QMessageBox()
-                Error.setWindowTitle("Error!")
-                Error.setText("Non-numeric value encountered")
-                Error.setDetailedText("Modelling parameters must be able to be cast into numeric values.")
-                Error.exec_()
+        if jj == 0 and len( self.ui.loopTableWidget.item(ii, jj).text().strip()) == 0:
+            for jjj in range(jj+1,jj+6): 
+                pCell = self.ui.loopTableWidget.item(ii, jjj)
+                pCell.setBackground( QtGui.QColor("white") )
+                pCell.setFlags( QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsUserCheckable   ) # not selectable 
+        elif jj == 0 and len( self.ui.loopTableWidget.item(ii, jj).text().strip() ): # ch. tag modified
+            for jjj in range(jj+1,jj+5): 
+                pCell = self.ui.loopTableWidget.item(ii, jjj)
+                pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
+                pCell.setBackground( QtGui.QColor("lightblue") )
+            if self.ui.loopTableWidget.item(ii, jj).text() not in self.loops.keys():
+                # This is a new loop ID 
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ] = {}
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["Tx"] = self.ui.loopTableWidget.item(ii, 5).checkState()
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["points"] = [ii] 
+                # Transmitter cell 
+                pCell = self.ui.loopTableWidget.item(ii, jj+5)
+                pCell.setCheckState(QtCore.Qt.Unchecked)
+                pCell.setFlags( QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled  )
+                pCell.setBackground( QtGui.QColor("lightblue") ) 
+            else:
+                # This is an existing loop ID 
+                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["points"].append( ii ) 
+                pCell = self.ui.loopTableWidget.item(ii, jj+5)
+                pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+                if self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"]:
+                    pCell.setCheckState(QtCore.Qt.Checked);
+                else:
+                    pCell.setCheckState(QtCore.Qt.Unchecked);
+                #pCell.setFlags( )
+                pCell.setBackground( QtGui.QColor("lightblue") )
+
+
             
+ 
         self.plotLoops()
+        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
+
 
     def plotLoops(self):
                
@@ -310,8 +383,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         for ii in range( self.ui.loopTableWidget.rowCount() ):
             for jj in range( self.ui.loopTableWidget.columnCount() ):
                 tp = type(self.ui.loopTableWidget.item(ii, jj))
-                if str(tp) == "<class 'NoneType'>":  # ugly hack needed by PySide for some strange reason.
-                    pass #print ("NONE")
+                if str(tp) == "<class 'NoneType'>":  
+                    pass 
+                elif not len(self.ui.loopTableWidget.item(ii, jj).text()): 
+                    pass
                 else:
                     if jj == 0: 
                         idx = self.ui.loopTableWidget.item(ii, 0).text()
@@ -331,6 +406,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget_3.ax1.plot(  np.array(nor[ii]), np.array(eas[ii])  )
             except:
                 pass 
+        #self.ui.mplwidget_3.figure.axes().set
+        plt.gca().set_aspect('equal') #, adjustable='box')
         self.ui.mplwidget_3.draw()
 
     def about(self):
@@ -356,7 +433,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.updateProcTrigger.connect(self.updateProc)
 
     def openGMRRAWDataset(self):
-
+        """ Opens a GMR header file
+        """
         try:
             with open('.gmr.last.path') as f: 
                 fpath = f.readline()  
@@ -495,8 +573,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             # Window centres 
 
         with open(SaveStr, 'w') as outfile:
-            for line in self.logText:
-                outfile.write(line+"\n")
+            #for line in self.logText:
+            #    outfile.write(line+"\n")
+            yaml.dump(self.YamlNode, outfile)   
             yaml.dump(INFO, outfile, default_flow_style=False)   
  
     def SavePreprocess(self):
@@ -536,8 +615,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["headerstr"] = str(self.headerstr)
         INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
-        
-        print ("YAML NODE", yaml.dump( self.YamlNode ) )
     
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
@@ -546,7 +623,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     # Export XML file suitable for USGS ScienceBase Data Release
     def ExportXML(self):
-
+        """ This is a filler function for use by USGS collaborators 
+        """
         return 42
 
     def OpenPreprocess(self):
@@ -601,7 +679,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             #print ( self.RAWDataProc.DATADICT["INFO"]["log"] )
         
         self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
-        self.YamlNode = yaml.load( self.logText ) 
+
+        self.YamlNode = AkvoYamlNode( )  #self.logText )
+        self.YamlNode.Akvo_VERSION = (yaml.load( self.logText )).Akvo_VERSION
+        self.YamlNode.Import = OrderedDict((yaml.load( self.logText )).Import)
+        self.YamlNode.Processing = OrderedDict((yaml.load( self.logText )).Processing)
+        #self.YamlNode.Akvo_VERSION =  2 #yaml.load( self.logText )["Akvo_VERSION"] #, Loader=yaml.RoundTripLoader) # offending line! 
+        #self.YamlNode = AkvoYamlNode( self.logText ) # offending line! 
+        #print("import type", type( self.YamlNode.Processing ))
+        self.Log() 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         #except KeyError:
         #    pass
@@ -779,8 +865,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #for line in nlogText: 
         #    self.ui.logTextBrowser.append( line )
         #    self.logText.append( line ) 
-            
-        self.ui.logTextBrowser.clear() 
+        self.ui.logTextBrowser.clear()
         self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
 
     def disable(self):
@@ -885,7 +970,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def calcQ(self):
         if "Calc Q" not in self.YamlNode.Processing.keys():
+            print("In CalcQ", yaml.dump(self.YamlNode.Processing)  )
             self.YamlNode.Processing["Calc Q"] = True
+            print( yaml.dump(self.YamlNode.Processing)  )
             self.Log()
         else:
             err_msg = "Q values have already been calculated"

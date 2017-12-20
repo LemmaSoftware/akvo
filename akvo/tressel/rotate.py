@@ -25,7 +25,7 @@ def quadrature(T, vL, wL, dt, xn, DT, t):
         # decimate
     # blind decimation
     # 1 instead of T 
-    irsamp = (T) * int(  (1./vL) / dt) # real 
+    irsamp = int(T) * int(  (1./vL) / dt) # real 
     iisamp =       int(  ((1./vL)/ dt) * ( .5*np.pi / (2.*np.pi) ) ) # imaginary
    
 
@@ -78,7 +78,7 @@ def quadrature(T, vL, wL, dt, xn, DT, t):
     #############################################################
     ## In-phase 
     #2*np.cos(wL*t)  
-    dw = -2.*np.pi*2
+    dw = 0 # -2.*np.pi*2
     Q = signal.filtfilt(b, a, xn*2*np.cos((wL+dw)*t))  # X
     I = signal.filtfilt(b, a, xn*2*np.sin((wL+dw)*t))  # Y
 
@@ -133,6 +133,11 @@ def RotateAmplitude(X, Y, zeta, df, t):
 
 def gateIntegrate(T2D, T2T, gpd, sigma, stackEfficiency=2.):
     """ Gate integrate the signal to gpd, gates per decade
+        T2D = the time series to gate integrate, complex 
+        T2T = the abscissa values 
+        gpd = gates per decade 
+        sigma = estimate of standard deviation for theoretical gate noise 
+        stackEfficiency = exponential in theoretical gate noise, 2 represents ideal stacking
     """
     
     # use artificial time gates so that early times are fully captured
@@ -140,48 +145,44 @@ def gateIntegrate(T2D, T2T, gpd, sigma, stackEfficiency=2.):
     T2TD = T2T[0] - (T2T[1]-T2T[0])
     T2T -= T2TD
     
-    # calculate total number of decades
-    nd = np.log10(T2T[-1]/T2T[0]) #np.log10(self.T2T[-1]) -  np.log10(self.T2T[-1])
+    #####################################
+    # calculate total number of decades #
+    # windows edges are approximate until binning but will be adjusted to reflect data timing, this 
+    # primarily impacts bins with a few samples  
+    nd = np.log10(T2T[-1]/T2T[0])               
     tdd = np.logspace( np.log10(T2T[0]), np.log10(T2T[-1]), (int)(gpd*nd)+1, base=10, endpoint=True) 
-    tdl = tdd[0:-1]     # these are left edges
-    tdr = tdd[1::]      # these are left edges
-    td = (tdl+tdr) / 2. # window centres
+    tdl = tdd[0:-1]                 # approximate window left edges
+    tdr = tdd[1::]                  # approximate window right edges
+    td = (tdl+tdr) / 2.             # approximate window centres
 
-    Vars = np.ones( len(td) ) * sigma**2 #* .15**2
+
+    Vars = np.zeros( len(td) ) 
     htd = np.zeros( len(td), dtype=complex )
-    isum = np.zeros( len(td) )
-    ii = 0
+    isum = np.zeros( len(td), dtype=int )  
 
-    SIGSTACK = {}
-    SIGSTACK[ii]= []
+    ii = 0
     for itd in range(len(T2T)):
         if ( T2T[itd] > tdr[ii] ):
-            if (ii < len(td)-1):
-                ii += 1
-                SIGSTACK[ii] = []
-            else:
-                #print "overshoot??", ii
-                break
+            ii += 1
+            # correct window edges to centre about data 
+            tdr[ii-1] = (T2T[itd-1]+T2T[itd])*.5 
+            tdl[ii  ] = (T2T[itd-1]+T2T[itd])*.5
         isum[ii] += 1
         htd[ii] += T2D[ itd ]
-        SIGSTACK[ii].append(T2D[itd])
         Vars[ii] += sigma**2
+        
+    td = (tdl+tdr) / 2.             # actual window centres
+    sigma2 = np.sqrt( Vars * ((1/(isum))**stackEfficiency) ) 
 
-    sigma = np.sqrt( Vars  * (1/isum)**stackEfficiency ) 
-    for ii in range(len(td)):
-        if len(SIGSTACK[ii]) > 30:
-            sigma[ii] = np.var(SIGSTACK[ii]) / ((len(SIGSTACK[ii])-1)**(1/stackEfficiency))
-            #sigma[ii] = np.std(SIGSTACK[ii]) * ( 1./(len(SIGSTACK[ii]))**stackEfficiency)
+    # Reset abscissa where isum == 1 
+    # when there is no windowing going on 
+    td[isum==1] = T2T[0:len(td)][isum==1]
 
-    # RESET times where isum == 1
-    ii = 0
-    while (isum[ii] == 1):
-        td[ii] = T2T[ii]
-        ii += 1
+    tdd = np.append(tdl, tdr[-1])
 
-    htd /= isum
-    T2T += T2TD  
-    return td+T2TD, htd, tdd+T2TD, sigma, isum  # centre abscissa, data, window edges, error  
+    htd /= isum # average
+    T2T += T2TD 
+    return td+T2TD, htd, tdd+T2TD, sigma2, isum  # centre abscissa, data, window edges, error 
 
 if __name__ == "__main__":
 

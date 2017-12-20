@@ -40,6 +40,7 @@ setup(name='Akvo',
           'numpy',
           'PyQt5',
           'pyyaml',
+          'pandas',
           'pyqt-distutils',
           'cmocean'
       ],
