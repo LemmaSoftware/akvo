@@ -1,12 +1,22 @@
-
 # Akvo 
-Akvo is a surface NMR processing workstation
-.hello whirld, still here, yup, 
+ Akvo provides processing of surface NMR data. It aims to be simple to use yet flexible for accommodating changes to processing flow. Akvo is written primarily in Python 3 with a small amount of R as well. The application is written around a Qt GUI with plotting provided by Matplotlib.
 
-Please...work 
-* it won't 
-* why?
+The bleeding-edge code may be accesed using the git client 
+```
+git clone https://git.lemmasoftware.org/akvo.git  
+```
+or, using our GitHub mirror 
+```
+git clone https://github.com/LemmaSoftware/akvo.git  
+```
 
+## Installation 
+Installation is straightforward. The only prerequisite that is sometimes not properly handled is PyQt5 which needs to be manually installed. 
+
+```
+python3 setup.py build 
+python3 setup.py install
+```
 
 ## Team 
 Akvo is developed by several teams including the University of Utah.
@@ -17,6 +27,6 @@ Akvo currently has preprocessing capabilities for VistaClara GMR data.
 ## Benefits 
 Processing steps are retained and logged in the processed file header, which is written in YAML. 
 This allows data processing to be repeatible, which is a major benefit. 
-YAML files are human readible, and easily ediable. Hello. 
+
 ## Languages
 Akvo is written primarily in Python 3, but has components written in R as well. The graphical user unterface is written in PyQt5.  An interface to modelling software written in C++ is in development. 
