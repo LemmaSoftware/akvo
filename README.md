@@ -1,7 +1,7 @@
 
 # Akvo 
 Akvo is a surface NMR processing workstation
-hello whirld 
+hello whirld, still here 
 
 ## Team 
 Akvo is developed by several teams including the University of Utah.
