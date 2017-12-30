@@ -7,7 +7,7 @@ pip install PyQt5
 ## Or 
 pip3 install PyQt5 
 
-Installation is done in the typical python fashion
+## Installation is done in the typical python fashion
 python setup.py build 
 python setup.py install    # requires sudo on most installations 
 
