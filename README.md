@@ -29,4 +29,4 @@ Processing steps are retained and logged in the processed file header, which is 
 This allows data processing to be repeatible, which is a major benefit. 
 
 ## Languages
-Akvo is written primarily in Python 3, but has components written in R as well. The graphical user unterface is written in PyQt5.  An interface to modelling software written in C++ is in development. 
+Akvo is written primarily in Python 3, but has components written in R as well. The graphical user unterface is written in PyQt5.  An interface to modelling software written in C++ (Lemma and Merlin) is in development. 
