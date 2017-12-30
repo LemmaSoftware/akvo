@@ -2,22 +2,16 @@ Thank you for your interest in Akvo!
 
 Akvo is a surface NMR (sNMR) processing utility. Currently preprocessing is supported, but we are adding inversion capabilities. Let us know if you are looking for something. 
 
-Installation is done in the typical python fashion
+##Configuration
+pip install PyQt5 
+## Or 
+pip3 install PyQt5 
 
+Installation is done in the typical python fashion
 python setup.py build 
-python setup.py build_ui   # OPTIONAL, see below
 python setup.py install    # requires sudo on most installations 
 
 # If you are going to be editing the source code, you may prefer to run 
 # the develop option which will not require rerunning the install option 
 # for each edit. This is entirely optional 
 python setup.py develop    # requires sudo on most installations 
-
-## Building the user interface 
-Akvo ships with a
-
-## On some platforms you may receive an error regarding PyQt5, it should be possible to manually 
-## install this via 
-pip install PyQt5 
-## Or 
-pip3 install PyQt5 
