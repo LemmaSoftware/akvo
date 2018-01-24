@@ -610,12 +610,13 @@ class GMRDataProcessor(SNMRDataProcessor):
                     #############################################################
                     # Rotated amplitude
                     #if ipm != 0:
-                    [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], (E0,phi,df,T2))
-                    #[ E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
+                    #[success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], (E0,phi,df,T2))
+                    [success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
                     #else:
                     #    [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"])
                     #[success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
-                    print("success", success, "E0", E0, "phi", phi, "df", df, "T2", T2)
+                    #print("success", success, "E0", E0, "phi", phi, "df", df, "T2", T2)
+                    
                     D = self.RotateAmplitude( ht.real, ht.imag, phi, df, self.DATADICT[pulse]["TIMES"] )
                     CA[pulse][chan][ipm,:] = D.imag[clip::]  # amplitude data 
                     NR[pulse][chan][ipm,:] = D.real[clip::]  # noise data

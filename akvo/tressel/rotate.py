@@ -128,9 +128,6 @@ def RotateAmplitude(X, Y, zeta, df, t):
     return np.abs(V) * np.exp( 1j * ( np.angle(V) - zeta - 2.*np.pi*df*t ) )
     #return np.abs(V) * np.exp( 1j * ( np.angle(V) - zeta - df*t ) )
 
-#def Gate(x, t):
-#    pass
-
 def gateIntegrate(T2D, T2T, gpd, sigma, stackEfficiency=2.):
     """ Gate integrate the signal to gpd, gates per decade
         T2D = the time series to gate integrate, complex 
@@ -162,7 +159,7 @@ def gateIntegrate(T2D, T2T, gpd, sigma, stackEfficiency=2.):
 
     ii = 0
     for itd in range(len(T2T)):
-        if ( T2T[itd] > tdr[ii] ):
+        if ( round(T2T[itd], 4) > round(tdr[ii], 4) ):
             ii += 1
             # correct window edges to centre about data 
             tdr[ii-1] = (T2T[itd-1]+T2T[itd])*.5 
