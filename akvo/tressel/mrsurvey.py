@@ -337,7 +337,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                 y_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
                 ax1.yaxis.set_major_formatter(y_formatter)
 
-                ax1.plot( 1e3*self.DATADICT[pulse]["TIMES"], np.average(  SimpleStack[pulse][chan], 0 ), color='darkblue' )
+                ax1.plot( 1e3*self.DATADICT[pulse]["TIMES"], np.average(  SimpleStack[pulse][chan], 0 )) #, color='darkblue' )
                 ax1.set_title("Ch." + str(chan) + ": avg FID", fontsize=8)
                 ax1.set_xlabel(r"time (ms)", fontsize=8)
 
@@ -408,7 +408,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                                            (float)(self.DATADICT["nPulseMoments"] * len(self.DATADICT[pulse]["chan"])))
                         self.progressTrigger.emit(percent)
 
-                    ax1.plot( 1e3*self.DATADICT[pulse]["TIMES"], np.average(  madstack[ichan], 0  ) , color='darkred')
+                    ax1.plot( 1e3*self.DATADICT[pulse]["TIMES"], np.average(  madstack[ichan], 0  ))# , color='darkred')
                         
                     MADStack[pulse][chan] = madstack[ichan]
                     VarStack[pulse][chan] = varstack[ichan]
@@ -427,6 +427,7 @@ class GMRDataProcessor(SNMRDataProcessor):
 #         cbar_ax = canvas.fig.add_axes([0.85, 0.1, 0.015, 0.355])
 #         cbar_ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')                 
         im2 = []
+        im1 = []
         for pulse in self.DATADICT["PULSES"]:
             ichan = 0
             axes = canvas.fig.axes
@@ -447,8 +448,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                 df = nu[1] - nu[0]
                 of = 0
 
-                istart = int((self.transFreq-150.)/df)
-                iend = int((self.transFreq+150.)/df)
+                istart = int((self.transFreq-50.)/df)
+                iend = int((self.transFreq+50.)/df)
                 of = nu[istart]
                 
                 def freqlabel(xxx, pos):
@@ -466,10 +467,15 @@ class GMRDataProcessor(SNMRDataProcessor):
                 # convert to dB and add colorbars
                 #db = 20.*np.log10(np.abs(SFFT[:,istart:iend]))
                 db = (np.abs(SFFT[:,istart:iend]))
+                #db = (np.real(SFFT[:,istart:iend]))
+                #dbr = (np.real(SFFT[:,istart:iend]))
+                #db = (np.imag(SFFT[:,istart:iend]))
                 
                 vvmin =  min(vvmin, np.min (db))
                 vvmax =  max(vvmax, np.max (db))
                 im2.append(ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax))
+                #im1.append(ax1.matshow( dbr, aspect='auto')) #, vmin=vvmin, vmax=vvmax))
+                #im2.append(ax2.matshow( db, aspect='auto', vmin=vvmin, vmax=vvmax))
                 #im2 = ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax)
                 if ichan == 0:
                     ax2.set_ylabel(r"$q$ (A $\cdot$ s)", fontsize=8)
@@ -510,6 +516,227 @@ class GMRDataProcessor(SNMRDataProcessor):
         canvas.draw()
         self.doneTrigger.emit() 
 
+    def FDSmartStack(self, outlierTest, MADcutoff, canvas):
+        
+        print("FFT stuff")
+        self.dataCubeFFT()       
+
+        Stack = {}
+        # align phase cycling for stacking and modulate
+        for pulse in self.DATADICT["PULSES"]:
+            stack = np.zeros(( len(self.DATADICT[pulse]["chan"]), \
+                               self.DATADICT["nPulseMoments"],\
+                               len(self.DATADICT["stacks"]),\
+                               len(self.DATADICT[pulse][self.DATADICT[pulse]["chan"][0] ]["FFT"]["nu"])//2 + 1),\
+                               dtype=np.complex )
+            for ipm in range(self.DATADICT["nPulseMoments"]):
+                istack = 0
+                for sstack in self.DATADICT["stacks"]:
+                    if self.pulseType == "FID" or pulse == "Pulse 2":
+                        mod = (-1)**(ipm%2) * (-1)**(sstack%2)
+                    elif self.pulseType == "4PhaseT1":
+                        mod = (-1)**(ipm%2) * (-1)**(((sstack-1)/2)%2)
+                    ichan = 0
+                    for chan in self.DATADICT[pulse]["chan"]:
+                        #stack[ichan,ipm,istack,:] += mod*self.DATADICT[pulse][chan][ipm][sstack]
+                        stack[ichan,ipm,istack,:] += mod*self.DATADICT[pulse][chan]["FFT"][sstack][ipm,:] 
+                        ichan += 1
+                    istack += 1
+            Stack[pulse] = stack
+
+        ######################################### 
+        # simple stack and plot of simple stack #
+        ########################################https://faculty.apps.utah.edu/#
+        canvas.reAxH2(np.shape(stack)[0], False, False)
+        axes = canvas.fig.axes
+        SimpleStack = {}
+        VarStack = {}
+        for pulse in self.DATADICT["PULSES"]:
+            SimpleStack[pulse] = {}
+            VarStack[pulse] = {}
+            ichan = 0
+            for chan in self.DATADICT[pulse]["chan"]: 
+                SimpleStack[pulse][chan] = 1e9*np.average( Stack[pulse][ichan], 1 ) 
+                VarStack[pulse][chan] = 1e9*np.std( Stack[pulse][ichan], 1 ) 
+                ax1 = axes[ 2*ichan ]
+                #ax1.get_yaxis().get_major_formatter().set_useOffset(False)
+
+                y_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+                ax1.yaxis.set_major_formatter(y_formatter)
+
+                #ax1.plot( 1e3*self.DATADICT[pulse][chan]["FFT"]["nu"][0:len(SimpleStack[pulse][chan])], np.average(SimpleStack[pulse][chan], 0 )) #, color='darkblue' )
+                #ax1.pcolor( np.real(SimpleStack[pulse][chan]) ) #, color='darkblue' )
+                ax1.matshow( np.real(SimpleStack[pulse][chan]), aspect='auto') #, color='darkblue' )
+                ax1.set_title("Ch." + str(chan) + ": avg FID", fontsize=8)
+                ax1.set_xlabel(r"time (ms)", fontsize=8)
+
+                if ichan == 0:
+                    ax1.set_ylabel(r"signal [nV]", fontsize=8)
+                else:
+                    plt.setp(ax1.get_yticklabels(), visible=False)
+                    plt.setp(ax1.get_yaxis().get_offset_text(), visible=False) 
+                ichan += 1
+
+        #########################
+        # Oulier rejectig stack #
+        #########################
+        if outlierTest == "MAD":
+            MADStack = {}
+            VarStack = {}
+            #1.4826 is assumption of gaussian noise 
+            madstack = np.zeros(( len(self.DATADICT[pulse]["chan"]),\
+                                  self.DATADICT["nPulseMoments"],\
+                                  len(self.DATADICT[pulse][self.DATADICT[pulse]["chan"][0] ]["FFT"]["nu"])//2 + 1))
+            varstack = np.zeros(( len(self.DATADICT[pulse]["chan"]),\
+                                  self.DATADICT["nPulseMoments"],\
+                                  len(self.DATADICT[pulse][self.DATADICT[pulse]["chan"][0] ]["FFT"]["nu"])//2 + 1))
+            for pulse in self.DATADICT["PULSES"]:
+                MADStack[pulse] = {}
+                VarStack[pulse] = {}
+                ichan = 0
+                for chan in self.DATADICT[pulse]["chan"]:
+                    ax1 = axes[ 2*ichan  ]
+                    for ipm in range(self.DATADICT["nPulseMoments"]):
+#                         # brutal loop over time, can this be vectorized? 
+#                         for it in range(len(self.DATADICT[pulse]["TIMES"])): 
+#                             x = 1e9 *Stack[pulse][ichan,ipm,:,it]
+#                             MAD = 1.4826 * np.median( np.abs(x-np.median(x)) )
+#                             good = 0
+#                             for istack in self.DATADICT["stacks"]:
+#                                 if (np.abs(x[istack-1]-np.median(x))) / MAD < 2:
+#                                     good += 1
+#                                     madstack[ ichan, ipm, it ] += x[istack-1]
+#                                 else:
+#                                     pass
+#                             madstack[ichan, ipm, it] /= good
+#                         percent = int(1e2* (float)(ipm) / (float)(self.DATADICT["nPulseMoments"]) )
+#                         self.progressTrigger.emit(percent)
+
+                        # Vectorized version of above...much, much faster 
+                        x = 1e9*copy.deepcopy(Stack[pulse][ichan][ipm,:,:])      # stack and time indices
+                        tile_med =  np.tile( np.median(x, axis=0), (np.shape(x)[0],1)) 
+                        MAD = MADcutoff * np.median(np.abs(x - tile_med), axis=0)
+                        tile_MAD =  np.tile( MAD, (np.shape(x)[0],1)) 
+                        good = np.abs(x-tile_med)/tile_MAD < 2. # 1.4826 # 2
+
+                        madstack[ichan][ipm] = copy.deepcopy( np.ma.masked_array(x, good != True).mean(axis=0) )
+                        varstack[ichan][ipm] = copy.deepcopy( np.ma.masked_array(x, good != True).std(axis=0) )
+                        
+                        # reporting
+                        percent = int(1e2* (float)((ipm)+ichan*self.DATADICT["nPulseMoments"]) / 
+                                           (float)(self.DATADICT["nPulseMoments"] * len(self.DATADICT[pulse]["chan"])))
+                        self.progressTrigger.emit(percent)
+
+                    ax2 = axes[2*ichan+1] # TODO fix hard coded number
+                    #ax1.plot( 1e3*self.DATADICT[pulse]["TIMES"], np.average(  madstack[ichan], 0  ))# , color='darkred')
+                    MADStack[pulse][chan] = madstack[ichan]
+                    VarStack[pulse][chan] = varstack[ichan]
+                    ax2.matshow( np.real(MADStack[pulse][chan]), aspect='auto') #, color='darkblue' )
+                    ichan += 1
+ 
+            self.DATADICT["stack"] = MADStack 
+
+        else:
+            self.DATADICT["stack"] = SimpleStack 
+ 
+#         #########################################
+#         # Plot Fourier Transform representation #
+#         #########################################
+# 
+# #         canvas.fig.subplots_adjust(right=0.8)
+# #         cbar_ax = canvas.fig.add_axes([0.85, 0.1, 0.015, 0.355])
+# #         cbar_ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')                 
+#         im2 = []
+#         im1 = []
+#         for pulse in self.DATADICT["PULSES"]:
+#             ichan = 0
+#             axes = canvas.fig.axes
+#             vvmin = 1e10 
+#             vvmax = 0
+#             for chan in self.DATADICT[pulse]["chan"]: 
+#                 ax1 = axes[2*ichan  ]
+#                 ax2 = axes[2*ichan+1] # TODO fix hard coded number
+#                 if outlierTest == "MAD":
+#                     X = np.fft.rfft( MADStack[pulse][chan][0,:] )
+#                     nu = np.fft.fftfreq(len( MADStack[pulse][chan][0,:]), d=self.dt)
+#                 else:
+#                     X = np.fft.rfft( SimpleStack[pulse][chan][0,:] )
+#                     nu = np.fft.fftfreq(len( SimpleStack[pulse][chan][0,:]), d=self.dt)
+#                 
+#                 nu = nu[0:len(X)]
+#                 nu[-1] = np.abs(nu[-1])
+#                 df = nu[1] - nu[0]
+#                 of = 0
+# 
+#                 istart = int((self.transFreq-50.)/df)
+#                 iend = int((self.transFreq+50.)/df)
+#                 of = nu[istart]
+#                 
+#                 def freqlabel(xxx, pos):
+#                     return  '%1.0f' %(of + xxx*df)
+#                 formatter = FuncFormatter(freqlabel)
+#         
+#                 SFFT = np.zeros( (self.DATADICT["nPulseMoments"], len(X)), dtype=np.complex64 )
+#                 SFFT[0,:] = X
+#                 for ipm in range(1, self.DATADICT["nPulseMoments"]):
+#                     if outlierTest == "MAD":
+#                         SFFT[ipm,:] = np.fft.rfft( MADStack[pulse][chan][ipm,:] )
+#                     else:
+#                         SFFT[ipm,:] = np.fft.rfft( SimpleStack[pulse][chan][ipm,:] )
+#                 
+#                 # convert to dB and add colorbars
+#                 #db = 20.*np.log10(np.abs(SFFT[:,istart:iend]))
+#                 db = (np.abs(SFFT[:,istart:iend]))
+#                 #db = (np.real(SFFT[:,istart:iend]))
+#                 #dbr = (np.real(SFFT[:,istart:iend]))
+#                 #db = (np.imag(SFFT[:,istart:iend]))
+#                 
+#                 vvmin =  min(vvmin, np.min (db))
+#                 vvmax =  max(vvmax, np.max (db))
+#                 im2.append(ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax))
+#                 #im1.append(ax1.matshow( dbr, aspect='auto')) #, vmin=vvmin, vmax=vvmax))
+#                 #im2.append(ax2.matshow( db, aspect='auto', vmin=vvmin, vmax=vvmax))
+#                 #im2 = ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax)
+#                 if ichan == 0:
+#                     ax2.set_ylabel(r"$q$ (A $\cdot$ s)", fontsize=8)
+#                 else:
+#                     #ax2.yaxis.set_ticklabels([])
+#                     plt.setp(ax2.get_yticklabels(), visible=False)
+# 
+#                 ax2.xaxis.set_major_formatter(formatter)
+#                 ax2.xaxis.set_ticks_position('bottom')
+#                 ax2.xaxis.set_major_locator(MaxNLocator(3))
+#                 
+#                 y_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+#                 ax2.yaxis.set_major_formatter(y_formatter)
+# 
+# 
+#                 #if chan == self.DATADICT[pulse]["chan"][-1]:
+#                     #cb2 = canvas.fig.colorbar(im2, cax=cbar_ax, format='%1.0e')
+# 
+#                 #cb2 = canvas.fig.colorbar(im2[0], ax=ax2, format='%1.0e', orientation='horizontal')
+#                 #cb2 = canvas.fig.colorbar(im2, ax=ax2, format='%1.0e', orientation='horizontal')
+#                 #cb2.ax.tick_params(axis='both', which='major', labelsize=8)
+#                 #cb2.set_label("signal (dB)", fontsize=8)
+#  
+#                 ichan += 1   
+# 
+# 
+#         canvas.fig.subplots_adjust(hspace=.1, wspace=.05, left=.075, right=.95 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+#         
+#         #cb1 = canvas.fig.colorbar(im, ax=axes[0::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
+#         #cb1.ax.tick_params(axis='both', which='major', labelsize=8)
+#         #cb1.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+# 
+#         cb2 = canvas.fig.colorbar(im2[-1], ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
+#         cb2.ax.tick_params(axis='both', which='major', labelsize=8)
+#         cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+
+        #canvas.fig.tight_layout() 
+        canvas.draw()
+        self.doneTrigger.emit() 
+
+
     def sumData(self, canvas, fred):
         chans = copy.deepcopy(self.DATADICT[self.DATADICT["PULSES"][0]]["chan"]) #= np.array( ( self.DATADICT[pulse]["chan"][0], ) )
         nchan = len(chans)
@@ -522,24 +749,29 @@ class GMRDataProcessor(SNMRDataProcessor):
                     for ipm in range(self.DATADICT["nPulseMoments"]):
                         self.DATADICT[pulse][chsum][ipm] = {} 
                         for istack in self.DATADICT["stacks"]:
-                            self.DATADICT[pulse][chsum][ipm][istack] = self.DATADICT[pulse][chans[ich]][ipm][istack] + self.DATADICT[pulse][ch][ipm][istack] 
-                    self.DATADICT[pulse]["chan"].append(chsum)
+                            self.DATADICT[pulse][chsum][ipm][istack] = self.DATADICT[pulse][chans[ich]][ipm][istack] - self.DATADICT[pulse][ch][ipm][istack] 
+                    if chsum == "1+2":
+                        #self.DATADICT[pulse]["rchan"].pop()
+                        #self.DATADICT[pulse]["rchan"].pop()
+                        self.DATADICT[pulse]["chan"].append(chsum)
 
         # Sum all channels 
-        chsum = ""
-        for ch in chans:
-            chsum += ch + "+" 
-        chsum = chsum[0:-1] # remove last "+"
+        sumall = False
+        if sumall:
+            chsum = ""
+            for ch in chans:
+                chsum += ch + "+" 
+            chsum = chsum[0:-1] # remove last "+"
          
-        for pulse in self.DATADICT["PULSES"]:
-            self.DATADICT[pulse][chsum] = {} 
-            for ipm in range(self.DATADICT["nPulseMoments"]):
-                self.DATADICT[pulse][chsum][ipm] = {} 
-                for istack in self.DATADICT["stacks"]:
-                    self.DATADICT[pulse][chsum][ipm][istack] = copy.deepcopy(self.DATADICT[pulse][chans[0]][ipm][istack])
-                    for ch in chans[1:]:
-                        self.DATADICT[pulse][chsum][ipm][istack] += self.DATADICT[pulse][ch][ipm][istack] 
-        self.DATADICT[pulse]["chan"].append(chsum)
+            for pulse in self.DATADICT["PULSES"]:
+                self.DATADICT[pulse][chsum] = {} 
+                for ipm in range(self.DATADICT["nPulseMoments"]):
+                    self.DATADICT[pulse][chsum][ipm] = {} 
+                    for istack in self.DATADICT["stacks"]:
+                        self.DATADICT[pulse][chsum][ipm][istack] = copy.deepcopy(self.DATADICT[pulse][chans[0]][ipm][istack])
+                        for ch in chans[1:]:
+                            self.DATADICT[pulse][chsum][ipm][istack] += self.DATADICT[pulse][ch][ipm][istack] 
+            self.DATADICT[pulse]["chan"].append(chsum)
 
 #         if nchan > 2:
 #             for ch in chans:
@@ -611,9 +843,10 @@ class GMRDataProcessor(SNMRDataProcessor):
                     # Rotated amplitude
                     #if ipm != 0:
                     #[success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], (E0,phi,df,T2))
-                    [success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
+                    #[success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
                     #else:
-                    #    [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"])
+                    [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"])
+                    #[success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], (E0,phi,df,T2))
                     #[success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
                     #print("success", success, "E0", E0, "phi", phi, "df", df, "T2", T2)
                     
@@ -649,7 +882,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         ###############
         # Plot on GUI #      
         ############### 
-        dcmap = cmocean.cm.balance_r #"RdBu" #YlGn" # "coolwarm_r"  # diverging 
+        dcmap = cmocean.cm.curl_r  #"seismic_r" #cmocean.cm.balance_r #"RdBu" #YlGn" # "coolwarm_r"  # diverging 
         canvas.reAxH2(  len(self.DATADICT[ self.DATADICT["PULSES"][0] ]["chan"] ), False, False)
         for pulse in self.DATADICT["PULSES"]:
             ichan = 0
@@ -679,7 +912,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                 if phase == 2: # CA NR
                     im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,\
                          vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse] )
-                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["NR"][pulse][chan], cmap=dcmap, rasterized=True,
+                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["NR"][pulse][chan], cmap=dcmap, rasterized=True,\
                          vmin=-self.DATADICT["NRmax"][pulse] , vmax=self.DATADICT["NRmax"][pulse] )
 #                     cb2 = canvas.fig.colorbar(im2, ax=ax2, format='%1.0e')
 #                     cb2.set_label("Noise residual (nV)", fontsize=8)
@@ -729,7 +962,7 @@ class GMRDataProcessor(SNMRDataProcessor):
             ax2.set_xlabel(r"Time (ms)", fontsize=8)
         
         canvas.fig.subplots_adjust(hspace=.15, wspace=.05, left=.075, right=.95, bottom=.1, top=.95 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
-        tick_locator = MaxNLocator(nbins=5)
+        tick_locator = MaxNLocator(nbins=3)
 
         cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
         cb1.ax.tick_params(axis='both', which='major', labelsize=8)
@@ -737,12 +970,13 @@ class GMRDataProcessor(SNMRDataProcessor):
         cb1.locator = tick_locator
         cb1.update_ticks()
 
+        tick_locator2 = MaxNLocator(nbins=3)
         cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30, pad=.2)
         cb2.ax.tick_params(axis='both', which='major', labelsize=8)
         cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
 
 
-        cb2.locator = tick_locator
+        cb2.locator = tick_locator2
         cb2.update_ticks()
 
         canvas.draw()
@@ -1131,7 +1365,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         
         canvas.reAxH(2)
         nstack = len(self.DATADICT["stacks"]) 
-        #canvas.ax1.set_yscale('log')
+        canvas.ax1.set_yscale('log')
 
         for pulse in self.DATADICT["PULSES"]:
             self.DATADICT[pulse]["qeff"] = {}
@@ -1140,7 +1374,15 @@ class GMRDataProcessor(SNMRDataProcessor):
                 self.DATADICT[pulse]["qeff"][ipm] = {}
                 self.DATADICT[pulse]["q_nu"][ipm] = {}
                 #canvas.ax1.clear()
-                scolours = np.array([0.,0.,1.])
+                #scolours = np.array( (   np.linspace(0.8,0.4,len(self.DATADICT["stacks"])), \
+                #                         np.linspace(0.0,0.6,len(self.DATADICT["stacks"])), \
+                #                         np.linspace(0.6,0.0,len(self.DATADICT["stacks"])) )   
+                #                   ).T
+
+                #scolours = plt.cm.Spectral(np.linspace(0,1,len(self.DATADICT["stacks"])))
+                #scolours = plt.cm.Blues(np.linspace(0,1,1.5*len(self.DATADICT["stacks"])))
+                scolours = cmocean.cm.ice(np.linspace(0,1,1.5*len(self.DATADICT["stacks"])))
+                iistack = 0
                 for istack in self.DATADICT["stacks"]:
                     #self.DATADICT[pulse]["PULSE_TIMES"]
                     x = self.DATADICT[pulse]["CURRENT"][ipm][istack]
@@ -1154,12 +1396,10 @@ class GMRDataProcessor(SNMRDataProcessor):
                     canvas.ax1.set_title(r"pulse moment index " +str(ipm), fontsize=10)
                     canvas.ax1.set_xlabel(r"$\nu$ [Hz]", fontsize=8)
                     canvas.ax1.set_ylabel(r"$q_{eff}$ [A$\cdot$sec]", fontsize=8)
-                    if nstack > 1:
-                        canvas.ax1.plot(v, qeff, color=scolours+istack*np.array((0.,1./(nstack+1.),-1./(nstack+1.)) )) # eff current
-                    else:
-                        canvas.ax1.plot(v, qeff, color=scolours) # eff current
+                    canvas.ax1.plot(v, qeff, color=scolours[iistack] ) # eff current
                     self.DATADICT[pulse]["qeff"][ipm][istack] = qeff
                     self.DATADICT[pulse]["q_nu"][ipm][istack] = v
+                    iistack += 1
                 canvas.draw()
                         
                 percent = int(1e2* (float)((istack)+ipm*self.DATADICT["nPulseMoments"]) / 
@@ -1177,25 +1417,27 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         ####################################
         # TODO label fid1 and fid2, and make a legend, and colour by pulse 
-        scolours = ['blue','green']
         nstack = len(self.DATADICT["stacks"])
         iFID = 0 
         for pulse in self.DATADICT["PULSES"]:
             self.DATADICT[pulse]["Q"] = np.zeros( (self.DATADICT["nPulseMoments"], len(self.DATADICT["stacks"])) )
             ilabel = True
             for ipm in range(self.DATADICT["nPulseMoments"]):
-                scolours = np.array([0.,0.,1.])
+                #scolours = np.array([0.,0.,1.])
+                scolours = cmocean.cm.ice(np.linspace(0,1,1.5*len(self.DATADICT["stacks"])))
+                #scolours = plt.cm.Spectral(np.linspace(0,1,len(self.DATADICT["stacks"])))
+                #scolours = plt.cm.Spectral(np.linspace(0,1,len(self.DATADICT["stacks"])))
                 istack = 0
                 for stack in self.DATADICT["stacks"]:
                     # find index 
                     icv = int (round(cv / self.DATADICT[pulse]["q_nu"][ipm][stack][1]))
                     self.DATADICT[pulse]["Q"][ipm,istack] = self.DATADICT[pulse]["qeff"][ipm][stack][icv]
                     if ilabel:
-                        ax.scatter(ipm, self.DATADICT[pulse]["qeff"][ipm][stack][icv], facecolors='none', edgecolors=scolours, label=(str(pulse)))
+                        ax.scatter(ipm, self.DATADICT[pulse]["qeff"][ipm][stack][icv], facecolors='none', edgecolors=scolours[istack], label=(str(pulse)))
                         ilabel = False
                     else:    
-                        ax.scatter(ipm, self.DATADICT[pulse]["qeff"][ipm][stack][icv], facecolors='none', edgecolors=scolours)
-                    scolours += np.array((0,1./(nstack+1),-1/(nstack+1.)))
+                        ax.scatter(ipm, self.DATADICT[pulse]["qeff"][ipm][stack][icv], facecolors='none', edgecolors=scolours[istack])
+                    #scolours += np.array((0,1./(nstack+1),-1/(nstack+1.)))
 
                     percent = int(1e2* (float)((istack)+ipm*self.DATADICT["nPulseMoments"]) / 
                                        (float)(len(self.DATADICT["PULSES"])*self.DATADICT["nPulseMoments"]*nstack))
@@ -1419,7 +1661,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     self.DATADICT[pulse][ichan]["FFT"][istack] = np.zeros((self.DATADICT["nPulseMoments"] , len(self.DATADICT[pulse][ichan][0][istack])//2+1), dtype=complex)
                     for ipm in range(self.DATADICT["nPulseMoments"]):
                         # Mod works for FID pulse sequences, TODO generalize this for 4 phase T1, etc..
-                        #mod = (-1)**(ipm%2) * (-1)**(istack%2)
+                        mod = (-1)**(ipm%2) * (-1)**(istack%2)
                         self.DATADICT[pulse][ichan]["FFT"][istack][ipm,:] = np.fft.rfft( self.DATADICT[pulse][ichan][ipm][istack] )
                         #if ipm%2:
                             # odd, phase cycled from previous

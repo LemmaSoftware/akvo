@@ -291,15 +291,24 @@ def quadratureDetect2(X, Y, tt, x0="None"):
         Y = imaginary component of NMR signal 
         tt = time 
     """
-    print("Pure Python Quad Det")
-    # df 
+    print("Pure Python Quad Det", "TODO look at loss functions and method")
+    # Loss functions, linear, soft_l1, huber, cauchy, arctan 
+    # df
+    loss = 'cauchy'  #  'soft_l1'
+    method = 'trf'   # trf, dogbox, lm 
     if x0=="None":
-        x0 = np.array( [1., 0., 0., .2] )
-        res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss='cauchy', f_scale=1.0,\
-            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ))
+        x0 = np.array( [1., 0., 0., .2] ) # A0, zeta, df, T2 
+        res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
+            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ),
+            method=method 
+            )
+        x = res_lsq.x 
+        print ("df", x[0], x[1], x[2], x[3])
     else:
-        res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss='cauchy', f_scale=1.0,\
-            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ))
+        res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
+            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ),
+            method=method 
+            )
 
         #bounds=( [0., 0, -20, .0] , [1., np.pi, 20, .6] ))
 

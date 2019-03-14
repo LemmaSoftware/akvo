@@ -179,7 +179,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.barProgress.hide();        
 
         self.ui.mplwidget_navigator.setCanvas(self.ui.mplwidget)
-        self.ui.mplwidget_navigator_2.setCanvas(self.ui.mplwidget_2)
+        #self.ui.mplwidget_navigator_2.setCanvas(self.ui.mplwidget)
 
         ##########################################################################
         # Loop Table 
@@ -845,7 +845,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 #        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("enableDSP()"), self.enableDSP)
 #        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("doneStatus()"), self.doneStatus)
 
-        self.ui.ProcessedBox.setEnabled(True)
+        #self.ui.ProcessedBox.setEnabled(True)
         self.ui.lcdNumberFID1Length.setEnabled(1)
         self.ui.lcdNumberFID2Length.setEnabled(1)
         self.ui.lcdNumberResampFreq.setEnabled(1)
@@ -970,9 +970,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def calcQ(self):
         if "Calc Q" not in self.YamlNode.Processing.keys():
-            print("In CalcQ", yaml.dump(self.YamlNode.Processing)  )
+            #print("In CalcQ", yaml.dump(self.YamlNode.Processing)  )
             self.YamlNode.Processing["Calc Q"] = True
-            print( yaml.dump(self.YamlNode.Processing)  )
+            #print( yaml.dump(self.YamlNode.Processing)  )
             self.Log()
         else:
             err_msg = "Q values have already been calculated"
@@ -983,7 +983,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.lock("pulse moment calculation")
         thread.start_new_thread(self.RAWDataProc.effectivePulseMoment, \
                 (self.ui.CentralVSpinBox.value(), \
-                self.ui.mplwidget_2))
+                self.ui.mplwidget))
 
     def FDSmartStack(self):
 
@@ -1002,7 +1002,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         thread.start_new_thread(self.RAWDataProc.TDSmartStack, \
                 (str(self.ui.outlierTestCB.currentText()), \
                 self.ui.MADCutoff.value(),
-                self.ui.mplwidget_2))
+                self.ui.mplwidget))
 
     def adaptFilter(self):
 
@@ -1016,9 +1016,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.Log()
         else:
             err_msg = "TD noise cancellation has already been applied!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
-                err_msg) 
-            return 
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
+            #return 
         
         self.lock("TD noise cancellation filter")
         thread.start_new_thread(self.RAWDataProc.adaptiveFilter, \
@@ -1104,7 +1103,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.lock("quadrature detection")
         thread.start_new_thread(self.RAWDataProc.quadDet, \
-                (self.ui.trimSpin.value(), int(self.ui.QDType.currentIndex()), self.ui.mplwidget_2))
+                (self.ui.trimSpin.value(), int(self.ui.QDType.currentIndex()), self.ui.mplwidget))
 
         self.ui.plotQD.setEnabled(True)
     
@@ -1112,7 +1111,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.lock("plot QD")
 
         thread.start_new_thread(self.RAWDataProc.plotQuadDet, \
-                (self.ui.trimSpin.value(), int(self.ui.QDType.currentIndex()), self.ui.mplwidget_2))
+                (self.ui.trimSpin.value(), int(self.ui.QDType.currentIndex()), self.ui.mplwidget))
 
 
     def gateIntegrate(self):
@@ -1124,7 +1123,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
  
         self.lock("gate integration")
         thread.start_new_thread(self.RAWDataProc.gateIntegrate, \
-                (self.ui.GPDspinBox.value(), self.ui.trimSpin.value(), self.ui.mplwidget_2))
+                (self.ui.GPDspinBox.value(), self.ui.trimSpin.value(), self.ui.mplwidget))
         
         self.ui.actionExport_Preprocessed_Dataset.setEnabled(True)
         self.ui.plotGI.setEnabled(True)
@@ -1133,7 +1132,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.lock("plot gate integrate")
         thread.start_new_thread(self.RAWDataProc.plotGateIntegrate, \
                 (self.ui.GPDspinBox.value(), self.ui.trimSpin.value(), \
-                self.ui.QDType_2.currentIndex(),  self.ui.mplwidget_2))
+                self.ui.QDType_2.currentIndex(),  self.ui.mplwidget))
  
     def designFilter(self):
         [bord, fe] = self.RAWDataProc.designFilter( \

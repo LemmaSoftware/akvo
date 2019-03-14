@@ -6,63 +6,33 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>980</height>
+    <width>1142</width>
+    <height>965</height>
    </rect>
   </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>60</width>
-    <height>60</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>1000</width>
-    <height>980</height>
-   </size>
-  </property>
   <property name="windowTitle">
-   <string>Akvo - sNMR Workbench</string>
-  </property>
-  <property name="windowOpacity">
-   <double>1.000000000000000</double>
-  </property>
-  <property name="autoFillBackground">
-   <bool>true</bool>
+   <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>0</width>
-     <height>0</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>1000</width>
-     <height>980</height>
-    </size>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="1">
      <widget class="QScrollArea" name="scrollArea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>550</width>
+        <height>800</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
-        <width>16777215</width>
-        <height>980</height>
+        <width>550</width>
+        <height>1000</height>
        </size>
       </property>
       <property name="widgetResizable">
@@ -73,11 +43,23 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>966</width>
-         <height>919</height>
+         <width>612</width>
+         <height>970</height>
         </rect>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>970</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>1000</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="sizePolicy">
@@ -88,8 +70,14 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>940</width>
+            <width>600</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
            </size>
           </property>
           <property name="layoutDirection">
@@ -98,458 +86,479 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
+          <property name="usesScrollButtons">
+           <bool>true</bool>
+          </property>
+          <property name="tabsClosable">
+           <bool>false</bool>
+          </property>
           <widget class="QWidget" name="tab">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>940</width>
-             <height>870</height>
+             <height>940</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>940</height>
             </size>
            </property>
            <attribute name="title">
-            <string>Preprocess RAW</string>
+            <string>Load</string>
            </attribute>
-           <widget class="QGroupBox" name="inputRAWParametersBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>5</x>
-              <y>750</y>
-              <width>460</width>
-              <height>125</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>460</width>
-              <height>125</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Input parameters</string>
-            </property>
-            <widget class="QLineEdit" name="stacksLineEdit">
-             <property name="geometry">
-              <rect>
-               <x>110</x>
-               <y>30</y>
-               <width>91</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the stacks that you would like processed.&lt;/p&gt;&lt;p&gt;This must be a valid set of numpy array indices. Remember that Python uses non end-inclusive indexing. &lt;/p&gt;&lt;p&gt;So things like [1:24] will include stacks 1-23&lt;/p&gt;&lt;p&gt;Furthermore [1:8,12:24] will include stacks 1-7 and 12:23. Any list of valid indices will be accepted, but they must be comma seperated. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="placeholderText">
-              <string>required</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>30</y>
-               <width>51</width>
-               <height>20</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string/>
-             </property>
-             <property name="statusTip">
-              <string comment="yo" extracomment="jldafjlk   kldajflj  adlkfjl"/>
-             </property>
-             <property name="text">
-              <string>Stacks</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_23">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>65</y>
-               <width>101</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Data Chs.</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="dataChanLineEdit">
-             <property name="geometry">
-              <rect>
-               <x>110</x>
-               <y>60</y>
-               <width>91</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the data channels that you would like processed.&lt;/p&gt;&lt;p&gt;This must be a valid set of numpy array indices. Remember that Python uses non end-inclusive indexing. &lt;/p&gt;&lt;p&gt;So things like [1:3] will use channels 1 and 2&lt;/p&gt;&lt;p&gt;Any list of valid indices will be accepted, but they must be comma seperated. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="placeholderText">
-              <string>required</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_24">
-             <property name="geometry">
-              <rect>
-               <x>220</x>
-               <y>36</y>
-               <width>121</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Dead time [ms]</string>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="DeadTimeSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>360</x>
-               <y>30</y>
-               <width>91</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the instrument dead time that is used. You may remove additonal or less dead time as an option. By default Akvo uses the recommended instrument dead times.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="minimum">
-              <double>0.500000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>0.500000000000000</double>
-             </property>
-             <property name="value">
-              <double>5.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_28">
-             <property name="geometry">
-              <rect>
-               <x>220</x>
-               <y>64</y>
-               <width>121</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Reference Chs.</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="refChanLineEdit">
-             <property name="geometry">
-              <rect>
-               <x>360</x>
-               <y>60</y>
-               <width>91</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the reference channels that you would like processed.&lt;/p&gt;&lt;p&gt;This must be a valid set of numpy array indices. Remember that Python uses non end-inclusive indexing. &lt;/p&gt;&lt;p&gt;So things like [1:3] will use channels 1 and 2&lt;/p&gt;&lt;p&gt;Any list of valid indices will be accepted, but they must be comma seperated. &lt;/p&gt;&lt;p&gt;Optionally no reference channels are allowed, just leave this field black so it says none&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="placeholderText">
-              <string>none</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_29">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>95</y>
-               <width>91</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Process FID</string>
-             </property>
-            </widget>
-            <widget class="QComboBox" name="FIDProcComboBox">
-             <property name="geometry">
-              <rect>
-               <x>110</x>
-               <y>90</y>
-               <width>91</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For T1 or CPMG pulses, which pulse(s) would you like to process. Note that for very short delay T1 pulses, the first pulse may be disabled. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="loadDataPushButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>360</x>
-               <y>90</y>
-               <width>91</width>
-               <height>31</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#loadDataPushButton {
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QGroupBox" name="inputRAWParametersBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>480</width>
+                <height>125</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>480</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Input parameters</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="toolTip">
+                  <string/>
+                 </property>
+                 <property name="statusTip">
+                  <string comment="yo" extracomment="jldafjlk   kldajflj  adlkfjl"/>
+                 </property>
+                 <property name="text">
+                  <string>Stacks</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="stacksLineEdit">
+                 <property name="toolTip">
+                  <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the stacks that you would like processed.&lt;/p&gt;&lt;p&gt;This must be a valid set of numpy array indices. Remember that Python uses non end-inclusive indexing. &lt;/p&gt;&lt;p&gt;So things like [1:24] will include stacks 1-23&lt;/p&gt;&lt;p&gt;Furthermore [1:8,12:24] will include stacks 1-7 and 12:23. Any list of valid indices will be accepted, but they must be comma seperated. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="placeholderText">
+                  <string>required</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_24">
+                 <property name="text">
+                  <string>Dead time [ms]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QDoubleSpinBox" name="DeadTimeSpinBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the instrument dead time that is used. You may remove additonal or less dead time as an option. By default Akvo uses the recommended instrument dead times.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="minimum">
+                  <double>0.500000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.500000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>5.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_23">
+                 <property name="text">
+                  <string>Data Chs.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="dataChanLineEdit">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the data channels that you would like processed.&lt;/p&gt;&lt;p&gt;This must be a valid set of numpy array indices. Remember that Python uses non end-inclusive indexing. &lt;/p&gt;&lt;p&gt;So things like [1:3] will use channels 1 and 2&lt;/p&gt;&lt;p&gt;Any list of valid indices will be accepted, but they must be comma seperated. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="placeholderText">
+                  <string>required</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_28">
+                 <property name="text">
+                  <string>Reference Chs.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <widget class="QLineEdit" name="refChanLineEdit">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the reference channels that you would like processed.&lt;/p&gt;&lt;p&gt;This must be a valid set of numpy array indices. Remember that Python uses non end-inclusive indexing. &lt;/p&gt;&lt;p&gt;So things like [1:3] will use channels 1 and 2&lt;/p&gt;&lt;p&gt;Any list of valid indices will be accepted, but they must be comma seperated. &lt;/p&gt;&lt;p&gt;Optionally no reference channels are allowed, just leave this field black so it says none&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="placeholderText">
+                  <string>none</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_29">
+                 <property name="text">
+                  <string>Process FID</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="FIDProcComboBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For T1 or CPMG pulses, which pulse(s) would you like to process. Note that for very short delay T1 pulses, the first pulse may be disabled. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QCheckBox" name="plotImportCheckBox">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string> Plot RAW</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="3">
+                <widget class="QPushButton" name="loadDataPushButton">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#loadDataPushButton {
     background: green;
 }
 
 #loadDataPushButton:disabled {
     background: black;
 }</string>
-             </property>
-             <property name="text">
-              <string>Load Data</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="plotImportCheckBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>224</x>
-               <y>90</y>
-               <width>111</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string> Plot RAW</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QGroupBox" name="BandPassBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>470</x>
-              <y>270</y>
-              <width>480</width>
-              <height>201</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>480</width>
-              <height>180</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>IIR Band-Pass Filter</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <widget class="QComboBox" name="fTypeComboBox">
-             <property name="geometry">
-              <rect>
-               <x>300</x>
-               <y>30</y>
-               <width>171</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="mouseTracking">
-              <bool>true</bool>
-             </property>
-             <property name="toolTip">
-              <string/>
-             </property>
-             <property name="statusTip">
-              <string extracomment="hello thre"/>
-             </property>
-             <property name="whatsThis">
-              <string extracomment="What type of filter to use"/>
-             </property>
-             <property name="accessibleDescription">
-              <string>Hello</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>Butterworth</string>
+                 </property>
+                 <property name="text">
+                  <string>Load Data</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="downSampleGroupBox">
+              <property name="enabled">
+               <bool>false</bool>
               </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Chebychev Type II</string>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Elliptic</string>
+              <property name="minimumSize">
+               <size>
+                <width>480</width>
+                <height>90</height>
+               </size>
               </property>
-             </item>
-            </widget>
-            <widget class="QPushButton" name="bandPassGO">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>170</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#bandPassGO {
+              <property name="maximumSize">
+               <size>
+                <width>480</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Downsample and truncate (anti-alias)</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Truncate [ms]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="truncateSpinBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the final length of your processed record. Note that the use of Adaptive filtering allows for the removal of additional late times. If you do not wish to truncate, leave as 0.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>1000</number>
+                 </property>
+                 <property name="value">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Downsample factor</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QSpinBox" name="downSampleSpinBox">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>5</number>
+                 </property>
+                 <property name="value">
+                  <number>5</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QPushButton" name="downSampleGO">
+                 <property name="styleSheet">
+                  <string notr="true">#downSampleGO {
     background: green;
 }
 
-#bandPassGO:disabled{
+#downSampleGO:disabled{
     background: black;
 }</string>
-             </property>
-             <property name="text">
-              <string>GO</string>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="passBandSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>130</x>
-               <y>60</y>
-               <width>71</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="minimum">
-              <double>25.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>500.000000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>5.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>50.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="stopBandSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>130</x>
-               <y>90</y>
-               <width>71</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="minimum">
-              <double>100.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>1000.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>280.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_19">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>62</y>
-               <width>111</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Pass Band [Hz]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_20">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>93</y>
-               <width>111</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Stop Band [Hz]</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="filterDesignPushButton">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>140</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <property name="text">
-              <string>design</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberFilterOrder">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>60</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberFilterOrder {
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="windowFilterGroupBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>90</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>480</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>FD Window Filter</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_45">
+                 <property name="text">
+                  <string>Type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="windowTypeComboBox">
+                 <item>
+                  <property name="text">
+                   <string>Hamming</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Hanning</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Flat top</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Rectangular</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_55">
+                 <property name="text">
+                  <string>dead time [ms]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_48">
+                 <property name="text">
+                  <string>Width [Hz]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1" rowspan="2">
+                <widget class="QDoubleSpinBox" name="windowBandwidthSpinBox">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>600.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2" rowspan="2">
+                <widget class="QLCDNumber" name="lcdWinDead">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#lcdWinDead {
 color: green;
 background: black;
 }
 
-#lcdNumberFilterOrder:disabled {
+#lcdWinDead:disabled {
 color: grey;
 background: dark grey;
 }</string>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberFTauDead">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>90</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberFTauDead {
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="3" rowspan="2">
+                <widget class="QPushButton" name="fdDesignPushButton">
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>design</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="3">
+                <widget class="QLabel" name="label_49">
+                 <property name="text">
+                  <string>Central freq from IIR Band-Pass</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="3">
+                <widget class="QPushButton" name="windowFilterGO">
+                 <property name="styleSheet">
+                  <string notr="true">#windowFilterGO {
+    background: green;
+}
+
+#windowFilterGO:disabled{
+    background: black;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="BandPassBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>480</width>
+                <height>180</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>IIR Band-Pass Filter</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="4" column="4" rowspan="2">
+                <widget class="QPushButton" name="filterDesignPushButton">
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="text">
+                  <string>design</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_32">
+                 <property name="text">
+                  <string>gstop [dB]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="4">
+                <widget class="QLCDNumber" name="lcdNumberFTauDead">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#lcdNumberFTauDead {
 color: green;
 background: black;
 }
@@ -558,717 +567,316 @@ background: black;
 color: grey;
 background: dark grey;
 }</string>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_18">
-             <property name="geometry">
-              <rect>
-               <x>230</x>
-               <y>60</y>
-               <width>57</width>
-               <height>14</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Order</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_21">
-             <property name="geometry">
-              <rect>
-               <x>230</x>
-               <y>91</y>
-               <width>121</width>
-               <height>20</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>dead time [ms]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_22">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>122</y>
-               <width>81</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>gpass [dB]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_32">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>153</y>
-               <width>91</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>gstop [dB]</string>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="gpassSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>130</x>
-               <y>120</y>
-               <width>71</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="suffix">
-              <string/>
-             </property>
-             <property name="decimals">
-              <number>3</number>
-             </property>
-             <property name="maximum">
-              <double>1.000000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>0.010000000000000</double>
-             </property>
-             <property name="value">
-              <double>0.010000000000000</double>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="gstopSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>130</x>
-               <y>150</y>
-               <width>71</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="value">
-              <double>5.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="CentralVSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>130</x>
-               <y>30</y>
-               <width>71</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In case of off-resonant transmitter pulse, you can set the central frequency that will be used for all processing. This has the biggest impact on the band-pass filter, and the frequencies used in inversion. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="decimals">
-              <number>0</number>
-             </property>
-             <property name="minimum">
-              <double>100.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>5001.000000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>1.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>1000.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_30">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>33</y>
-               <width>91</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Central ν Hz</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_10">
-             <property name="geometry">
-              <rect>
-               <x>230</x>
-               <y>32</y>
-               <width>41</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Type</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="pushButton_4">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>250</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>save</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="plotBP">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>180</y>
-               <width>111</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string> Plot </string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QGroupBox" name="headerFileBox">
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QCheckBox" name="plotBP">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string> Plot </string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3" colspan="2">
+                <widget class="QComboBox" name="fTypeComboBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="mouseTracking">
+                  <bool>true</bool>
+                 </property>
+                 <property name="toolTip">
+                  <string/>
+                 </property>
+                 <property name="statusTip">
+                  <string extracomment="hello thre"/>
+                 </property>
+                 <property name="whatsThis">
+                  <string extracomment="What type of filter to use"/>
+                 </property>
+                 <property name="accessibleDescription">
+                  <string>Hello</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Butterworth</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chebychev Type II</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Elliptic</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="1" column="4">
+                <widget class="QLCDNumber" name="lcdNumberFilterOrder">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#lcdNumberFilterOrder {
+color: green;
+background: black;
+}
+
+#lcdNumberFilterOrder:disabled {
+color: grey;
+background: dark grey;
+}</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1" rowspan="2">
+                <widget class="QDoubleSpinBox" name="gpassSpinBox">
+                 <property name="suffix">
+                  <string/>
+                 </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
+                 <property name="maximum">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.010000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="4" rowspan="2">
+                <widget class="QPushButton" name="bandPassGO">
+                 <property name="styleSheet">
+                  <string notr="true">#bandPassGO {
+    background: green;
+}
+
+#bandPassGO:disabled{
+    background: black;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QDoubleSpinBox" name="CentralVSpinBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In case of off-resonant transmitter pulse, you can set the central frequency that will be used for all processing. This has the biggest impact on the band-pass filter, and the frequencies used in inversion. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="decimals">
+                  <number>0</number>
+                 </property>
+                 <property name="minimum">
+                  <double>100.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>5001.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2" colspan="2">
+                <widget class="QLabel" name="label_21">
+                 <property name="text">
+                  <string>dead time [ms]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_20">
+                 <property name="text">
+                  <string>Stop Band [Hz]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_30">
+                 <property name="text">
+                  <string>Central ν Hz</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1" rowspan="2">
+                <widget class="QDoubleSpinBox" name="gstopSpinBox">
+                 <property name="value">
+                  <double>5.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="stopBandSpinBox">
+                 <property name="minimum">
+                  <double>100.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>280.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QDoubleSpinBox" name="passBandSpinBox">
+                 <property name="minimum">
+                  <double>25.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>500.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>5.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>50.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_22">
+                 <property name="text">
+                  <string>gpass [dB]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Order</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_19">
+                 <property name="text">
+                  <string>Pass Band [Hz]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="sumDataBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>480</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Combine (sum) data channels</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <layout class="QFormLayout" name="formLayout">
+               <item row="0" column="0">
+                <widget class="QPushButton" name="sumDataGO">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For some types of multichannel data, the channels can be summed into composite channels. This method sums all channels down to a recursion level of 2.  For single loop datasets do not use this method.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#sumDataGO {
+    background: green;
+}
+
+#sumDataGO:disabled{
+    background: black;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_8">
+           <attribute name="title">
+            <string>NC</string>
+           </attribute>
+           <widget class="QGroupBox" name="adaptFDBox">
             <property name="enabled">
              <bool>false</bool>
             </property>
             <property name="geometry">
              <rect>
-              <x>5</x>
-              <y>510</y>
-              <width>460</width>
-              <height>230</height>
+              <x>10</x>
+              <y>50</y>
+              <width>480</width>
+              <height>83</height>
              </rect>
             </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>460</width>
-              <height>230</height>
-             </size>
-            </property>
-            <property name="autoFillBackground">
-             <bool>false</bool>
-            </property>
             <property name="title">
-             <string>Header file info</string>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-            <widget class="QTextBrowser" name="headerFileTextBrowser">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>20</y>
-               <width>441</width>
-               <height>41</height>
-              </rect>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-               <italic>true</italic>
-              </font>
-             </property>
-             <property name="html">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:8pt; font-weight:400; font-style:italic;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Serif'; font-size:9pt;&quot;&gt;Load supported RAW Dataset header from file menu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_4">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>70</y>
-               <width>81</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Pulse Type</string>
-             </property>
-            </widget>
-            <widget class="QTextBrowser" name="pulseTypeTextBrowser">
-             <property name="geometry">
-              <rect>
-               <x>160</x>
-               <y>70</y>
-               <width>271</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <italic>true</italic>
-              </font>
-             </property>
-             <property name="acceptDrops">
-              <bool>true</bool>
-             </property>
-             <property name="toolTip">
-              <string/>
-             </property>
-             <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOff</enum>
-             </property>
-             <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOff</enum>
-             </property>
-             <property name="html">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:italic;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'DejaVu Serif'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberNuTx">
-             <property name="geometry">
-              <rect>
-               <x>160</x>
-               <y>100</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <property name="whatsThis">
-              <string extracomment="here is a comment"/>
-             </property>
-             <property name="autoFillBackground">
-              <bool>false</bool>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberNuTx {
-color: green;
-background: black;
-}
-
-#lcdNumberNuTx:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-             <property name="value" stdset="0">
-              <double>0.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberTuneuF">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>100</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberTuneuF {
-color: green;
-background: black;
-}
-
-#lcdNumberTuneuF:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberTauPulse1">
-             <property name="geometry">
-              <rect>
-               <x>160</x>
-               <y>130</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberTauPulse1 {
-color: green;
-background: black;
-}
-
-#lcdNumberTauPulse1:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_6">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>100</y>
-               <width>91</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>ν Tx  [Hz]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_7">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>130</y>
-               <width>141</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>τ Pulse 1 [ms]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_13">
-             <property name="geometry">
-              <rect>
-               <x>250</x>
-               <y>160</y>
-               <width>91</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>τ Delay [ms]</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberTauPulse2">
-             <property name="geometry">
-              <rect>
-               <x>160</x>
-               <y>160</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberTauPulse2 {
-color: green;
-background: black;
-}
-
-#lcdNumberTauPulse2:disabled{
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_14">
-             <property name="geometry">
-              <rect>
-               <x>250</x>
-               <y>100</y>
-               <width>111</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Tx tuning [μF]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_15">
-             <property name="geometry">
-              <rect>
-               <x>250</x>
-               <y>130</y>
-               <width>111</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>ν Sampling [Hz]</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberSampFreq">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>130</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberSampFreq {
-color: green;
-background: black;
-}
-
-#lcdNumberSampFreq:disabled{
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="digitCount">
-              <number>5</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberTauDelay">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>160</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberTauDelay {
-color: green;
-background: black;
-}
-
-#lcdNumberTauDelay:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_16">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>160</y>
-               <width>131</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>τ Pulse 2 [ms]</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberNQ">
-             <property name="geometry">
-              <rect>
-               <x>160</x>
-               <y>190</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberNQ {
-color: green;
-background: black;
-}
-
-#lcdNumberNQ:disabled{
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_9">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>190</y>
-               <width>141</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of pulse moments (q)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Num q</string>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QGroupBox" name="downSampleGroupBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>470</x>
-              <y>20</y>
-              <width>480</width>
-              <height>90</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>480</width>
-              <height>90</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Downsample and truncate (anti-alias)</string>
+             <string>FD (static transfer function) Noise cancellation</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
             </property>
-            <widget class="QLabel" name="label_3">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>33</y>
-               <width>111</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Truncate [ms]</string>
-             </property>
-            </widget>
-            <widget class="QSpinBox" name="truncateSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>170</x>
-               <y>30</y>
-               <width>101</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the final length of your processed record. Note that the use of Adaptive filtering allows for the removal of additional late times. If you do not wish to truncate, leave as 0.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="maximum">
-              <number>1000</number>
-             </property>
-             <property name="value">
-              <number>0</number>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="downSampleGO">
+            <widget class="QPushButton" name="adaptFDGO">
              <property name="geometry">
               <rect>
                <x>370</x>
-               <y>60</y>
+               <y>50</y>
                <width>99</width>
                <height>23</height>
               </rect>
              </property>
              <property name="styleSheet">
-              <string notr="true">#downSampleGO {
+              <string notr="true">#adaptFDGO {
     background: green;
 }
 
-#downSampleGO:disabled{
+#adaptFDGO:disabled{
     background: black;
 }</string>
              </property>
@@ -1276,82 +884,32 @@ background: dark grey;
               <string>GO</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_12">
+            <widget class="QLabel" name="label_36">
              <property name="geometry">
               <rect>
-               <x>10</x>
-               <y>63</y>
-               <width>131</width>
+               <x>20</x>
+               <y>30</y>
+               <width>271</width>
                <height>16</height>
               </rect>
              </property>
              <property name="text">
-              <string>Downsample factor</string>
+              <string>Utilizes a window filter (as defined above) </string>
              </property>
             </widget>
-            <widget class="QSpinBox" name="downSampleSpinBox">
+            <widget class="QLabel" name="label_56">
              <property name="geometry">
               <rect>
-               <x>170</x>
-               <y>60</y>
-               <width>101</width>
-               <height>25</height>
+               <x>20</x>
+               <y>50</y>
+               <width>281</width>
+               <height>16</height>
               </rect>
              </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <number>5</number>
-             </property>
-             <property name="value">
-              <number>5</number>
+             <property name="text">
+              <string>Uses central v from Band-pass filter</string>
              </property>
             </widget>
-           </widget>
-           <widget class="MyDynamicMplCanvas" name="mplwidget" native="true">
-            <property name="geometry">
-             <rect>
-              <x>3</x>
-              <y>10</y>
-              <width>460</width>
-              <height>460</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>460</width>
-              <height>460</height>
-             </size>
-            </property>
-           </widget>
-           <widget class="MyDynamicMplCanvasNavigator" name="mplwidget_navigator" native="true">
-            <property name="geometry">
-             <rect>
-              <x>3</x>
-              <y>470</y>
-              <width>460</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>460</width>
-              <height>30</height>
-             </size>
-            </property>
            </widget>
            <widget class="QGroupBox" name="adaptBox">
             <property name="enabled">
@@ -1359,8 +917,8 @@ background: dark grey;
             </property>
             <property name="geometry">
              <rect>
-              <x>470</x>
-              <y>500</y>
+              <x>10</x>
+              <y>140</y>
               <width>480</width>
               <height>120</height>
              </rect>
@@ -1449,7 +1007,7 @@ background: dark grey;
               <double>0.990000000000000</double>
              </property>
             </widget>
-            <widget class="QLabel" name="label_41">
+            <widget class="QLabel" name="label_43">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -1462,7 +1020,7 @@ background: dark grey;
               <string>Filter Taps</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_42">
+            <widget class="QLabel" name="label_44">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -1475,7 +1033,7 @@ background: dark grey;
               <string>Forgetting factor (λ)</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_43">
+            <widget class="QLabel" name="label_46">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -1535,7 +1093,7 @@ background: dark grey;
               <double>0.010000000000000</double>
              </property>
             </widget>
-            <widget class="QLabel" name="label_44">
+            <widget class="QLabel" name="label_51">
              <property name="geometry">
               <rect>
                <x>260</x>
@@ -1548,7 +1106,7 @@ background: dark grey;
               <string>Mu</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_46">
+            <widget class="QLabel" name="label_52">
              <property name="geometry">
               <rect>
                <x>260</x>
@@ -1588,493 +1146,11 @@ background: dark grey;
              </item>
             </widget>
            </widget>
-           <widget class="QGroupBox" name="windowFilterGroupBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>470</x>
-              <y>150</y>
-              <width>480</width>
-              <height>90</height>
-             </rect>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>90</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>FD Window Filter</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <widget class="QComboBox" name="windowTypeComboBox">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>30</y>
-               <width>111</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <item>
-              <property name="text">
-               <string>Hamming</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Hanning</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Flat top</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Rectangular</string>
-              </property>
-             </item>
-            </widget>
-            <widget class="QLabel" name="label_45">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>35</y>
-               <width>57</width>
-               <height>14</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Type</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_48">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>63</y>
-               <width>71</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Width [Hz]</string>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="windowBandwidthSpinBox">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>60</y>
-               <width>111</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <double>1000.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>600.000000000000000</double>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="windowFilterGO">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>60</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#windowFilterGO {
-    background: green;
-}
-
-#windowFilterGO:disabled{
-    background: black;
-}</string>
-             </property>
-             <property name="text">
-              <string>GO</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_49">
-             <property name="geometry">
-              <rect>
-               <x>180</x>
-               <y>3</y>
-               <width>271</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Central freq from IIR Band-Pass</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="fdDesignPushButton">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>30</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <property name="text">
-              <string>design</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdWinDead">
-             <property name="geometry">
-              <rect>
-               <x>260</x>
-               <y>60</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdWinDead {
-color: green;
-background: black;
-}
-
-#lcdWinDead:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_55">
-             <property name="geometry">
-              <rect>
-               <x>250</x>
-               <y>40</y>
-               <width>121</width>
-               <height>20</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>dead time [ms]</string>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QGroupBox" name="ProcessedBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>470</x>
-              <y>760</y>
-              <width>480</width>
-              <height>101</height>
-             </rect>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>100</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Processed data paramaters</string>
-            </property>
-            <widget class="QLabel" name="label_17">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>33</y>
-               <width>121</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>FID 1 length [s]</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberFID1Length">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>150</x>
-               <y>30</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberFID1Length {
-color: green;
-background: black;
-}
-
-#lcdNumberFID1Length:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberFID2Length">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>150</x>
-               <y>60</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberFID2Length {
-color: green;
-background: black;
-}
-
-#lcdNumberFID2Length:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_39">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>63</y>
-               <width>121</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>FID 2 length [s]</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdNumberResampFreq">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>33</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdNumberResampFreq {
-color: green;
-background: black;
-}
-
-#lcdNumberResampFreq:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_40">
-             <property name="geometry">
-              <rect>
-               <x>240</x>
-               <y>33</y>
-               <width>121</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>ν Sampling [Hz]</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_47">
-             <property name="geometry">
-              <rect>
-               <x>240</x>
-               <y>63</y>
-               <width>121</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>total dead time</string>
-             </property>
-            </widget>
-            <widget class="QLCDNumber" name="lcdTotalDeadTime">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>60</y>
-               <width>64</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#lcdTotalDeadTime {
-color: green;
-background: black;
-}
-
-#lcdTotalDeadTime:disabled {
-color: grey;
-background: dark grey;
-}</string>
-             </property>
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::Flat</enum>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QGroupBox" name="sumDataBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>470</x>
-              <y>650</y>
-              <width>481</width>
-              <height>80</height>
-             </rect>
-            </property>
-            <property name="title">
-             <string>Combine (sum) data channels</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <widget class="QPushButton" name="sumDataGO">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>50</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For some types of multichannel data, the channels can be summed into composite channels. This method sums all channels down to a recursion level of 2.  For single loop datasets do not use this method.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#sumDataGO {
-    background: green;
-}
-
-#sumDataGO:disabled{
-    background: black;
-}</string>
-             </property>
-             <property name="text">
-              <string>GO</string>
-             </property>
-            </widget>
-           </widget>
           </widget>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
-            <string>Data QC</string>
+            <string>QC</string>
            </attribute>
-           <widget class="MyDynamicMplCanvas" name="mplwidget_2" native="true">
-            <property name="geometry">
-             <rect>
-              <x>3</x>
-              <y>10</y>
-              <width>941</width>
-              <height>571</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>460</width>
-              <height>460</height>
-             </size>
-            </property>
-           </widget>
-           <widget class="MyDynamicMplCanvasNavigator" name="mplwidget_navigator_2" native="true">
-            <property name="geometry">
-             <rect>
-              <x>3</x>
-              <y>580</y>
-              <width>460</width>
-              <height>30</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>460</width>
-              <height>30</height>
-             </size>
-            </property>
-           </widget>
            <widget class="QGroupBox" name="FDSmartStackGroupBox">
             <property name="enabled">
              <bool>false</bool>
@@ -2082,7 +1158,7 @@ background: dark grey;
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>750</y>
+              <y>110</y>
               <width>460</width>
               <height>121</height>
              </rect>
@@ -2125,7 +1201,7 @@ background: dark grey;
               </property>
              </item>
             </widget>
-            <widget class="QLabel" name="label_5">
+            <widget class="QLabel" name="label_37">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -2190,7 +1266,7 @@ background: dark grey;
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>640</y>
+              <y>10</y>
               <width>461</width>
               <height>101</height>
              </rect>
@@ -2230,8 +1306,8 @@ background: dark grey;
             </property>
             <property name="geometry">
              <rect>
-              <x>479</x>
-              <y>640</y>
+              <x>0</x>
+              <y>230</y>
               <width>461</width>
               <height>121</height>
              </rect>
@@ -2280,7 +1356,7 @@ background: dark grey;
               <number>0</number>
              </property>
             </widget>
-            <widget class="QLabel" name="label_35">
+            <widget class="QLabel" name="label_38">
              <property name="geometry">
               <rect>
                <x>20</x>
@@ -2353,8 +1429,8 @@ background: dark grey;
             </property>
             <property name="geometry">
              <rect>
-              <x>480</x>
-              <y>780</y>
+              <x>0</x>
+              <y>350</y>
               <width>461</width>
               <height>91</height>
              </rect>
@@ -2406,7 +1482,7 @@ background: dark grey;
               <number>20</number>
              </property>
             </widget>
-            <widget class="QLabel" name="label_8">
+            <widget class="QLabel" name="label_53">
              <property name="geometry">
               <rect>
                <x>20</x>
@@ -2476,7 +1552,7 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
-            <string>Survey Parameters</string>
+            <string>META</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="1">
@@ -2484,7 +1560,7 @@ background: dark grey;
               <property name="title">
                <string>Survey site information</string>
               </property>
-              <widget class="QLabel" name="label_34">
+              <widget class="QLabel" name="label_54">
                <property name="geometry">
                 <rect>
                  <x>20</x>
@@ -2497,7 +1573,7 @@ background: dark grey;
                 <string>Temperature [°C]</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_33">
+              <widget class="QLabel" name="label_57">
                <property name="geometry">
                 <rect>
                  <x>20</x>
@@ -2510,7 +1586,7 @@ background: dark grey;
                 <string>Survey date</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_36">
+              <widget class="QLabel" name="label_62">
                <property name="geometry">
                 <rect>
                  <x>10</x>
@@ -2546,7 +1622,7 @@ background: dark grey;
                 <enum>Qt::Horizontal</enum>
                </property>
               </widget>
-              <widget class="QLabel" name="label_52">
+              <widget class="QLabel" name="label_63">
                <property name="geometry">
                 <rect>
                  <x>0</x>
@@ -2598,7 +1674,7 @@ background: dark grey;
                 <bool>true</bool>
                </property>
               </widget>
-              <widget class="QLabel" name="label_50">
+              <widget class="QLabel" name="label_64">
                <property name="geometry">
                 <rect>
                  <x>24</x>
@@ -2637,7 +1713,7 @@ background: dark grey;
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This table is used to enter coil geometries the format is as follows: each row specifies a single point on a coil. The first column is the coil index (using the GMR channel is useful), the next three colums specify the point in Northing, Easting, and Elevation. These can either be local coordinates or global ones. The final column specifies the loop radius if it is a circle or figure 8, for non circular or figure 8 loops leave this column blank. For figure-8 loops the coils do not need to be touching (see Irons and Kass, 2017). If a given index has 1 row it will be a circular loop, two rows will be a figure 8, and more than that will be a polygonal representation of the points, linearlly interpolated between them. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_54">
+              <widget class="QLabel" name="label_65">
                <property name="geometry">
                 <rect>
                  <x>10</x>
@@ -2691,7 +1767,7 @@ background: dark grey;
                 <double>50000.000000000000000</double>
                </property>
               </widget>
-              <widget class="QLabel" name="label_38">
+              <widget class="QLabel" name="label_66">
                <property name="geometry">
                 <rect>
                  <x>670</x>
@@ -2704,7 +1780,7 @@ background: dark grey;
                 <string>B Declination [°] </string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_37">
+              <widget class="QLabel" name="label_67">
                <property name="geometry">
                 <rect>
                  <x>670</x>
@@ -2761,7 +1837,7 @@ background: dark grey;
                 <double>45.000000000000000</double>
                </property>
               </widget>
-              <widget class="QLabel" name="label_51">
+              <widget class="QLabel" name="label_68">
                <property name="geometry">
                 <rect>
                  <x>670</x>
@@ -2774,7 +1850,7 @@ background: dark grey;
                 <string>B Intensity [nT]</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_57">
+              <widget class="QLabel" name="label_69">
                <property name="geometry">
                 <rect>
                  <x>670</x>
@@ -2806,7 +1882,7 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="tab_7">
            <attribute name="title">
-            <string>Kernel calc</string>
+            <string>Kern</string>
            </attribute>
            <widget class="Line" name="line_2">
             <property name="geometry">
@@ -2885,7 +1961,7 @@ background: dark grey;
               </rect>
              </property>
             </widget>
-            <widget class="QLabel" name="label_26">
+            <widget class="QLabel" name="label_70">
              <property name="geometry">
               <rect>
                <x>21</x>
@@ -2898,7 +1974,7 @@ background: dark grey;
               <string>min. level</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_27">
+            <widget class="QLabel" name="label_71">
              <property name="geometry">
               <rect>
                <x>20</x>
@@ -2911,7 +1987,7 @@ background: dark grey;
               <string>max. level</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_31">
+            <widget class="QLabel" name="label_72">
              <property name="geometry">
               <rect>
                <x>187</x>
@@ -2997,7 +2073,7 @@ background: dark grey;
               <string>Origin</string>
              </property>
             </widget>
-            <widget class="QLabel" name="label_25">
+            <widget class="QLabel" name="label_73">
              <property name="geometry">
               <rect>
                <x>210</x>
@@ -3027,74 +2103,61 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="tab_6">
            <attribute name="title">
-            <string>Forward modelling</string>
+            <string>Model</string>
            </attribute>
-           <widget class="QGroupBox" name="adaptFDBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+           <widget class="QToolBox" name="toolBox">
             <property name="geometry">
              <rect>
-              <x>160</x>
-              <y>180</y>
-              <width>480</width>
-              <height>83</height>
+              <x>40</x>
+              <y>430</y>
+              <width>411</width>
+              <height>141</height>
              </rect>
             </property>
-            <property name="title">
-             <string>FD (static transfer function) Noise cancellation</string>
+            <property name="currentIndex">
+             <number>1</number>
             </property>
-            <property name="checkable">
-             <bool>true</bool>
+            <widget class="QWidget" name="page">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>411</width>
+               <height>77</height>
+              </rect>
+             </property>
+             <attribute name="label">
+              <string>Page 1</string>
+             </attribute>
+            </widget>
+            <widget class="QWidget" name="page_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>411</width>
+               <height>77</height>
+              </rect>
+             </property>
+             <attribute name="label">
+              <string>Page 2</string>
+             </attribute>
+            </widget>
+           </widget>
+           <widget class="QStackedWidget" name="stackedWidget">
+            <property name="geometry">
+             <rect>
+              <x>40</x>
+              <y>270</y>
+              <width>411</width>
+              <height>91</height>
+             </rect>
             </property>
-            <widget class="QPushButton" name="adaptFDGO">
-             <property name="geometry">
-              <rect>
-               <x>370</x>
-               <y>50</y>
-               <width>99</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">#adaptFDGO {
-    background: green;
-}
-
-#adaptFDGO:disabled{
-    background: black;
-}</string>
-             </property>
-             <property name="text">
-              <string>GO</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_11">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>30</y>
-               <width>271</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Utilizes a window filter (as defined above) </string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_56">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>50</y>
-               <width>281</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Uses central v from Band-pass filter</string>
-             </property>
-            </widget>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="page_3"/>
+            <widget class="QWidget" name="page_4"/>
            </widget>
           </widget>
           <widget class="QWidget" name="tab_4">
@@ -3146,11 +2209,11 @@ background: red;
              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;All processing steps are recorded here for your records&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;All processing steps are recorded here for your records&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
-           <widget class="QLabel" name="label_53">
+           <widget class="QLabel" name="label_74">
             <property name="geometry">
              <rect>
               <x>420</x>
@@ -3170,6 +2233,623 @@ p, li { white-space: pre-wrap; }
       </widget>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QGroupBox" name="groupBoxPlot">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="MyDynamicMplCanvas" name="mplwidget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>460</width>
+           <height>300</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="MyDynamicMplCanvasNavigator" name="mplwidget_navigator" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>460</width>
+           <height>38</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="headerFileBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>460</width>
+           <height>250</height>
+          </size>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="title">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Header file</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="3">
+           <widget class="QTextBrowser" name="headerFileTextBrowser">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="html">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Noto Sans'; font-size:8pt; font-weight:400; font-style:italic;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Serif'; font-size:9pt;&quot;&gt;Load supported RAW Dataset header from file menu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>ν Tx  [Hz]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLCDNumber" name="lcdNumberNuTx">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="whatsThis">
+             <string extracomment="here is a comment"/>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberNuTx {
+color: green;
+background: black;
+}
+
+#lcdNumberNuTx:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+            <property name="value" stdset="0">
+             <double>0.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Pulse Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QTextBrowser" name="pulseTypeTextBrowser">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>64</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>64</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="acceptDrops">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="html">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:400; font-style:italic;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'DejaVu Serif';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of pulse moments (q)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Num q</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLCDNumber" name="lcdNumberNQ">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberNQ {
+color: green;
+background: black;
+}
+
+#lcdNumberNQ:disabled{
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>τ Delay [ms]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QLCDNumber" name="lcdNumberTauDelay">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberTauDelay {
+color: green;
+background: black;
+}
+
+#lcdNumberTauDelay:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>τ Pulse 1 [ms]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLCDNumber" name="lcdNumberTauPulse1">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberTauPulse1 {
+color: green;
+background: black;
+}
+
+#lcdNumberTauPulse1:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>FID 1 length [s]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLCDNumber" name="lcdNumberFID1Length">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberFID1Length {
+color: green;
+background: black;
+}
+
+#lcdNumberFID1Length:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>τ Pulse 2 [ms]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLCDNumber" name="lcdNumberTauPulse2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberTauPulse2 {
+color: green;
+background: black;
+}
+
+#lcdNumberTauPulse2:disabled{
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="label_39">
+            <property name="text">
+             <string>FID 2 length [s]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QLCDNumber" name="lcdNumberFID2Length">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberFID2Length {
+color: green;
+background: black;
+}
+
+#lcdNumberFID2Length:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>ν Sampling [Hz]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLCDNumber" name="lcdNumberSampFreq">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberSampFreq {
+color: green;
+background: black;
+}
+
+#lcdNumberSampFreq:disabled{
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="digitCount">
+             <number>5</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="label_40">
+            <property name="text">
+             <string>ν re-sampling [Hz]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="3">
+           <widget class="QLCDNumber" name="lcdNumberResampFreq">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberResampFreq {
+color: green;
+background: black;
+}
+
+#lcdNumberResampFreq:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Tx tuning [μF]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLCDNumber" name="lcdNumberTuneuF">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdNumberTuneuF {
+color: green;
+background: black;
+}
+
+#lcdNumberTuneuF:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLabel" name="label_47">
+            <property name="text">
+             <string>total dead time</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="3">
+           <widget class="QLCDNumber" name="lcdTotalDeadTime">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#lcdTotalDeadTime {
+color: green;
+background: black;
+}
+
+#lcdTotalDeadTime:disabled {
+color: grey;
+background: dark grey;
+}</string>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="segmentStyle">
+             <enum>QLCDNumber::Flat</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -3177,13 +2857,13 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
-     <height>20</height>
+     <width>1142</width>
+     <height>30</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="menuOpen_GMR_RAW_Header">
     <property name="title">
-     <string>&amp;File</string>
+     <string>File</string>
     </property>
     <addaction name="actionOpen_GMR"/>
     <addaction name="separator"/>
@@ -3191,87 +2871,53 @@ p, li { white-space: pre-wrap; }
     <addaction name="actionOpen_VC_Preprocessed_dataset"/>
     <addaction name="separator"/>
     <addaction name="actionSave_Preprocessed_Dataset"/>
-    <addaction name="separator"/>
     <addaction name="actionExport_Preprocessed_Dataset"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
    </widget>
-   <widget class="QMenu" name="menuAbout">
+   <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>&amp;Help</string>
+     <string>Help</string>
     </property>
     <addaction name="actionAboutAkvo"/>
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuAbout"/>
+   <addaction name="menuOpen_GMR_RAW_Header"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionClose">
-   <property name="text">
-    <string>&amp;Close</string>
-   </property>
-  </action>
-  <action name="actionAboutAkvo">
-   <property name="text">
-    <string>&amp;About Akvo</string>
-   </property>
-  </action>
-  <action name="actionNothing">
-   <property name="text">
-    <string>Nothing</string>
-   </property>
-  </action>
-  <action name="actionTemperature">
-   <property name="text">
-    <string>Temperature</string>
-   </property>
-  </action>
   <action name="actionOpen_GMR">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
    <property name="text">
-    <string>&amp;Open GMR RAW header</string>
-   </property>
-   <property name="iconText">
-    <string>Open GMR RAW dataset(s)</string>
-   </property>
-  </action>
-  <action name="actionProcess">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Process</string>
+    <string>&amp;Open GMR Header</string>
    </property>
   </action>
   <action name="actionOpen_Preprocessed_Dataset">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
    <property name="text">
-    <string>Load Avko &amp;Preprocessed dataset</string>
+    <string>Open Akvo Preprocessed dataset</string>
    </property>
   </action>
   <action name="actionOpen_VC_Preprocessed_dataset">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
-    <string>Load &amp;VC Preprocessed dataset</string>
+    <string>Open VC Preprocessed dataset</string>
    </property>
   </action>
   <action name="actionSave_Preprocessed_Dataset">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
    <property name="text">
-    <string>&amp;Save Preprocessed Dataset</string>
+    <string>Save processing </string>
    </property>
   </action>
   <action name="actionExport_Preprocessed_Dataset">
    <property name="text">
-    <string>&amp;Export to Lemma</string>
+    <string>Export to Lemma</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionAboutAkvo">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
@@ -3292,38 +2938,5 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>actionClose</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>437</x>
-     <y>386</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionAboutAkvo</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>424</x>
-     <y>387</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

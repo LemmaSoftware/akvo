@@ -1025,8 +1025,8 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
-        self.actionClose.activated.connect(MainWindow.close)
-        self.actionAboutBrewCentral.activated.connect(MainWindow.show)
+        #self.actionClose.activated.connect(MainWindow.close)
+        #self.actionAboutBrewCentral.activated.connect(MainWindow.show)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
