@@ -17,7 +17,8 @@ class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=3, height=4, dpi=100):
         
-        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='darkgrey') # this fucking works...why?
+        #self.fig.patch.set_facecolor('blue')
         FigureCanvas.__init__(self, self.fig)
 
         self.setParent(parent)
@@ -33,35 +34,43 @@ class MyDynamicMplCanvas(MyMplCanvas):
 
     """A canvas that updates itself every second with a new plot."""
     def __init__(self, *args, **kwargs):
-        
         MyMplCanvas.__init__(self, *args, **kwargs)
         self.ax1 = self.fig.add_axes([.125,.1,.725,.8])
         self.ax2 = self.ax1.twinx() # fig.add_axes([.125,.1,.725,.8])
         self.compute_initial_figure()
 
     def reAxH(self, num, shx=True, shy=True):
+        
+        try:
+            for ax in fig.axes:
+                self.fig.delaxes(ax)
+        except:
+            pass
         try:
             self.fig.clear()
         except:
             pass
+
         for n in range(num):
             if n == 0:
-                self.ax1 = self.fig.add_subplot( 1, num, 1 )
+                self.ax1 = self.fig.add_subplot( 1, num, 1)
                 self.ax1.tick_params(axis='both', which='major', labelsize=8)
                 self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
+                self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='x')  
                 self.ax1.yaxis.get_offset_text().set_size(8) 
+                self.ax1.xaxis.get_offset_text().set_size(8) 
             if n == 1:
-                self.ax2 = self.fig.add_subplot( 1, num, 2 )
+                self.ax2 = self.fig.add_subplot( 1, num, 2)
                 self.ax2.tick_params(axis='both', which='major', labelsize=8)
                 self.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax2.yaxis.get_offset_text().set_size(8) 
             if n == 2:
-                self.ax3 = self.fig.add_subplot( 1, num, 3 )
+                self.ax3 = self.fig.add_subplot( 1, num, 3) 
                 self.ax3.tick_params(axis='both', which='major', labelsize=8)
                 self.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax3.yaxis.get_offset_text().set_size(8) 
             if n == 3:
-                self.ax4 = self.fig.add_subplot( 1, num, 4 )
+                self.ax4 = self.fig.add_subplot( 1, num, 4) 
                 self.ax4.tick_params(axis='both', which='major', labelsize=8)
                 self.ax4.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax4.yaxis.get_offset_text().set_size(8) 
@@ -72,7 +81,6 @@ class MyDynamicMplCanvas(MyMplCanvas):
                 self.fig.delaxes(ax)
         except:
             pass
-
         try:
             self.fig.clear()
         except:
@@ -80,29 +88,29 @@ class MyDynamicMplCanvas(MyMplCanvas):
         
         for n in range(num):
             if n == 0:
-                self.ax1 = self.fig.add_subplot( 2, num, 1 )
+                self.ax1 = self.fig.add_subplot( 2, num, 1)
                 self.ax1.tick_params(axis='both', which='major', labelsize=8)
                 self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax1.yaxis.get_offset_text().set_size(8) 
-                self.ax21 = self.fig.add_subplot( 2, num, num+1 )
+                self.ax21 = self.fig.add_subplot( 2, num, num+1)
                 self.ax21.tick_params(axis='both', which='major', labelsize=8)
                 self.ax21.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax21.yaxis.get_offset_text().set_size(8) 
             if n == 1:
-                self.ax2 = self.fig.add_subplot( 2, num, 2, sharex=self.ax1, sharey=self.ax1 )
+                self.ax2 = self.fig.add_subplot( 2, num, 2, sharex=self.ax1, sharey=self.ax1)
                 self.ax2.tick_params(axis='both', which='major', labelsize=8)
                 self.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax2.yaxis.get_offset_text().set_size(8) 
-                self.ax22 = self.fig.add_subplot( 2, num, num+2, sharex=self.ax21, sharey=self.ax21 )
+                self.ax22 = self.fig.add_subplot( 2, num, num+2, sharex=self.ax21, sharey=self.ax21)
                 self.ax22.tick_params(axis='both', which='major', labelsize=8)
                 self.ax22.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax22.yaxis.get_offset_text().set_size(8) 
             if n == 2:
-                self.ax3 = self.fig.add_subplot( 2, num, 3, sharex=self.ax1, sharey=self.ax1 )
+                self.ax3 = self.fig.add_subplot( 2, num, 3, sharex=self.ax1, sharey=self.ax1)
                 self.ax3.tick_params(axis='both', which='major', labelsize=8)
                 self.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax3.yaxis.get_offset_text().set_size(8) 
-                self.ax23 = self.fig.add_subplot( 2, num, num+3, sharex=self.ax21, sharey=self.ax21 )
+                self.ax23 = self.fig.add_subplot( 2, num, num+3, sharex=self.ax21, sharey=self.ax21)
                 self.ax23.tick_params(axis='both', which='major', labelsize=8)
                 self.ax23.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax23.yaxis.get_offset_text().set_size(8) 
@@ -176,6 +184,7 @@ class MyDynamicMplCanvas(MyMplCanvas):
         except:
             pass
 
+        #self.fig.patch.set_facecolor('red')
         self.ax1 = self.fig.add_subplot(211)
         if shx and shy:
             self.ax2 = self.fig.add_subplot(212, sharex=self.ax1, sharey=self.ax1)
@@ -231,6 +240,13 @@ class MyDynamicMplCanvas(MyMplCanvas):
             self.ax2 = self.fig.add_subplot(212) 
 
         self.ax3 = self.ax1.twinx()
+
+        #self.ax1.set_facecolor('red')
+        #self.ax2.set_facecolor('red')
+        #self.ax3.set_facecolor('red')
+        #self.fig.set_facecolor('red')
+        #self.fig.set_edgecolor('red')
+        #self.ax1.set_axis_bgcolor('green')
 
         self.ax1.tick_params(axis='both', which='major', labelsize=8)
         self.ax2.tick_params(axis='both', which='major', labelsize=8)

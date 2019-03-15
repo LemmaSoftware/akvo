@@ -172,6 +172,25 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.plotGI.setEnabled(False) 
         self.ui.plotGI.pressed.connect( self.plotGI )
  
+        # hide header info box 
+        #self.ui.headerFileBox.setVisible(False) 
+        self.ui.headerFileBox.clicked.connect( self.headerBoxShrink ) 
+        self.ui.headerBox2.setVisible(False) 
+
+        # Clean up the tab widget 
+        self.ui.actionPreprocessing.triggered.connect(self.addPreProc)
+        self.ui.actionModelling.triggered.connect(self.addModelling)
+        self.ui.actionInversion.triggered.connect(self.addInversion)
+
+        # tabs 
+        #self.ui.ProcTabs.tabCloseRequested.connect( self.closeTabs )
+        #self.ui.ProcTabs.tabBar().setTabButton(7, QtWidgets.QTabBar.RightSide,None) 
+        self.ui.ProcTabs.removeTab(4)    
+        self.ui.ProcTabs.removeTab(4)    
+        self.ui.ProcTabs.removeTab(4)    
+        self.ui.ProcTabs.removeTab(4)    
+        #self.ui.LoadTab.close(  ) 
+
         # Add progressbar to statusbar
         self.ui.barProgress =  QtWidgets.QProgressBar()
         self.ui.statusbar.addPermanentWidget(self.ui.barProgress, 0);
@@ -180,6 +199,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui.mplwidget_navigator.setCanvas(self.ui.mplwidget)
         #self.ui.mplwidget_navigator_2.setCanvas(self.ui.mplwidget)
+
 
         ##########################################################################
         # Loop Table 
@@ -231,6 +251,59 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.layerTableWidget.setItem(ir, ic, pCell)
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
 
+    def closeTabs(self):
+        #self.ui.ProcTabs.removeTab(idx)    
+        self.ui.ProcTabs.clear( )    
+    
+    def addPreProc(self):
+        if self.ui.actionPreprocessing.isChecked(): 
+            self.ui.actionModelling.setChecked(False) 
+            self.ui.actionInversion.setChecked(False) 
+            self.ui.ProcTabs.clear( )    
+            self.ui.ProcTabs.insertTab( 0, self.ui.LoadTab, "Load" )    
+            self.ui.ProcTabs.insertTab( 1, self.ui.NCTab, "NC" )    
+            self.ui.ProcTabs.insertTab( 2, self.ui.QCTab, "QC" )    
+            self.ui.ProcTabs.insertTab( 3, self.ui.METATab, "META" )    
+            self.ui.ProcTabs.insertTab( 4, self.ui.LogTab, "Log" )    
+        else:
+            self.ui.ProcTabs.removeTab(0)    
+            self.ui.ProcTabs.removeTab(0)    
+            self.ui.ProcTabs.removeTab(0)    
+            self.ui.ProcTabs.removeTab(0)    
+    
+    def addModelling(self):
+        if self.ui.actionModelling.isChecked(): 
+            self.ui.actionPreprocessing.setChecked(False) 
+            self.ui.actionInversion.setChecked(False) 
+            self.ui.ProcTabs.clear( )    
+            self.ui.ProcTabs.insertTab( 0, self.ui.KernTab, "Kernel" )    
+            self.ui.ProcTabs.insertTab( 1, self.ui.ModelTab, "Modelling" )    
+            self.ui.ProcTabs.insertTab( 2, self.ui.LogTab, "Log" )    
+        else:
+            self.ui.ProcTabs.removeTab(0)    
+            self.ui.ProcTabs.removeTab(0)    
+    
+    def addInversion(self, idx):
+        if self.ui.actionInversion.isChecked(): 
+            self.ui.actionPreprocessing.setChecked(False) 
+            self.ui.actionModelling.setChecked(False) 
+            self.ui.ProcTabs.clear( )    
+            self.ui.ProcTabs.insertTab( 0, self.ui.InvertTab, "Inversion" )    
+            self.ui.ProcTabs.insertTab( 1, self.ui.AppraiseTab, "Appraisal" )    
+            self.ui.ProcTabs.insertTab( 2, self.ui.LogTab, "Log" )    
+        else:
+            self.ui.ProcTabs.removeTab(0)    
+            self.ui.ProcTabs.removeTab(0)    
+
+    def headerBoxShrink(self):
+        #self.ui.headerFileBox.setVisible(False)
+ 
+        if self.ui.headerFileBox.isChecked( ): 
+            #self.ui.headerFileBox.setMinimumSize(460,250) 
+            self.ui.headerBox2.setVisible(True) 
+        else:
+            #self.ui.headerFileBox.setMinimumSize(460,50) 
+            self.ui.headerBox2.setVisible(False) 
 
     def sigmaCellChanged(self):
         self.ui.layerTableWidget.cellChanged.disconnect(self.sigmaCellChanged) 
@@ -365,18 +438,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 #pCell.setFlags( )
                 pCell.setBackground( QtGui.QColor("lightblue") )
 
-
-            
- 
         self.plotLoops()
         self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
 
 
     def plotLoops(self):
-               
-        #self.ui.mplwidget_3.fig.clear() 
-        self.ui.mplwidget_3.ax1.clear() 
-        self.ui.mplwidget_3.ax2.clear()
+
+        print("Plotting loopz")        
+       
+        self.ui.mplwidget.reAxH(1)
+        #self.ui.mplwidget.ax1.clear() 
+        #self.ui.mplwidget.ax2.clear()
         nor = dict()
         eas = dict()
         dep = dict() 
@@ -403,12 +475,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         for ii in nor.keys():            
             try:    
-                self.ui.mplwidget_3.ax1.plot(  np.array(nor[ii]), np.array(eas[ii])  )
+                self.ui.mplwidget.ax1.plot(  np.array(nor[ii]), np.array(eas[ii])  )
             except:
                 pass 
-        #self.ui.mplwidget_3.figure.axes().set
-        plt.gca().set_aspect('equal') #, adjustable='box')
-        self.ui.mplwidget_3.draw()
+        #self.ui.mplwidget.figure.axes().set
+        self.ui.mplwidget.ax1.set_aspect('equal') #, adjustable='box')
+        self.ui.mplwidget.draw()
 
     def about(self):
         # TODO proper popup with info
@@ -469,6 +541,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberNQ.setEnabled(True)
 
         self.ui.headerFileBox.setEnabled(True)
+        self.ui.headerFileBox.setChecked( True )
+        self.ui.headerBox2.setVisible(True) 
         self.ui.inputRAWParametersBox.setEnabled(True)
         self.ui.loadDataPushButton.setEnabled(True)
          
@@ -706,6 +780,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberNQ.setEnabled(True)
 
         self.ui.headerFileBox.setEnabled(True)
+        self.ui.headerFileBox.setChecked( False )
+        #self.ui.headerBox2.setVisible(True) 
         self.ui.inputRAWParametersBox.setEnabled(True)
         self.ui.loadDataPushButton.setEnabled(True)
         
@@ -1249,8 +1325,8 @@ def main():
     for ax in [ aw.ui.mplwidget ]: 
         ax.fig.clear()
         subplot = ax.fig.add_subplot(111)
-        ax.fig.patch.set_facecolor( None )
-        ax.fig.patch.set_alpha( .0 )
+        #ax.fig.patch.set_facecolor( None )
+        #ax.fig.patch.set_alpha( .0 )
         subplot.imshow(img) 
         subplot.xaxis.set_major_locator(plt.NullLocator()) 
         subplot.yaxis.set_major_locator(plt.NullLocator()) 

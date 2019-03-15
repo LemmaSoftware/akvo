@@ -17,7 +17,7 @@ class custom_build_py(build_py):
         build_py.run(self)
 
 setup(name='Akvo',
-      version='1.0.6',
+      version='1.0.7',
       description='Surface nuclear magnetic resonance workbench',
       author='Trevor P. Irons',
       author_email='Trevor.Irons@lemmasoftware.org',

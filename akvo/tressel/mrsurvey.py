@@ -2216,6 +2216,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         #    results = pool.starmap( loadGMRBinaryFID, zip(itertools.repeat(self), fnames, info ) ) # zip(np.tile(vc, (ns, 1)), np.tile(vgc, (ns,1)), itertools.repeat(sys.argv[1]), itertools.repeat(sys.argv[2]), EPS_CMR))
 
         # Plotting
+
         if plot: 
             iistack = 0
             for istack in procStacks:
@@ -2223,6 +2224,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     canvas.ax1.clear()
                     canvas.ax2.clear()
                     canvas.ax3.clear()
+                    #canvas.fig.patch.set_facecolor('blue')
                            
                     for ichan in chan:
                         canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
