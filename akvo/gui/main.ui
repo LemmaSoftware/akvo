@@ -2159,8 +2159,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">
@@ -2172,8 +2172,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>411</width>
-               <height>77</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">

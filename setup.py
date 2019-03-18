@@ -16,12 +16,17 @@ class custom_build_py(build_py):
         self.run_command('build_ui')
         build_py.run(self)
 
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(name='Akvo',
-      version='1.0.7',
+      version='1.0.12',
       description='Surface nuclear magnetic resonance workbench',
+      long_description=long_description,
       author='Trevor P. Irons',
       author_email='Trevor.Irons@lemmasoftware.org',
-      url='https://svn.lemmasofware.org/akvo',
+      url='https://akvo.lemmasoftware.org/',
       #setup_requires=['PyQt5'],
       setup_requires=[
         # Setuptools 18.0 properly handles Cython extensions.
@@ -33,12 +38,12 @@ setup(name='Akvo',
 #      ext_modules = cythonise("akvo/tressel/*.pyx"), 
 #      build_requires=['cython'],
       install_requires=[
-#          'cython',
-          'rpy2',
+#         'cython',
+#          'rpy2',
           'matplotlib',
           'scipy',
           'numpy',
-          'PyQt5',
+          'pyqt5',
           'pyyaml',
           'pandas',
           'pyqt-distutils',
@@ -62,6 +67,11 @@ setup(name='Akvo',
       package_data={
         'akvo.gui': ['*.png']  #All .r files 
       },
+      classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+        "Operating System :: OS Independent",
+      ],
     )
 
 
