@@ -50,7 +50,7 @@
          <x>0</x>
          <y>0</y>
          <width>537</width>
-         <height>866</height>
+         <height>882</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -456,26 +456,6 @@
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
-               <item row="1" column="1" rowspan="2">
-                <widget class="QDoubleSpinBox" name="windowBandwidthSpinBox">
-                 <property name="decimals">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <double>1000.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>600.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_55">
-                 <property name="text">
-                  <string>dead time [ms]</string>
-                 </property>
-                </widget>
-               </item>
                <item row="4" column="1">
                 <widget class="QLCDNumber" name="lcdWinDead">
                  <property name="sizePolicy">
@@ -500,10 +480,53 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
+               <item row="4" column="3">
+                <widget class="QPushButton" name="windowFilterGO">
+                 <property name="styleSheet">
+                  <string notr="true">#windowFilterGO {
+    background: green;
+}
+
+#windowFilterGO:disabled{
+    background: black;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_48">
                  <property name="text">
                   <string>Width [Hz]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1" rowspan="2">
+                <widget class="QDoubleSpinBox" name="windowBandwidthSpinBox">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>1000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>600.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_45">
+                 <property name="text">
+                  <string>Type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_55">
+                 <property name="text">
+                  <string>dead time [ms]</string>
                  </property>
                 </widget>
                </item>
@@ -538,29 +561,6 @@ background: dark grey;
                  </property>
                  <property name="text">
                   <string>design</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_45">
-                 <property name="text">
-                  <string>Type</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="3">
-                <widget class="QPushButton" name="windowFilterGO">
-                 <property name="styleSheet">
-                  <string notr="true">#windowFilterGO {
-    background: green;
-}
-
-#windowFilterGO:disabled{
-    background: black;
-}</string>
-                 </property>
-                 <property name="text">
-                  <string>GO</string>
                  </property>
                 </widget>
                </item>
@@ -600,20 +600,26 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_7">
-               <item row="4" column="4" rowspan="2">
-                <widget class="QPushButton" name="filterDesignPushButton">
-                 <property name="styleSheet">
-                  <string notr="true"/>
-                 </property>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_19">
                  <property name="text">
-                  <string>design</string>
+                  <string>Pass Band [Hz]</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_32">
+               <item row="6" column="3" rowspan="2" colspan="2">
+                <widget class="QPushButton" name="bandPassGO">
+                 <property name="styleSheet">
+                  <string notr="true">#bandPassGO {
+    background: green;
+}
+
+#bandPassGO:disabled{
+    background: black;
+}</string>
+                 </property>
                  <property name="text">
-                  <string>gstop [dB]</string>
+                  <string>GO</string>
                  </property>
                 </widget>
                </item>
@@ -641,60 +647,64 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
-                <widget class="QCheckBox" name="plotBP">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_18">
                  <property name="text">
-                  <string> Plot </string>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
+                  <string>Order</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="3" colspan="2">
-                <widget class="QComboBox" name="fTypeComboBox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_30">
+                 <property name="text">
+                  <string>Central ν Hz</string>
                  </property>
-                 <property name="mouseTracking">
-                  <bool>true</bool>
+                </widget>
+               </item>
+               <item row="4" column="3" rowspan="2" colspan="2">
+                <widget class="QPushButton" name="filterDesignPushButton">
+                 <property name="styleSheet">
+                  <string notr="true"/>
                  </property>
-                 <property name="toolTip">
-                  <string/>
+                 <property name="text">
+                  <string>design</string>
                  </property>
-                 <property name="statusTip">
-                  <string extracomment="hello thre"/>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="stopBandSpinBox">
+                 <property name="minimum">
+                  <double>100.000000000000000</double>
                  </property>
-                 <property name="whatsThis">
-                  <string extracomment="What type of filter to use"/>
+                 <property name="maximum">
+                  <double>1000.000000000000000</double>
                  </property>
-                 <property name="accessibleDescription">
-                  <string>Hello</string>
+                 <property name="value">
+                  <double>280.000000000000000</double>
                  </property>
-                 <item>
-                  <property name="text">
-                   <string>Butterworth</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Chebychev Type II</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Elliptic</string>
-                  </property>
-                 </item>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_32">
+                 <property name="text">
+                  <string>gstop [dB]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QDoubleSpinBox" name="passBandSpinBox">
+                 <property name="minimum">
+                  <double>25.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>500.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>5.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>50.000000000000000</double>
+                 </property>
                 </widget>
                </item>
                <item row="1" column="4">
@@ -740,19 +750,26 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="6" column="4" rowspan="2">
-                <widget class="QPushButton" name="bandPassGO">
-                 <property name="styleSheet">
-                  <string notr="true">#bandPassGO {
-    background: green;
-}
-
-#bandPassGO:disabled{
-    background: black;
-}</string>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QCheckBox" name="plotBP">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
                  <property name="text">
-                  <string>GO</string>
+                  <string> Plot </string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -778,6 +795,13 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
+               <item row="5" column="1" rowspan="2">
+                <widget class="QDoubleSpinBox" name="gstopSpinBox">
+                 <property name="value">
+                  <double>5.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="2" colspan="2">
                 <widget class="QLabel" name="label_21">
                  <property name="text">
@@ -792,56 +816,6 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="label_10">
-                 <property name="text">
-                  <string>Type</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_30">
-                 <property name="text">
-                  <string>Central ν Hz</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1" rowspan="2">
-                <widget class="QDoubleSpinBox" name="gstopSpinBox">
-                 <property name="value">
-                  <double>5.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QDoubleSpinBox" name="stopBandSpinBox">
-                 <property name="minimum">
-                  <double>100.000000000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>1000.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>280.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="passBandSpinBox">
-                 <property name="minimum">
-                  <double>25.000000000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>500.000000000000000</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>5.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>50.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
                <item row="3" column="0">
                 <widget class="QLabel" name="label_22">
                  <property name="text">
@@ -849,18 +823,44 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="1" column="2">
-                <widget class="QLabel" name="label_18">
-                 <property name="text">
-                  <string>Order</string>
+               <item row="0" column="3" colspan="2">
+                <widget class="QComboBox" name="fTypeComboBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_19">
-                 <property name="text">
-                  <string>Pass Band [Hz]</string>
+                 <property name="mouseTracking">
+                  <bool>true</bool>
                  </property>
+                 <property name="toolTip">
+                  <string/>
+                 </property>
+                 <property name="statusTip">
+                  <string extracomment="hello thre"/>
+                 </property>
+                 <property name="whatsThis">
+                  <string extracomment="What type of filter to use"/>
+                 </property>
+                 <property name="accessibleDescription">
+                  <string>Hello</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Butterworth</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chebychev Type II</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Elliptic</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
               </layout>
@@ -880,13 +880,13 @@ background: dark grey;
               <property name="minimumSize">
                <size>
                 <width>505</width>
-                <height>0</height>
+                <height>100</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>505</width>
-                <height>100</height>
+                <height>200</height>
                </size>
               </property>
               <property name="title">
@@ -951,11 +951,14 @@ background: dark grey;
            <attribute name="title">
             <string>NC</string>
            </attribute>
+           <attribute name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tab contains noise cancellation algorithms. The frequency-domain algorithm is often less effective than the time domain approach. We often discourage using the frequency domain algorithm. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
              <widget class="QGroupBox" name="groupBox_3">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -969,6 +972,12 @@ background: dark grey;
               <property name="title">
                <string>Model-based harmonic removal</string>
               </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
              </widget>
             </item>
             <item>
@@ -977,7 +986,7 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1056,7 +1065,7 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1298,7 +1307,7 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1306,13 +1315,13 @@ background: dark grey;
               <property name="minimumSize">
                <size>
                 <width>505</width>
-                <height>0</height>
+                <height>100</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>505</width>
-                <height>100</height>
+                <height>150</height>
                </size>
               </property>
               <property name="title">
@@ -1321,43 +1330,71 @@ background: dark grey;
               <property name="checkable">
                <bool>true</bool>
               </property>
-              <layout class="QGridLayout" name="gridLayout_9">
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_8">
-                 <property name="text">
-                  <string>Fourier-based calculation</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QPushButton" name="calcQGO">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>80</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">#calcQGO {
+              <widget class="QLabel" name="label_8">
+               <property name="geometry">
+                <rect>
+                 <x>8</x>
+                 <y>84</y>
+                 <width>399</width>
+                 <height>10</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>10</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>10</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Fourier-based calculation</string>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="calcQGO">
+               <property name="geometry">
+                <rect>
+                 <x>380</x>
+                 <y>80</y>
+                 <width>84</width>
+                 <height>30</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">#calcQGO {
     background: green;
 }
 
 #calcQGO:disabled{
     background: black;
 }</string>
-                 </property>
-                 <property name="text">
-                  <string>GO</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
+               </property>
+               <property name="text">
+                <string>GO</string>
+               </property>
+              </widget>
              </widget>
             </item>
             <item>
@@ -1374,7 +1411,7 @@ background: dark grey;
               <property name="minimumSize">
                <size>
                 <width>505</width>
-                <height>100</height>
+                <height>150</height>
                </size>
               </property>
               <property name="maximumSize">
@@ -1474,7 +1511,7 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1482,13 +1519,13 @@ background: dark grey;
               <property name="minimumSize">
                <size>
                 <width>505</width>
-                <height>0</height>
+                <height>100</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>505</width>
-                <height>16777215</height>
+                <height>200</height>
                </size>
               </property>
               <property name="title">
@@ -1609,7 +1646,7 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1617,7 +1654,7 @@ background: dark grey;
               <property name="minimumSize">
                <size>
                 <width>505</width>
-                <height>0</height>
+                <height>200</height>
                </size>
               </property>
               <property name="maximumSize">
@@ -2159,8 +2196,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <attribute name="label">
@@ -2172,8 +2209,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>411</width>
+               <height>77</height>
               </rect>
              </property>
              <attribute name="label">
