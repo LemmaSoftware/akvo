@@ -21,9 +21,10 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
-      version='1.0.14',
+      version='1.0.15',
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
+      long_description_content_type='text/markdown',
       author='Trevor P. Irons',
       author_email='Trevor.Irons@lemmasoftware.org',
       url='https://akvo.lemmasoftware.org/',
