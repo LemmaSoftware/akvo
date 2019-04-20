@@ -978,6 +978,35 @@ background: dark grey;
               <property name="checked">
                <bool>false</bool>
               </property>
+              <widget class="QPushButton" name="harmonicGO">
+               <property name="geometry">
+                <rect>
+                 <x>380</x>
+                 <y>120</y>
+                 <width>88</width>
+                 <height>34</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>PushButton</string>
+               </property>
+              </widget>
+              <widget class="QDoubleSpinBox" name="f0Spin">
+               <property name="geometry">
+                <rect>
+                 <x>160</x>
+                 <y>120</y>
+                 <width>71</width>
+                 <height>32</height>
+                </rect>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+               <property name="value">
+                <double>60.000000000000000</double>
+               </property>
+              </widget>
              </widget>
             </item>
             <item>
@@ -2196,8 +2225,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">

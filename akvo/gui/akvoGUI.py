@@ -165,7 +165,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.gateIntegrateGO.pressed.connect( self.gateIntegrate )
         self.ui.calcQGO.pressed.connect( self.calcQ )
         self.ui.FDSmartStackGO.pressed.connect( self.FDSmartStack )
-        
+        self.ui.harmonicGO.pressed.connect( self.harmonicModel )       
+ 
         self.ui.plotQD.setEnabled(False) 
         self.ui.plotQD.pressed.connect( self.plotQD )
         
@@ -1059,6 +1060,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.lock("pulse moment calculation")
         thread.start_new_thread(self.RAWDataProc.effectivePulseMoment, \
                 (self.ui.CentralVSpinBox.value(), \
+                self.ui.mplwidget))
+
+    def harmonicModel(self):
+        self.lock("harmonic noise modelling")
+        thread.start_new_thread(self.RAWDataProc.harmonicModel, \
+                (self.ui.f0Spin.value(), \
                 self.ui.mplwidget))
 
     def FDSmartStack(self):

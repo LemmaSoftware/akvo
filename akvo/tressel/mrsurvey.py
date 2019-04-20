@@ -25,6 +25,7 @@ import akvo.tressel.decay as decay
 import akvo.tressel.pca as pca
 import akvo.tressel.rotate as rotate
 import akvo.tressel.cmaps as cmaps
+import akvo.tressel.harmonic as harmonic
 
 import cmocean # colormaps for geophysical data 
 plt.register_cmap(name='viridis', cmap=cmaps.viridis)
@@ -516,6 +517,73 @@ class GMRDataProcessor(SNMRDataProcessor):
         canvas.draw()
         self.doneTrigger.emit() 
 
+    def harmonicModel(self, f0, canvas):
+        print("harmonic modelling...", f0)
+        plot = True
+        if plot:
+            canvas.reAx2()
+            canvas.ax1.tick_params(axis='both', which='major', labelsize=8)
+            canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
+            canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
+            canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
+
+        # Data
+        iFID = 0
+        for pulse in self.DATADICT["PULSES"]:
+            self.DATADICT[pulse]["TIMES"] =  self.DATADICT[pulse]["TIMES"]
+            for ipm in range(self.DATADICT["nPulseMoments"]):
+                for istack in self.DATADICT["stacks"]:
+                    canvas.ax1.clear()
+                    canvas.ax2.clear()
+                    #for ichan in np.append(self.DATADICT[pulse]["chan"], self.DATADICT[pulse]["rchan"]):
+                    for ichan in self.DATADICT[pulse]["rchan"]:
+                        
+                        if plot:
+                            canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
+
+                        #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 40, self.DATADICT[pulse]["TIMES"] ) 
+                        #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-.25, f0+.25, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
+
+                        # plot
+                        #if plot:
+                        #    canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                        #        label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
+
+                    for ichan in self.DATADICT[pulse]["chan"]:
+                        
+                        if plot:
+                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
+                        
+                        self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 40, self.DATADICT[pulse]["TIMES"] ) 
+                        #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-.25, f0+.25, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
+                        #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 50, self.DATADICT[pulse]["TIMES"] ) 
+               
+                        # plot
+                        if plot:
+                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                label = "data " + pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
+
+                    if plot:
+                        canvas.ax1.set_xlabel(r"time [s]", fontsize=8)
+                        canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
+                        canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
+                        canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
+                        canvas.ax1.legend(prop={'size':6})
+                        canvas.ax2.legend(prop={'size':6})
+                        canvas.draw() 
+                    
+                percent = (int)(1e2*((float)(iFID*self.DATADICT["nPulseMoments"]+(ipm))/(len(self.DATADICT["PULSES"])*self.nPulseMoments)))
+                self.progressTrigger.emit(percent)  
+            iFID += 1
+        self.doneTrigger.emit() 
+        self.updateProcTrigger.emit()  
+
+
+        self.doneTrigger.emit() 
+        
+    
     def FDSmartStack(self, outlierTest, MADcutoff, canvas):
         
         print("FFT stuff")
