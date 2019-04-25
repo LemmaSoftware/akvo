@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
-      version='1.0.16',
+      version='1.0.19',
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -50,7 +50,7 @@ setup(name='Akvo',
           'pyqt-distutils',
           'cmocean'
       ],
-      packages=['akvo', 'akvo.tressel', 'akvo.gui'],
+      packages=['akvo', 'akvo.tressel', 'akvo.gui','akvo.lemma'],
       license=['GPL 4.0'],
       entry_points = {
               'console_scripts': [
@@ -66,7 +66,8 @@ setup(name='Akvo',
       # Mechanism to include auxiliary files
       include_package_data=True,
       package_data={
-        'akvo.gui': ['*.png']  #All .r files 
+        'akvo.gui': ['*.png'],  #All .r files 
+        'akvo.lemma': ['pyLemmaCore.so']
       },
       classifiers=[
         "Programming Language :: Python :: 3",

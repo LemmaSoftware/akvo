@@ -29,6 +29,8 @@ import datetime, time
 
 
 from akvo.tressel import mrsurvey 
+#from akvo.lemma import pyLemmaCore  # Looking ahead! 
+
 import pkg_resources  # part of setuptools
 version = pkg_resources.require("Akvo")[0].version
 
