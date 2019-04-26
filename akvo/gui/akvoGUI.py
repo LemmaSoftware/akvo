@@ -731,8 +731,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         unpickle = pickle.Unpickler(pfile)
         self.connectGMRDataProcessor()
         self.RAWDataProc.DATADICT = unpickle.load()
-        
-        self.RAWDataProc.readHeaderFile(self.RAWDataProc.DATADICT["INFO"]["headerstr"])
+       
+        # This line causes Akvo to crash, if the header file is no longer there. We don't need to load the 
+        # file. TODO, need to disable "Load Data" in Load command though, as that is no longer possible.  
+        #self.RAWDataProc.readHeaderFile(self.RAWDataProc.DATADICT["INFO"]["headerstr"])
         self.headerstr = self.RAWDataProc.DATADICT["INFO"]["headerstr"]
  
         self.RAWDataProc.pulseType = self.RAWDataProc.DATADICT["INFO"]["pulseType"] 

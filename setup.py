@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
-      version='1.0.19',
+      version='1.0.20',
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
       long_description_content_type='text/markdown',
