@@ -82,7 +82,7 @@ class AkvoYamlNode(yaml.YAMLObject):
     #    self.Import = OrderedDict( node["Import"] ) # {}
     #    self.Processing = OrderedDict( node["Processing"] ) 
     def __repr__(self):
-        return "%s(name=%r, Akvo_VESION=%r, Import=%r, Processing=%r)" % (
+        return "%s(name=%r, Akvo_VERSION=%r, Import=%r, Processing=%r)" % (
             #self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing )
             self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
             #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing)) 
@@ -760,12 +760,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
 
         self.YamlNode = AkvoYamlNode( )  #self.logText )
-        self.YamlNode.Akvo_VERSION = (yaml.load( self.logText )).Akvo_VERSION
-        self.YamlNode.Import = OrderedDict((yaml.load( self.logText )).Import)
-        self.YamlNode.Processing = OrderedDict((yaml.load( self.logText )).Processing)
-        #self.YamlNode.Akvo_VERSION =  2 #yaml.load( self.logText )["Akvo_VERSION"] #, Loader=yaml.RoundTripLoader) # offending line! 
-        #self.YamlNode = AkvoYamlNode( self.logText ) # offending line! 
-        #print("import type", type( self.YamlNode.Processing ))
+       
+        self.YamlNode.Akvo_VERSION = (yaml.load( self.logText, Loader=yaml.Loader )).Akvo_VERSION
+        self.YamlNode.Import = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
+        self.YamlNode.Processing = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
         self.Log() 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         #except KeyError:
