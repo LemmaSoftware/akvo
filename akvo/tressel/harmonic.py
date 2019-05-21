@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import least_squares 
 from scipy.optimize import minimize
 from scipy.linalg import lstsq as sclstsq
+import scipy.linalg as lin
 
 def harmonic2 ( f1, f2, sN, fs, nK, t ): 
     """
@@ -14,32 +15,32 @@ def harmonic2 ( f1, f2, sN, fs, nK, t ):
         nK = number of harmonics to calculate 
         t = time samples 
     """
-    print("building matrix ")
+    print("building matrix 2")
     A = np.zeros( (len(t),  4*nK) )
     #f1 = f1MHz * 1e-3
     #f2 = f2MHz * 1e-3
     for irow, tt in enumerate(t): 
-        A[irow, 0:2*nK:2] = np.cos( np.arange(nK)*2*np.pi*(f1/fs)*irow )
-        A[irow, 1:2*nK:2] = np.sin( np.arange(nK)*2*np.pi*(f1/fs)*irow )
-        A[irow, 2*nK::2] = np.cos( np.arange(nK)*2*np.pi*(f2/fs)*irow )
+        A[irow, 0:2*nK:2]  = np.cos( np.arange(nK)*2*np.pi*(f1/fs)*irow )
+        A[irow, 1:2*nK:2]  = np.sin( np.arange(nK)*2*np.pi*(f1/fs)*irow )
+        A[irow, 2*nK::2]   = np.cos( np.arange(nK)*2*np.pi*(f2/fs)*irow )
         A[irow, 2*nK+1::2] = np.sin( np.arange(nK)*2*np.pi*(f2/fs)*irow )
 
     v = np.linalg.lstsq(A, sN, rcond=1e-8)
     #v = sclstsq(A, sN) #, rcond=1e-6)
 
-    alpha = v[0][0:2*nK:2]
-    beta  = v[0][1:2*nK:2]
+    alpha = v[0][0:2*nK:2] + 1e-16
+    beta  = v[0][1:2*nK:2] + 1e-16
     amp = np.sqrt( alpha**2 + beta**2 )
     phase = np.arctan(- beta/alpha)
     
-    alpha2 = v[0][2*nK::2]
-    beta2  = v[0][2*nK+1::2]
+    alpha2 = v[0][2*nK::2]   + 1e-16
+    beta2  = v[0][2*nK+1::2] + 1e-16
     amp2 = np.sqrt( alpha2**2 + beta2**2 )
     phase2 = np.arctan(- beta2/alpha2)
 
     h = np.zeros(len(t))
     for ik in range(nK):
-        h += np.sqrt(alpha[ik]**2 + beta[ik]**2) * np.cos( 2.*np.pi*ik * (f1/fs) * np.arange(0, len(t), 1 )  + phase[ik] ) \
+        h += np.sqrt( alpha[ik]**2 + beta[ik]**2)  * np.cos( 2.*np.pi*ik * (f1/fs) * np.arange(0, len(t), 1 )  + phase[ik] ) \
            + np.sqrt(alpha2[ik]**2 + beta2[ik]**2) * np.cos( 2.*np.pi*ik * (f2/fs) * np.arange(0, len(t), 1 )  + phase2[ik] )
 
     return sN-h
@@ -60,10 +61,17 @@ def harmonic ( f0, sN, fs, nK, t ):
         A[irow, 0::2] = np.cos( np.arange(nK)*2*np.pi*(f0/fs)*irow )
         A[irow, 1::2] = np.sin( np.arange(nK)*2*np.pi*(f0/fs)*irow )
 
-    v = np.linalg.lstsq(A, sN, rcond=None) #, rcond=1e-8)
-
+    v = np.linalg.lstsq(A, sN, rcond=1e-16) # rcond=None) #, rcond=1e-8)
+    #v = sclstsq(A, sN) #, rcond=1e-6)
     alpha = v[0][0::2]
     beta  = v[0][1::2]
+    
+    #print("Solving A A.T")
+    #v = lin.solve(np.dot(A,A.T).T, sN) #, rcond=1e-6)
+    #v = np.dot(A.T, v)
+    #v = np.dot(np.linalg.inv(np.dot(A.T, A)), np.dot(A.T, sN))
+    #alpha = v[0::2]
+    #beta  = v[1::2]
 
     amp = np.sqrt( alpha**2 + beta**2 )
     phase = np.arctan(- beta/alpha)
@@ -75,6 +83,59 @@ def harmonic ( f0, sN, fs, nK, t ):
         h += np.sqrt(alpha[ik]**2 + beta[ik]**2) * np.cos( 2.*np.pi*ik * (f0/fs) * np.arange(0, len(t), 1 )  + phase[ik] )
 
     #plt.matshow(A, aspect='auto')
+    #plt.colorbar()
+
+    #plt.figure()
+    #plt.plot(alpha)
+    #plt.plot(beta)
+    #plt.plot(amp)
+
+    #plt.figure()
+    #plt.plot(h)
+    #plt.title("modelled noise")
+    return sN-h
+
+
+def harmonicEuler ( f0, sN, fs, nK, t ): 
+    """
+    Performs inverse calculation of harmonics contaminating a signal. 
+    Args:
+        f0 = base frequency of the sinusoidal noise 
+        sN = signal containing noise 
+        fs = sampling frequency
+        nK = number of harmonics to calculate 
+        t = time samples 
+    """
+    print("building Euler matrix ")
+    A = np.zeros( (len(t),  nK), dtype=np.complex64)
+    for irow, tt in enumerate(t): 
+        #A[irow, 0::2] = np.cos( np.arange(nK)*2*np.pi*(f0/fs)*irow )
+        #A[irow, 1::2] = np.sin( np.arange(nK)*2*np.pi*(f0/fs)*irow )
+        A[irow,:] = np.exp( 1j* np.arange(nK)*2*np.pi*(f0/fs)*irow )
+
+
+    v = np.linalg.lstsq(A, sN, rcond=None) # rcond=None) #, rcond=1e-8)
+    #v = sclstsq(A, sN) #, rcond=1e-6)
+    alpha = np.real(v[0]) #[0::2]
+    beta  = np.imag(v[0]) #[1::2]
+    
+    #print("Solving A A.T")
+    #v = lin.solve(np.dot(A,A.T).T, sN) #, rcond=1e-6)
+    #v = np.dot(A.T, v)
+    #v = np.dot(np.linalg.inv(np.dot(A.T, A)), np.dot(A.T, sN))
+    #alpha = v[0::2]
+    #beta  = v[1::2]
+
+    amp = np.abs(v[0])     #np.sqrt( alpha**2 + beta**2 )
+    phase = np.angle(v[0]) # np.arctan(- beta/alpha)
+
+    #print("amp:", amp, " phase", phase)
+
+    h = np.zeros(len(t))
+    for ik in range(nK):
+        h +=  2*amp[ik] * np.cos( 2.*np.pi*ik * (f0/fs) * np.arange(0, len(t), 1 )  + phase[ik] )
+
+    #plt.matshow(np.imag(A), aspect='auto')
     #plt.colorbar()
 
     #plt.figure()
@@ -102,7 +163,7 @@ def jacobian( f0, sN, fs, nK, t):
 
 
 def harmonicNorm ( f0, sN, fs, nK, t ): 
-    return np.linalg.norm( harmonic(f0, sN, fs, nK, t))
+    return np.linalg.norm( harmonicEuler(f0, sN, fs, nK, t))
 
 def harmonic2Norm ( f0, sN, fs, nK, t ): 
     return np.linalg.norm(harmonic2(f0[0], f0[1], sN, fs, nK, t))
@@ -112,13 +173,13 @@ def minHarmonic(f0, sN, fs, nK, t):
     print("minHarmonic", f0, fs, nK, " guess=", f02)
     res = minimize( harmonicNorm, np.array((f0)), args=(sN, fs, nK, t)) #, method='Nelder-Mead' )# jac=None, hess=None, bounds=None )
     print(res)
-    return harmonic(res.x[0], sN, fs, nK, t)
+    return harmonicEuler(res.x[0], sN, fs, nK, t)
 
 def minHarmonic2(f1, f2, sN, fs, nK, t):
     #f02 = guessf0(sN, fs)
     #print("minHarmonic2", f0, fs, nK, " guess=", f02)
     #methods with bounds, L-BFGS-B, TNC, SLSQP
-    res = minimize( harmonic2Norm, np.array((f1,f2)), args=(sN, fs, nK, t)) #, bounds=((f1-1.,f1+1.0),(f2-1.0,f2+1.0)), method='SLSQP' )
+    res = minimize( harmonic2Norm, np.array((f1,f2)), args=(sN, fs, nK, t)) #, bounds=((f1-1.,f1+1.0),(f2-1.0,f2+1.0)), method='TNC' )
     print(res)
     return harmonic2(res.x[0], res.x[1], sN, fs, nK, t) 
 
@@ -138,32 +199,35 @@ if __name__ == "__main__":
 
     f0 = 60      # Hz
     f1 = 60      # Hz
-    delta  = 0 #np.random.rand() 
+    delta  = np.random.rand() 
     delta2 = 0 #np.random.rand() 
     print("delta", delta)
     fs = 10000   # GMR 
     t = np.arange(0, 1, 1/fs)
-    phi = 0 #np.random.rand() 
+    phi = np.random.rand() 
     phi2 = 0 # np.random.rand() 
     A =  1.0
     A2 = 0.0 
-    nK = 10
+    A3 = 0.0 
+    nK = 35
     T2 = .200
-    sN  = A * np.sin( ( 1*(delta  +f0))*2*np.pi*t + phi ) + \
-          A2* np.sin( ( 1*(delta2 +f1))*2*np.pi*t + phi2 ) + \
+    sN  = A *np.sin( ( 1*(delta  +f0))*2*np.pi*t + phi ) + \
+          A2*np.sin( ( 1*(delta2 +f1))*2*np.pi*t + phi2 ) + \
               np.random.normal(0,.1,len(t)) + \
-              + np.exp( -t/T2  ) 
+              + A3*np.exp( -t/T2  ) 
 
-    sNc = A * np.sin(  (1*(delta +f0))*2*np.pi*t + phi ) + \
-          A2* np.sin(  (1*(delta2+f1))*2*np.pi*t + phi2 ) + \
-              + np.exp( -t/T2  ) 
+    sNc = A *np.sin(  (1*(delta +f0))*2*np.pi*t + phi ) + \
+          A2*np.sin(  (1*(delta2+f1))*2*np.pi*t + phi2 ) + \
+              + A3*np.exp( -t/T2  ) 
 
 
     guessf0(sN, fs)
 
-    #h = harmonic( f0, sN, fs, nK, t) 
+    #h = harmonicEuler( f0, sN, fs, nK, t) 
     #h = minHarmonic2( f0, f1, sN, fs, nK, t) 
-    h = harmonic2( f0, f1, sN, fs, nK, t) 
+    #h = harmonic2( f0, f1, sN, fs, nK, t) 
+    
+    h = minHarmonic( f0, sN, fs, nK, t) 
 
     plt.figure()
     plt.plot(t, sN, label="sN")

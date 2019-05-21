@@ -558,7 +558,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                         
                         self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 40, self.DATADICT[pulse]["TIMES"] ) 
                         #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-.25, f0+.25, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
-                        #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 50, self.DATADICT[pulse]["TIMES"] ) 
+                        #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonicEuler( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
                
                         # plot
                         if plot:

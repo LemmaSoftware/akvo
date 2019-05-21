@@ -1322,7 +1322,7 @@ def main():
     logo2 = pkg_resources.resource_filename(__name__, 'akvo2.png')
     qApp = QtWidgets.QApplication(sys.argv)
 
-    ssplash = False
+    ssplash = True
     if ssplash:
         pixmap = QtGui.QPixmap(logo)
         splash = QtWidgets.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
