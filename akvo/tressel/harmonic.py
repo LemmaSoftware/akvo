@@ -103,7 +103,7 @@ def minHarmonic(f0, sN, fs, nK, t):
     f02 = guessf0(sN, fs)
     print("minHarmonic", f0, fs, nK, " guess=", f02)
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
-    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, nK, t), jac='2-point', method='BFGS') #, jac=jacEuler) #, hess=None, bounds=None )
+    res = minimize(harmonicNorm, np.array((f02)), args=(sN, fs, nK, t), jac='2-point', method='BFGS') #, jac=jacEuler) #, hess=None, bounds=None )
     print(res)
     return harmonicEuler(res.x[0], sN, fs, nK, t)#[0]
 
