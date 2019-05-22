@@ -109,69 +109,73 @@ def harmonicEuler ( f0, sN, fs, nK, t ):
     print("building Euler matrix ")
     A = np.zeros( (len(t),  nK), dtype=np.complex64)
     for irow, tt in enumerate(t): 
-        #A[irow, 0::2] = np.cos( np.arange(nK)*2*np.pi*(f0/fs)*irow )
-        #A[irow, 1::2] = np.sin( np.arange(nK)*2*np.pi*(f0/fs)*irow )
-        A[irow,:] = np.exp( 1j* np.arange(nK)*2*np.pi*(f0/fs)*irow )
-
+        A[irow,:] = np.exp(1j* np.arange(1,nK+1) * 2*np.pi* (f0/fs) * irow)
 
     v = np.linalg.lstsq(A, sN, rcond=None) # rcond=None) #, rcond=1e-8)
-    #v = sclstsq(A, sN) #, rcond=1e-6)
     alpha = np.real(v[0]) #[0::2]
     beta  = np.imag(v[0]) #[1::2]
-    
-    #print("Solving A A.T")
-    #v = lin.solve(np.dot(A,A.T).T, sN) #, rcond=1e-6)
-    #v = np.dot(A.T, v)
-    #v = np.dot(np.linalg.inv(np.dot(A.T, A)), np.dot(A.T, sN))
-    #alpha = v[0::2]
-    #beta  = v[1::2]
 
     amp = np.abs(v[0])     #np.sqrt( alpha**2 + beta**2 )
     phase = np.angle(v[0]) # np.arctan(- beta/alpha)
 
-    #print("amp:", amp, " phase", phase)
+    h = np.zeros(len(t))
+    for ik in range(nK):
+        h +=  2*amp[ik] * np.cos( 2.*np.pi*(ik+1) * (f0/fs) * np.arange(0, len(t), 1 )  + phase[ik] )
+
+    return sN-h
+
+def harmonicEuler2 ( f0, f1, sN, fs, nK, t ): 
+    """
+    Performs inverse calculation of harmonics contaminating a signal. 
+    Args:
+        f0 = base frequency of the sinusoidal noise 
+        sN = signal containing noise 
+        fs = sampling frequency
+        nK = number of harmonics to calculate 
+        t = time samples 
+    """
+    print("building Euler matrix 2 ")
+    A = np.zeros( (len(t),  2*nK), dtype=np.complex64)
+    for irow, tt in enumerate(t): 
+        A[irow,0:nK]    = np.exp( 1j* np.arange(1,nK+1)*2*np.pi*(f0/fs)*irow )
+        A[irow,nK:2*nK] = np.exp( 1j* np.arange(1,nK+1)*2*np.pi*(f1/fs)*irow )
+
+    v = np.linalg.lstsq(A, sN, rcond=None) # rcond=None) #, rcond=1e-8)
+
+    amp = np.abs(v[0][0:nK])     
+    phase = np.angle(v[0][0:nK]) 
+    amp1 = np.abs(v[0][nK:2*nK])     
+    phase1 = np.angle(v[0][nK:2*nK]) 
 
     h = np.zeros(len(t))
     for ik in range(nK):
-        h +=  2*amp[ik] * np.cos( 2.*np.pi*ik * (f0/fs) * np.arange(0, len(t), 1 )  + phase[ik] )
+        h +=  2*amp[ik]  * np.cos( 2.*np.pi*(ik+1) * (f0/fs) * np.arange(0, len(t), 1 )  + phase[ik] ) + \
+              2*amp1[ik] * np.cos( 2.*np.pi*(ik+1) * (f1/fs) * np.arange(0, len(t), 1 )  + phase1[ik] )
 
-    #plt.matshow(np.imag(A), aspect='auto')
-    #plt.colorbar()
-
-    #plt.figure()
-    #plt.plot(alpha)
-    #plt.plot(beta)
-    #plt.plot(amp)
-
-    #plt.figure()
-    #plt.plot(h)
-    #plt.title("modelled noise")
     return sN-h
 
-def jacobian( f0, sN, fs, nK, t):
+def jacEuler( f0, sN, fs, nK, t):
     print("building Jacobian matrix ")
-    A = np.zeros( (len(t),  2*nK) )
-    for irow, tt in enumerate(t): 
-        #A[irow, 0::2] = np.cos( np.arange(nK)*2*np.pi*(f0/fs)*irow )
-        #A[irow, 1::2] = np.sin( np.arange(nK)*2*np.pi*(f0/fs)*irow )
-        # brutal 
-        for k, ik in enumerate( np.arange(0, 2*nK, 2) ):
-            #A[irow, ik  ] = np.cos( k*2*np.pi*(f0/fs)*irow )
-            #A[irow, ik+1] = np.sin( k*2*np.pi*(f0/fs)*irow )    
-            A[irow, ik  ] = - (2.*np.pi*k*irow * sin((2.*np.pi*irow*f0)/fs)) / fs
-            A[irow, ik+1] =   (2.*np.pi*k*irow * cos((2.*np.pi*irow*f0)/fs)) / fs
-
+    J = np.zeros( (len(t),  nK), dtype=np.complex64 )
+    for it, tt in enumerate(t):
+        for ik, k in enumerate( np.arange(0, nK) ):
+            c = 1j*2.*np.pi*(ik+1.)*it
+            J[it, ik] = c*np.exp( c*f0/fs ) / fs 
+    #plt.matshow(np.imag(J), aspect='auto')
+    #plt.show()
+    return J
 
 def harmonicNorm ( f0, sN, fs, nK, t ): 
-    return np.linalg.norm( harmonicEuler(f0, sN, fs, nK, t))
+    return np.linalg.norm( harmonicEuler(f0, sN, fs, nK, t) )
 
 def harmonic2Norm ( f0, sN, fs, nK, t ): 
-    return np.linalg.norm(harmonic2(f0[0], f0[1], sN, fs, nK, t))
+    return np.linalg.norm(harmonicEuler2(f0[0], f0[1], sN, fs, nK, t))
 
 def minHarmonic(f0, sN, fs, nK, t):
     f02 = guessf0(sN, fs)
     print("minHarmonic", f0, fs, nK, " guess=", f02)
-    res = minimize( harmonicNorm, np.array((f0)), args=(sN, fs, nK, t)) #, method='Nelder-Mead' )# jac=None, hess=None, bounds=None )
+    # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
+    res = minimize( harmonicNorm, np.array((f0)), args=(sN, fs, nK, t)) #, method='CG', jac=jacEuler) #, hess=None, bounds=None )
     print(res)
     return harmonicEuler(res.x[0], sN, fs, nK, t)
 
@@ -181,7 +185,7 @@ def minHarmonic2(f1, f2, sN, fs, nK, t):
     #methods with bounds, L-BFGS-B, TNC, SLSQP
     res = minimize( harmonic2Norm, np.array((f1,f2)), args=(sN, fs, nK, t)) #, bounds=((f1-1.,f1+1.0),(f2-1.0,f2+1.0)), method='TNC' )
     print(res)
-    return harmonic2(res.x[0], res.x[1], sN, fs, nK, t) 
+    return harmonicEuler2(res.x[0], res.x[1], sN, fs, nK, t) 
 
 def guessf0( sN, fs ):
     S = np.fft.fft(sN)
@@ -198,17 +202,17 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt 
 
     f0 = 60      # Hz
-    f1 = 60      # Hz
+    f1 = 62      # Hz
     delta  = np.random.rand() 
-    delta2 = 0 #np.random.rand() 
+    delta2 =  np.random.rand() 
     print("delta", delta)
     fs = 10000   # GMR 
     t = np.arange(0, 1, 1/fs)
-    phi = np.random.rand() 
-    phi2 = 0 # np.random.rand() 
+    phi =  np.random.rand() 
+    phi2 = np.random.rand() 
     A =  1.0
-    A2 = 0.0 
-    A3 = 0.0 
+    A2 = 0.25 
+    A3 = 1.0 
     nK = 35
     T2 = .200
     sN  = A *np.sin( ( 1*(delta  +f0))*2*np.pi*t + phi ) + \
@@ -223,11 +227,14 @@ if __name__ == "__main__":
 
     guessf0(sN, fs)
 
+    # single freq
     #h = harmonicEuler( f0, sN, fs, nK, t) 
-    #h = minHarmonic2( f0, f1, sN, fs, nK, t) 
-    #h = harmonic2( f0, f1, sN, fs, nK, t) 
+    #h = minHarmonic( f0, sN, fs, nK, t) 
     
-    h = minHarmonic( f0, sN, fs, nK, t) 
+    # two freqs 
+    h = minHarmonic2( f0, f1, sN, fs, nK, t) 
+    #h = harmonic2( f0, f1, sN, fs, nK, t) 
+    #h = harmonicEuler2( f0, f1, sN, fs, nK, t) 
 
     plt.figure()
     plt.plot(t, sN, label="sN")
