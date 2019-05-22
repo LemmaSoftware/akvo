@@ -106,10 +106,21 @@ def harmonicEuler ( f0, sN, fs, nK, t ):
         nK = number of harmonics to calculate 
         t = time samples 
     """
-    print("building Euler matrix ")
-    A = np.zeros( (len(t),  nK), dtype=np.complex64)
-    for irow, tt in enumerate(t): 
-        A[irow,:] = np.exp(1j* np.arange(1,nK+1) * 2*np.pi* (f0/fs) * irow)
+    
+    #print("building Euler matrix ")
+    #A = np.zeros( (len(t),  nK), dtype=np.complex64)
+    #for irow, tt in enumerate(t): 
+    #    A[irow,:] = np.exp(1j* np.arange(1,nK+1) * 2*np.pi* (f0/fs) * irow)
+    
+    #AA = np.zeros( (len(t),  nK), dtype=np.complex64)
+    A = np.exp(1j* np.tile( np.arange(1,nK+1),(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile(np.arange(len(t)),(nK,1)).T  )
+    #AA =  np.tile(np.arange(len(t)), (nK,1)).T 
+
+    #plt.matshow( np.imag(A), aspect='auto' )
+    #plt.matshow( np.real(AA), aspect='auto' )
+    #plt.show()
+    #exit()
+    #print ("A norm", np.linalg.norm(A - AA))
 
     v = np.linalg.lstsq(A, sN, rcond=None) # rcond=None) #, rcond=1e-8)
     alpha = np.real(v[0]) #[0::2]
@@ -175,7 +186,7 @@ def minHarmonic(f0, sN, fs, nK, t):
     f02 = guessf0(sN, fs)
     print("minHarmonic", f0, fs, nK, " guess=", f02)
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
-    res = minimize( harmonicNorm, np.array((f0)), args=(sN, fs, nK, t)) #, method='CG', jac=jacEuler) #, hess=None, bounds=None )
+    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, nK, t)) #, method='CG', jac=jacEuler) #, hess=None, bounds=None )
     print(res)
     return harmonicEuler(res.x[0], sN, fs, nK, t)
 
@@ -183,7 +194,7 @@ def minHarmonic2(f1, f2, sN, fs, nK, t):
     #f02 = guessf0(sN, fs)
     #print("minHarmonic2", f0, fs, nK, " guess=", f02)
     #methods with bounds, L-BFGS-B, TNC, SLSQP
-    res = minimize( harmonic2Norm, np.array((f1,f2)), args=(sN, fs, nK, t)) #, bounds=((f1-1.,f1+1.0),(f2-1.0,f2+1.0)), method='TNC' )
+    res = minimize( harmonic2Norm, np.array((f1,f2)), args=(sN, fs, nK, t), jac='2-point') #, bounds=((f1-1.,f1+1.0),(f2-1.0,f2+1.0)), method='TNC' )
     print(res)
     return harmonicEuler2(res.x[0], res.x[1], sN, fs, nK, t) 
 
@@ -202,7 +213,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt 
 
     f0 = 60      # Hz
-    f1 = 62      # Hz
+    f1 = 61      # Hz
     delta  = np.random.rand() 
     delta2 =  np.random.rand() 
     print("delta", delta)
@@ -211,7 +222,7 @@ if __name__ == "__main__":
     phi =  np.random.rand() 
     phi2 = np.random.rand() 
     A =  1.0
-    A2 = 0.25 
+    A2 = 0.0 
     A3 = 1.0 
     nK = 35
     T2 = .200
@@ -229,10 +240,10 @@ if __name__ == "__main__":
 
     # single freq
     #h = harmonicEuler( f0, sN, fs, nK, t) 
-    #h = minHarmonic( f0, sN, fs, nK, t) 
+    h = minHarmonic( f0, sN, fs, nK, t) 
     
     # two freqs 
-    h = minHarmonic2( f0, f1, sN, fs, nK, t) 
+    #h = minHarmonic2( f0, f1, sN, fs, nK, t) 
     #h = harmonic2( f0, f1, sN, fs, nK, t) 
     #h = harmonicEuler2( f0, f1, sN, fs, nK, t) 
 
