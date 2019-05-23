@@ -1893,7 +1893,8 @@ class GMRDataProcessor(SNMRDataProcessor):
         for it in range(len(impulse[0])):
             if abs(impulse[1][0][it][0]) >= .1 * gpass:# gpass:
                 self.fe = impulse[0][it]
-           
+         
+        canvas.draw() 
         return [bord, self.fe] 
 
     def downsample(self, truncate, dec, plot, canvas):

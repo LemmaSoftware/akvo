@@ -1252,13 +1252,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.gpassSpinBox.value(), \
                 self.ui.gstopSpinBox.value(), \
                 str(self.ui.fTypeComboBox.currentText()),
-                self.ui.mplwidget)
+                self.ui.mplwidget
+        )
         self.ui.lcdNumberFilterOrder.display(bord)
         self.ui.lcdNumberFTauDead.display(1e3*fe)
-        #self.ui.lcdNumberFilterOrder.display(bord)
         self.ui.bandPassGO.setEnabled(1)
-        #   self.ui.lcdNumberTauPulse2.display(1e3*self.RAWDataProc.pulseLength[1])
-    
+        # Hack for MacOS to force refresh of group box and plot
+        self.ui.mplwidget.hide()
+        self.ui.mplwidget.show()
+        self.ui.BandPassBox.hide()
+        self.ui.BandPassBox.show()
+ 
     def windowFilter(self):
         
         if "Window filter" not in self.YamlNode.Processing.keys():
@@ -1295,6 +1299,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget )
 
         self.ui.lcdWinDead.display(dead)
+        # Hack for MacOS to force refresh of group box and plot
+        self.ui.mplwidget.hide()
+        self.ui.mplwidget.show()
+        self.ui.windowFilterGroupBox.hide()
+        self.ui.windowFilterGroupBox.show()
 
     def updateProgressBar(self, percent):
         self.ui.barProgress.setValue(percent)
