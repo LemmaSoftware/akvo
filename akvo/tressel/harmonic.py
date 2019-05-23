@@ -4,18 +4,23 @@ from scipy.optimize import minimize
 from scipy.linalg import lstsq as sclstsq
 import scipy.linalg as lin
 
-def harmonicEuler ( f0, sN, fs, nK, t ): 
+#def harmonicEuler ( f0, sN, fs, nK, t ): 
+def harmonicEuler ( sN, fs, t, f0, k1, kN, ks ): 
     """
     Performs inverse calculation of harmonics contaminating a signal. 
     Args:
-        f0 = base frequency of the sinusoidal noise 
         sN = signal containing noise 
         fs = sampling frequency
-        nK = number of harmonics to calculate 
         t = time samples 
+        f0 = base frequency of the sinusoidal noise 
+        nK = number of harmonics to calculate 
+
     """
     
-    A = np.exp(1j* np.tile( np.arange(1,nK+1),(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK,1)).T  )
+    #A = np.exp(1j* np.tile( np.arange(1,nK+1),(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK,1)).T  )
+    KK = np.arange(k1, kN+1, 1/ks )
+    nK = len(KK)
+    A = np.exp(1j* np.tile(KK,(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK,1)).T  )
 
     v = np.linalg.lstsq(A, sN, rcond=None) 
     alpha = np.real(v[0]) 
@@ -25,45 +30,23 @@ def harmonicEuler ( f0, sN, fs, nK, t ):
     phase = np.angle(v[0]) 
 
     h = np.zeros(len(t))
-    for ik in range(nK):
-        h +=  2*amp[ik] * np.cos( 2.*np.pi*(ik+1) * (f0/fs) * np.arange(1, len(t)+1, 1 )  + phase[ik] )
+    #for ik in range(nK):
+    #    h +=  2*amp[ik] * np.cos( 2.*np.pi*(ik+1) * (f0/fs) * np.arange(1, len(t)+1, 1 )  + phase[ik] )
+    for ik, k in enumerate(KK):
+        h +=  2*amp[ik] * np.cos( 2.*np.pi*(k) * (f0/fs) * np.arange(1, len(t)+1, 1 )  + phase[ik] )
     
     return sN-h
     
     res = sN-h # residual 
 
-    # calculate jacobian 
-    #J = jacEuler(f0, sN, fs, nK, t)
-    #plt.matshow(np.real(J), aspect='auto')
-    
-    #Jv = J * np.tile(v[0], (len(t) ,1)) 
-    #plt.matshow(np.real(Jv), aspect='auto')
-    
-    #print ("shape J",  np.shape(J))
-    #print ("shape v",  np.shape(v[0]))
-    #print ("shape Jv",  np.shape(Jv))
+def harmonicNorm (f0, sN, fs, t, k1, kN, ks): 
+    return np.linalg.norm( harmonicEuler(sN, fs, t, f0, k1, kN, ks)) 
 
-    #plt.figure()
-    #plt.plot(v[0])
-    #plt.figure()
-    #plt.plot(Jv)
-    #plt.show()
-    #exit()
-
-    #jac =  np.linalg.norm( np.dot(Jv.T, res)) 
-    #print("norm ||", jac , "||", " at freq", f0)
-
-    #return res, jac 
-
-
-def jacEuler( f0, sN, fs, nK, t):
-    print("building Jacobian matrix ")
-    J = np.zeros( (len(t),  nK), dtype=np.complex64 )
-    for it, tt in enumerate(t):
-        for ik, k in enumerate( np.arange(0, nK) ):
-            c = 1j*2.*np.pi*(ik+1.)
-            J[it, ik] = (c*np.exp(it*c*f0/fs)) / fs 
-    return J
+def minHarmonic(sN, fs, t, f0, k1, kN, ks):
+    # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
+    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
+    print(res)
+    return harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks)#[0]
 
 def harmonicEuler2 ( f0, f1, sN, fs, nK, t ): 
     """
@@ -93,19 +76,18 @@ def harmonicEuler2 ( f0, f1, sN, fs, nK, t ):
 
     return sN-h
 
-def harmonicNorm ( f0, sN, fs, nK, t ): 
-    return np.linalg.norm( harmonicEuler(f0, sN, fs, nK, t) )
-
 def harmonic2Norm ( f0, sN, fs, nK, t ): 
     return np.linalg.norm(harmonicEuler2(f0[0], f0[1], sN, fs, nK, t))
 
-def minHarmonic(f0, sN, fs, nK, t):
-    f02 = guessf0(sN, fs)
-    print("minHarmonic", f0, fs, nK, " guess=", f02)
-    # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
-    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, nK, t), jac='2-point', method='BFGS') #, jac=jacEuler) #, hess=None, bounds=None )
-    print(res)
-    return harmonicEuler(res.x[0], sN, fs, nK, t)#[0]
+#def minHarmonic(f0, sN, fs, nK, t):
+#    f02 = guessf0(sN, fs)
+#    print("minHarmonic", f0, fs, nK, " guess=", f02)
+#    # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
+#    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, nK, t), jac='2-point', method='BFGS') #, jac=jacEuler) #, hess=None, bounds=None )
+#    print(res)
+#    return harmonicEuler(res.x[0], sN, fs, nK, t)#[0]
+
+
 
 def minHarmonic2(f1, f2, sN, fs, nK, t):
     #f02 = guessf0(sN, fs)

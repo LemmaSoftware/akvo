@@ -517,7 +517,18 @@ class GMRDataProcessor(SNMRDataProcessor):
         canvas.draw()
         self.doneTrigger.emit() 
 
-    def harmonicModel(self, nF, nK, f0, f1, plot, canvas):
+    #def harmonicModel(self, nF, nK, f0, f1, plot, canvas):
+    
+    def harmonicModel(self, nF, f0, f0K1, f0KN, f0Ks, f1, plot, canvas):
+        """ nF = number of base frequencies, must be 1 or 2 
+            f0 = first base frequency  
+            f0K1 = first harmonic to model for first base frequency 
+            f0KN = last harmonic to model for the first base frequency 
+            f0Ks = subharmonic spacing, set to 1 for no subharmonics.
+            plot = should Akvo plot the results 
+            f1 = second base frequency  
+            canvas = mpl plotting axis      
+        """
         #print("harmonic modelling...", f0)
         #plot = True
         if plot:
@@ -543,7 +554,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                                 label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
 
                         if nF == 1:
-                            self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
+                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
+                            self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
+                                f0, f0K1, f0KN, f0Ks ) 
                         elif nF == 2:
                             self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f1+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
 
@@ -559,7 +572,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                                 label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
                         
                         if nF == 1:
-                            self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
+                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
+                            self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
+                                f0, f0K1, f0KN, f0Ks ) 
                         elif nF == 2:
                             self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f1+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
                         #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonicEuler( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 

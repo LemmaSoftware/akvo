@@ -168,6 +168,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.calcQGO.pressed.connect( self.calcQ )
         self.ui.FDSmartStackGO.pressed.connect( self.FDSmartStack )
         self.ui.harmonicGO.pressed.connect( self.harmonicModel )       
+
+        self.ui.f0K1Spin.valueChanged.connect( self.LCDHarmonics )
+        self.ui.f0KNSpin.valueChanged.connect( self.LCDHarmonics )
+        self.ui.f0KsSpin.valueChanged.connect( self.LCDHarmonics )
+        self.ui.f0Spin.valueChanged.connect( self.LCDHarmonics )
  
         self.ui.plotQD.setEnabled(False) 
         self.ui.plotQD.pressed.connect( self.plotQD )
@@ -228,7 +233,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.loopTableWidget.setDragEnabled(False)
         #self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
-        self.loops = {}        
+        self.loops = {}          
 
         ##########################################################################
         # layer Table 
@@ -253,6 +258,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
                 self.ui.layerTableWidget.setItem(ir, ic, pCell)
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
+
+    def LCDHarmonics(self):
+        self.ui.lcdH1F.setEnabled(True)
+        self.ui.lcdH1F.display( self.ui.f0Spin.value() * self.ui.f0K1Spin.value() )
+        self.ui.lcdHNF.setEnabled(True)
+        self.ui.lcdHNF.display( self.ui.f0Spin.value() * self.ui.f0KNSpin.value() )
+        self.ui.lcdf0NK.setEnabled(True)
+        self.ui.lcdf0NK.display( (self.ui.f0KNSpin.value()+1-self.ui.f0K1Spin.value()) * self.ui.f0KsSpin.value() )
 
     def closeTabs(self):
         #self.ui.ProcTabs.removeTab(idx)    
@@ -1084,12 +1097,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def harmonicModel(self):
 
-
         if "Harmonic modelling" not in self.YamlNode.Processing.keys():
             self.YamlNode.Processing["Harmonic modelling"] = {}
             self.YamlNode.Processing["Harmonic modelling"]["NF"] = str( self.ui.NHarmonicsFreqsSpin.value() ) 
-            self.YamlNode.Processing["Harmonic modelling"]["Nk"] = str( self.ui.NKHarmonicsSpin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f0"] = str( self.ui.f0Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f0K1"] = str( self.ui.f0K1Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f0KN"] = str( self.ui.f0KNSpin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f0Ks"] = str( self.ui.f0KsSpin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f1Spin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["Segments"] = str( 1 ) # Future 
             self.Log()
@@ -1104,11 +1117,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         thread.start_new_thread(self.RAWDataProc.harmonicModel, \
                 ( \
                  self.ui.NHarmonicsFreqsSpin.value(), \
-                 self.ui.NKHarmonicsSpin.value(), \
                  self.ui.f0Spin.value(), \
+                 self.ui.f0K1Spin.value(), \
+                 self.ui.f0KNSpin.value(), \
+                 self.ui.f0KsSpin.value(), \
                  self.ui.f1Spin.value(), \
                  self.ui.plotHarmonic.isChecked(), \
-                 self.ui.mplwidget) \
+                 self.ui.mplwidget \
+                ) \
         )
 
     def FDSmartStack(self):
