@@ -768,7 +768,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         #except KeyError:
         #    pass
-       
         # Remove "Saved" and "Loaded" from processing flow 
         #if "Loaded" not in self.YamlNode.Processing.keys():
         #    self.YamlNode.Processing["Loaded"] = []
@@ -783,14 +782,27 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberNQ.setEnabled(True)
 
         self.ui.headerFileBox.setEnabled(True)
-        self.ui.headerFileBox.setChecked( False )
+        self.ui.headerFileBox.setChecked( True )
+        self.headerBoxShrink() 
         #self.ui.headerBox2.setVisible(True) 
-        self.ui.inputRAWParametersBox.setEnabled(True)
+        self.ui.inputRAWParametersBox.setEnabled(False)
         self.ui.loadDataPushButton.setEnabled(True)
         
-        # make plots as you import the dataset
+        # make plots as you import the datasetmost
         self.ui.plotImportCheckBox.setEnabled(True)
         self.ui.plotImportCheckBox.setChecked(True)
+
+        # enable the LCDs
+        self.ui.lcdNumberFID1Length.setEnabled(1)
+        self.ui.lcdNumberFID2Length.setEnabled(1)
+        self.ui.lcdNumberResampFreq.setEnabled(1)
+        self.ui.lcdTotalDeadTime.setEnabled(1)
+        
+        self.ui.lcdTotalDeadTime.display( 1e3*self.RAWDataProc.DATADICT["INFO"]["deadTime"] )
+        self.ui.headerFileTextBrowser.clear( ) 
+        self.ui.headerFileTextBrowser.append( self.RAWDataProc.DATADICT["INFO"]["headerstr"] )
+            
+        self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0])
  
         # Update info from the header into the GUI
         self.ui.pulseTypeTextBrowser.clear()
@@ -798,7 +810,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberNuTx.display(self.RAWDataProc.transFreq)
         self.ui.lcdNumberTauPulse1.display(1e3*self.RAWDataProc.pulseLength[0])
         self.ui.lcdNumberTuneuF.display(self.RAWDataProc.TuneCapacitance)
-        self.ui.lcdNumberSampFreq.display(self.RAWDataProc.samp)
+        self.ui.lcdNumberResampFreq.display(self.RAWDataProc.samp)
+        self.ui.lcdNumberSampFreq.display(50000) # TODO, if non GMR is supported, query
         self.ui.lcdNumberNQ.display(self.RAWDataProc.nPulseMoments)
         self.ui.DeadTimeSpinBox.setValue(1e3*self.RAWDataProc.deadTime)
         self.ui.CentralVSpinBox.setValue( self.RAWDataProc.transFreq )
@@ -948,6 +961,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
 
     def disable(self):
+        self.ui.inputRAWParametersBox.setEnabled(False)
         self.ui.BandPassBox.setEnabled(False)
         self.ui.downSampleGroupBox.setEnabled(False)
         self.ui.windowFilterGroupBox.setEnabled(False)
@@ -991,7 +1005,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         # FD Adaptive filtering 
         self.ui.adaptFDBox.setEnabled(True)
-        self.ui.adaptFDBox.setChecked(True)
+        self.ui.adaptFDBox.setChecked(False)
+        
+        # Harmonic
+        self.ui.harmonicBox.setEnabled(True)
+        self.ui.harmonicBox.setChecked(True)
 
         # sum group box
         try:
@@ -1067,8 +1085,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def harmonicModel(self):
         self.lock("harmonic noise modelling")
         thread.start_new_thread(self.RAWDataProc.harmonicModel, \
-                (self.ui.f0Spin.value(), \
-                self.ui.mplwidget))
+                ( \
+                 self.ui.NHarmonicsFreqsSpin.value(), \
+                 self.ui.NKHarmonicsSpin.value(), \
+                 self.ui.f0Spin.value(), \
+                 self.ui.f1Spin.value(), \
+                 self.ui.plotHarmonic.isChecked(), \
+                 self.ui.mplwidget) \
+        )
 
     def FDSmartStack(self):
 
@@ -1171,7 +1195,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         thread.start_new_thread(self.RAWDataProc.downsample, \
                 (self.ui.truncateSpinBox.value(), \
-                self.ui.downSampleSpinBox.value(),
+                self.ui.downSampleSpinBox.value(), \
+                self.ui.dsPlot.isChecked(), \
                 self.ui.mplwidget))
 
     def quadDet(self):

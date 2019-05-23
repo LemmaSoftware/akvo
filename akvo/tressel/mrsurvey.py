@@ -517,9 +517,9 @@ class GMRDataProcessor(SNMRDataProcessor):
         canvas.draw()
         self.doneTrigger.emit() 
 
-    def harmonicModel(self, f0, canvas):
-        print("harmonic modelling...", f0)
-        plot = True
+    def harmonicModel(self, nF, nK, f0, f1, plot, canvas):
+        #print("harmonic modelling...", f0)
+        #plot = True
         if plot:
             canvas.reAx2()
             canvas.ax1.tick_params(axis='both', which='major', labelsize=8)
@@ -542,7 +542,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                             canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
                                 label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
 
-                        self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
+                        self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 45, self.DATADICT[pulse]["TIMES"] ) 
                         #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f0+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 30, self.DATADICT[pulse]["TIMES"] ) 
 
                         # plot
@@ -556,7 +556,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                             canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
                                 label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
                         
-                        self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
+                        self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 45, self.DATADICT[pulse]["TIMES"] ) 
                         #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f0+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 30, self.DATADICT[pulse]["TIMES"] ) 
                         #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonicEuler( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
                
@@ -1896,7 +1896,7 @@ class GMRDataProcessor(SNMRDataProcessor):
            
         return [bord, self.fe] 
 
-    def downsample(self, truncate, dec, canvas):
+    def downsample(self, truncate, dec, plot, canvas):
         """ Downsamples and truncates the raw signal. 
         """
         canvas.reAx2()
@@ -1932,24 +1932,24 @@ class GMRDataProcessor(SNMRDataProcessor):
                             self.DATADICT[pulse][ichan][ipm][istack] = self.DATADICT[pulse][ichan][ipm][istack][0:itrunc]
                             RSTIMES = RSTIMES[0:itrunc]
 
-
-                    for ichan in self.DATADICT[pulse]["chan"]:
-                        canvas.ax2.plot( RSTIMES, 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
-                            label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
-                    for ichan in self.DATADICT[pulse]["rchan"]:
-                        canvas.ax1.plot( RSTIMES, 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
-                            label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
+                    if plot:
+                        for ichan in self.DATADICT[pulse]["chan"]:
+                            canvas.ax2.plot( RSTIMES, 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
+                        for ichan in self.DATADICT[pulse]["rchan"]:
+                            canvas.ax1.plot( RSTIMES, 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
                     
-                    canvas.ax1.set_xlabel(r"time [s]", fontsize=8)
-                    canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
-                    canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
-                    canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
+                        canvas.ax1.set_xlabel(r"time [s]", fontsize=8)
+                        canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
+                        canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
+                        canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
                     
-                    canvas.ax1.legend(prop={'size':6})
-                    canvas.ax2.legend(prop={'size':6})
-                    canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-                    canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-                    canvas.draw() 
+                        canvas.ax1.legend(prop={'size':6})
+                        canvas.ax2.legend(prop={'size':6})
+                        canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                        canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                        canvas.draw() 
                 percent = (int)(1e2*((float)(iFID*self.DATADICT["nPulseMoments"]+(ipm))/( len(self.DATADICT["PULSES"])*self.nPulseMoments)))
                 self.progressTrigger.emit(percent)
             iFID += 1  
