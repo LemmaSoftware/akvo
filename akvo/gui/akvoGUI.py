@@ -1083,7 +1083,24 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def harmonicModel(self):
+
+
+        if "Harmonic modelling" not in self.YamlNode.Processing.keys():
+            self.YamlNode.Processing["Harmonic modelling"] = {}
+            self.YamlNode.Processing["Harmonic modelling"]["NF"] = str( self.ui.NHarmonicsFreqsSpin.value() ) 
+            self.YamlNode.Processing["Harmonic modelling"]["Nk"] = str( self.ui.NKHarmonicsSpin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f0"] = str( self.ui.f0Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f1Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["Segments"] = str( 1 ) # Future 
+            self.Log()
+        else:
+            err_msg = "Harmonic modelling noise cancellation has already been applied!"
+            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) 
+            return 
+
         self.lock("harmonic noise modelling")
+
         thread.start_new_thread(self.RAWDataProc.harmonicModel, \
                 ( \
                  self.ui.NHarmonicsFreqsSpin.value(), \
@@ -1276,8 +1293,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             reply =QtWidgets.QMessageBox.critical(self, 'Error', 
                 err_msg) 
             return 
-
         self.lock("window filter")
+        
         thread.start_new_thread(self.RAWDataProc.windowFilter, \
                 (str(self.ui.windowTypeComboBox.currentText()), \
                 self.ui.windowBandwidthSpinBox.value(), \
