@@ -40,7 +40,10 @@ def harmonicEuler ( sN, fs, t, f0, k1, kN, ks ):
     res = sN-h # residual 
 
 def harmonicNorm (f0, sN, fs, t, k1, kN, ks): 
-    return np.linalg.norm( harmonicEuler(sN, fs, t, f0, k1, kN, ks)) 
+    #print ("norm diff")
+    #return np.linalg.norm( harmonicEuler(sN, fs, t, f0, k1, kN, ks)) 
+    ii =  sN < (3.* np.std(sN))
+    return np.linalg.norm( harmonicEuler(sN, fs, t, f0, k1, kN, ks)[ii] ) 
 
 def minHarmonic(sN, fs, t, f0, k1, kN, ks):
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr

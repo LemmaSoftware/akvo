@@ -519,14 +519,20 @@ class GMRDataProcessor(SNMRDataProcessor):
 
     #def harmonicModel(self, nF, nK, f0, f1, plot, canvas):
     
-    def harmonicModel(self, nF, f0, f0K1, f0KN, f0Ks, f1, plot, canvas):
+    def harmonicModel(self, nF, \
+        f0, f0K1, f0KN, f0Ks,  \
+        f1, f1K1, f1KN, K1Ks,  \
+        plot, canvas):
         """ nF = number of base frequencies, must be 1 or 2 
             f0 = first base frequency  
             f0K1 = first harmonic to model for first base frequency 
             f0KN = last harmonic to model for the first base frequency 
             f0Ks = subharmonic spacing, set to 1 for no subharmonics.
-            plot = should Akvo plot the results 
             f1 = second base frequency  
+            f1K1 = first harmonic to model for second base frequency 
+            f1KN = last harmonic to model for the second base frequency 
+            f1Ks = subharmonic spacing for the second base frequency, set to 1 for no subharmonics.
+            plot = should Akvo plot the results 
             canvas = mpl plotting axis      
         """
         #print("harmonic modelling...", f0)

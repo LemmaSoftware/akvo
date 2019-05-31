@@ -173,6 +173,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.f0KNSpin.valueChanged.connect( self.LCDHarmonics )
         self.ui.f0KsSpin.valueChanged.connect( self.LCDHarmonics )
         self.ui.f0Spin.valueChanged.connect( self.LCDHarmonics )
+
+        self.ui.NHarmonicsFreqsSpin.valueChanged.connect( self.LCDHarmonics2 )
+        
+        self.ui.f1K1Spin.valueChanged.connect( self.LCDHarmonics2 )
+        self.ui.f1KNSpin.valueChanged.connect( self.LCDHarmonics2 )
+        self.ui.f1KsSpin.valueChanged.connect( self.LCDHarmonics2 )
+        self.ui.f1Spin.valueChanged.connect( self.LCDHarmonics2 )
  
         self.ui.plotQD.setEnabled(False) 
         self.ui.plotQD.pressed.connect( self.plotQD )
@@ -266,6 +273,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdHNF.display( self.ui.f0Spin.value() * self.ui.f0KNSpin.value() )
         self.ui.lcdf0NK.setEnabled(True)
         self.ui.lcdf0NK.display( (self.ui.f0KNSpin.value()+1-self.ui.f0K1Spin.value()) * self.ui.f0KsSpin.value() )
+    
+    def LCDHarmonics2(self):
+        if self.ui.NHarmonicsFreqsSpin.value() == 2:
+            self.ui.lcdH1F2.setEnabled(True)
+            self.ui.lcdH1F2.display( self.ui.f1Spin.value() * self.ui.f1K1Spin.value() )
+            self.ui.lcdHNF2.setEnabled(True)
+            self.ui.lcdHNF2.display( self.ui.f1Spin.value() * self.ui.f1KNSpin.value() )
+            self.ui.lcdf0NK2.setEnabled(True)
+            self.ui.lcdf0NK2.display( (self.ui.f1KNSpin.value()+1-self.ui.f1K1Spin.value()) * self.ui.f1KsSpin.value() )
+        else:
+            self.ui.lcdH1F2.setEnabled(False)
+            self.ui.lcdHNF2.setEnabled(False)
+            self.ui.lcdf0NK2.setEnabled(False)
 
     def closeTabs(self):
         #self.ui.ProcTabs.removeTab(idx)    
@@ -1103,7 +1123,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.YamlNode.Processing["Harmonic modelling"]["f0K1"] = str( self.ui.f0K1Spin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["f0KN"] = str( self.ui.f0KNSpin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["f0Ks"] = str( self.ui.f0KsSpin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f1Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f0"] = str( self.ui.f0Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f1K1"] = str( self.ui.f0K1Spin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f1KN"] = str( self.ui.f0KNSpin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f1Ks"] = str( self.ui.f0KsSpin.value() )
+            self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f0Spin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["Segments"] = str( 1 ) # Future 
             self.Log()
         else:
@@ -1122,6 +1146,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                  self.ui.f0KNSpin.value(), \
                  self.ui.f0KsSpin.value(), \
                  self.ui.f1Spin.value(), \
+                 self.ui.f1K1Spin.value(), \
+                 self.ui.f1KNSpin.value(), \
+                 self.ui.f1KsSpin.value(), \
                  self.ui.plotHarmonic.isChecked(), \
                  self.ui.mplwidget \
                 ) \
