@@ -63,29 +63,34 @@ def harmonicEuler2 ( sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks ):
         f0kN = Last base harmonic to calulate for f0
         f0ks = subharmonics to calculate 
     """
+    
     #A1 = np.exp(1j* np.tile( np.arange(1,nK+1),(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile(np.arange(1, len(t)+1, 1),(nK,1)).T  )
     #A2 = np.exp(1j* np.tile( np.arange(1,nK+1),(len(t), 1)) * 2*np.pi* (f1/fs) * np.tile(np.arange(1, len(t)+1, 1),(nK,1)).T  )
     #A = np.concatenate( (A1, A2), axis=1 )
-    KK0 = np.arange(f0k1, f0kN+1, 1/f0ks )
+    KK0 = np.arange(f0k1, f0kN+1, 1/f0ks)
     nK0 = len(KK0)
-    A0 = np.exp(1j* np.tile(KK0,(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK0,1)).T  )
-    KK1 = np.arange(f1k1, f1kN+1, 1/f1ks )
+    A0 = np.exp(1j* np.tile(KK0,(len(t), 1)) * 2*np.pi* (f0/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK0,1)).T)
+
+    KK1 = np.arange(f1k1, f1kN+1, 1/f1ks)
     nK1 = len(KK1)
-    A1 = np.exp(1j* np.tile(KK1,(len(t), 1)) * 2*np.pi* (f1/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK1,1)).T  )
-    A = np.concatenate( (A0, A1), axis=1 )
+    A1 = np.exp(1j* np.tile(KK1,(len(t), 1)) * 2*np.pi* (f1/fs) * np.tile( np.arange(1, len(t)+1, 1),(nK1,1)).T)
+    
+
+    A = np.concatenate((A0, A1), axis=1)
+    #A = A0
 
     v = np.linalg.lstsq(A, sN, rcond=None) # rcond=None) #, rcond=1e-8)
-    amp = np.abs(v[0][0:nK0])     
-    phase = np.angle(v[0][0:nK0]) 
+    amp0 = np.abs(v[0][0:nK0])     
+    phase0 = np.angle(v[0][0:nK0]) 
     amp1 = np.abs(v[0][nK0::])     
     phase1 = np.angle(v[0][nK0::]) 
+    
 
     h = np.zeros(len(t))
     for ik in range(nK0):
-        h +=  2*amp[ik]  * np.cos( 2.*np.pi*(ik+1) * (f0/fs) * np.arange(1, len(t)+1, 1 )  + phase[ik] ) 
+        h +=  2*amp0[ik] * np.cos( 2.*np.pi*(ik+1) * (f0/fs) * np.arange(1, len(t)+1, 1 )  + phase0[ik] ) 
     for ik in range(nK1):
-        h +=  2*amp1[ik]  * np.cos( 2.*np.pi*(ik+1) * (f1/fs) * np.arange(1, len(t)+1, 1 )  + phase1[ik] ) # + \
-        #      2*amp1[ik] * np.cos( 2.*np.pi*(ik+1) * (f1/fs) * np.arange(1, len(t)+1, 1 )  + phase1[ik] )
+        h +=  2*amp1[ik] * np.cos( 2.*np.pi*(ik+1) * (f1/fs) * np.arange(1, len(t)+1, 1 )  + phase1[ik] ) # + \
 
     return sN-h
 
@@ -117,7 +122,7 @@ def minHarmonic2(sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks):
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
     res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, f0kN, f0ks, f1k1,f1kN, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
     print(res)
-    return harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1kN, f1kN, f1ks)#[0]
+    return harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1k1, f1kN, f1ks)#[0]
 
 def guessf0( sN, fs ):
     S = np.fft.fft(sN)
