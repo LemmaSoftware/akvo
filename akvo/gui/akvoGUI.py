@@ -834,8 +834,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdTotalDeadTime.display( 1e3*self.RAWDataProc.DATADICT["INFO"]["deadTime"] )
         self.ui.headerFileTextBrowser.clear( ) 
         self.ui.headerFileTextBrowser.append( self.RAWDataProc.DATADICT["INFO"]["headerstr"] )
-            
-        self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0])
+        
+        if u"Pulse 1" in self.RAWDataProc.DATADICT.keys():
+            self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0])
+        if u"Pulse 2" in self.RAWDataProc.DATADICT.keys():
+            self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][0])
  
         # Update info from the header into the GUI
         self.ui.pulseTypeTextBrowser.clear()
@@ -1351,8 +1354,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 #                 self.ui.CentralVSpinBox.value(), \
 #                 str(self.ui.windowTypeComboBox.currentText()), \
 #                 self.ui.mplwidget ))
+
+        mPulse = "None"
+        if u"Pulse 1" in self.RAWDataProc.DATADICT.keys():
+            mPulse = u"Pulse 1"
+        elif u"Pulse 2" in self.RAWDataProc.DATADICT.keys():
+            mPulse = u"Pulse 2"
         a,b,c,d,dead = self.RAWDataProc.computeWindow( \
-                "Pulse 1",
+                mPulse,
                 self.ui.windowBandwidthSpinBox.value(), \
                 self.ui.CentralVSpinBox.value(), \
                 str(self.ui.windowTypeComboBox.currentText()), \
