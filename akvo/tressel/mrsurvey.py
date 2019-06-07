@@ -298,7 +298,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         pass   
  
     def TDSmartStack(self, outlierTest, MADcutoff, canvas):
-
+        #print("Line 300 in mrsurvey")
         Stack = {}
         # align for stacking and modulate
         for pulse in self.DATADICT["PULSES"]:
@@ -308,9 +308,29 @@ class GMRDataProcessor(SNMRDataProcessor):
                 istack = 0
                 for sstack in self.DATADICT["stacks"]:
                     if self.pulseType == "FID" or pulse == "Pulse 2":
-                        mod = (-1)**(ipm%2) * (-1)**(sstack%2)
+                        if floor(self.nDAQVersion) < 2:
+                            mod = 1
+                        else:
+                            mod = (-1.)**(ipm%2) * (-1.)**(sstack%2)
+                    elif self.pulseType == "T1":
+                        #mod = (-1.)**(sstack%2)
+                        #mod = (-1)**(ipm%2) * (-1)**(sstack%2)
+                        #mod = (-1)**(ipm%2) * (-1.**(((sstack-1)/2)%2))
+                        #print("mod", mod, ipm, sstack,  (-1.)**(ipm%2),  -1.0**(((sstack-1)/2)%2 ))
+                        #mod = (-1.)**((ipm+1)%2) * (-1.**(((sstack)/2)%2))
+                        #mod = (-1.)**((ipm-1)%2) * (-1.)**((sstack-1)%2)
+                        #mod = 1 # (-1.**(((sstack-1)/2)%2))
+
+                        # These two give great noise estimate
+                        #qcycler = np.array([1,-1,-1,1])
+                        #scycler = np.array([1,-1,1,-1])
+
+                        qcycler = np.array([ 1, 1])
+                        scycler = np.array([ 1, 1])
+                        mod = qcycler.take([ipm], mode='wrap')*scycler.take([sstack], mode='wrap')
+                        #mod = (-1.)**(ipm%2) * (-1.)**(sstack%2)
                     elif self.pulseType == "4PhaseT1":
-                        mod = (-1)**(ipm%2) * (-1)**(((sstack-1)/2)%2)
+                        mod = (-1.)**(ipm%2) * (-1.**(((sstack-1)/2)%2))
                     ichan = 0
                     for chan in self.DATADICT[pulse]["chan"]:
                         stack[ichan,ipm,istack,:] += mod*self.DATADICT[pulse][chan][ipm][sstack]
@@ -472,8 +492,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                 #dbr = (np.real(SFFT[:,istart:iend]))
                 #db = (np.imag(SFFT[:,istart:iend]))
                 
-                vvmin =  min(vvmin, np.min (db))
-                vvmax =  max(vvmax, np.max (db))
+                vvmin =  min(vvmin, np.min(db) + 1e-16 )
+                vvmax =  max(vvmax, np.max(db) + 1e-16 )
                 im2.append(ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax))
                 #im1.append(ax1.matshow( dbr, aspect='auto')) #, vmin=vvmin, vmax=vvmax))
                 #im2.append(ax2.matshow( db, aspect='auto', vmin=vvmin, vmax=vvmax))
@@ -2246,6 +2266,59 @@ class GMRDataProcessor(SNMRDataProcessor):
             nds += ndr
             nps += ndr 
 
+    def loadGMRASCIIT1( self, rawfname, istack ):
+        """Based on the geoMRI instrument manufactured by VistaClara. Imports 
+        a suite of raw .lvm files with the following format (on one line)
+
+        time(s) DC_Bus/100(V) Current+/75(A)  Curr-/75(A)  Voltage+/200(V) \  
+        Ch1(V) Ch2(V) Ch3(V) Ch4(V)
+
+        Sampling rate is assumed at 50 kHz 
+        """
+        import pandas as pd 
+        #################################################################################
+        # figure out key data indices
+        # Pulse       
+        nps  = (int)((self.prePulseDelay)*self.samp)
+        npul = (int)(self.pulseLength[0]*self.samp) #+ 100 
+
+        # phase cycling 
+        # Older T1 GMR data had a curious phase cycling
+        npc = 2 #(int)( self.samp / self.transFreq / 6 )
+        #print("npc", npc)
+
+        # Data 
+        nds  = nps+npul+(int)((self.deadTime)*self.samp);           # indice pulse 1 data starts 
+        nd1 = (int)( (self.interpulseDelay) * self.samp) - nds      # samples in first pulse
+        ndr = (int)( (self.interpulseDelay) * self.samp)            # samples in record 
+
+        invGain = 1./self.RxGain        
+        invCGain = self.CurrentGain        
+
+        pulse = "Pulse 1"
+        chan = self.DATADICT[pulse]["chan"] 
+        rchan = self.DATADICT[pulse]["rchan"] 
+            
+        T = 1.5 #N_samp * self.dt 
+        TIMES = np.arange(0, T, self.dt) - .0002 # small offset in GMR DAQ?
+        
+        self.DATADICT["Pulse 1"]["TIMES"]       = TIMES[nds:nds+nd1]
+        self.DATADICT["Pulse 1"]["PULSE_TIMES"] = TIMES[nps:nps+npul]
+
+        # pandas is much faster than numpy for io
+        #DATA = np.loadtxt(rawfname)
+        DATA = pd.read_csv(rawfname, header=None, sep="\t").values
+        for ipm in range(self.nPulseMoments):
+            for ichan in np.append(chan,rchan):
+                if ipm%2:
+                    self.DATADICT["Pulse 1"][ichan][ipm][istack]     =  DATA[:, eval(ichan)+4][(nds+npc):(nds+nd1+npc)] * invGain
+                    #self.DATADICT["Pulse 1"][ichan][ipm][istack]     =  DATA[:, eval(ichan)+4][nds:(nds+nd1)] * invGain
+                    self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] =  DATA[:,2][nps+npc:nps+npul+npc] * invCGain
+                else:
+                    self.DATADICT["Pulse 1"][ichan][ipm][istack]     =  DATA[:, eval(ichan)+4][nds:(nds+nd1)] * invGain
+                    self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] =  DATA[:,2][nps:nps+npul] * invCGain
+            nds += ndr
+            nps += ndr 
 
     def loadFIDData(self, base, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, plot):
         '''
@@ -2297,7 +2370,9 @@ class GMRDataProcessor(SNMRDataProcessor):
         iistack = 0
         fnames = []
         for istack in procStacks:
-            if self.nDAQVersion < 2.3:
+            if self.nDAQVersion <= 1.0:
+                self.loadGMRASCIIFID( base + "_" + str(istack) + ".lvm", istack )
+            elif self.nDAQVersion < 2.3:
                 #rawfname = base + "_" + str(istack) 
                 self.loadGMRASCIIFID( base + "_" + str(istack), istack )
             else:
@@ -2313,7 +2388,6 @@ class GMRDataProcessor(SNMRDataProcessor):
         #info["prePulseDelay"] = self.prePulseDelay
         #with multiprocessing.Pool() as pool: 
         #    results = pool.starmap( loadGMRBinaryFID, zip(itertools.repeat(self), fnames, info ) ) # zip(np.tile(vc, (ns, 1)), np.tile(vgc, (ns,1)), itertools.repeat(sys.argv[1]), itertools.repeat(sys.argv[2]), EPS_CMR))
-
         # Plotting
 
         if plot: 
@@ -2354,7 +2428,115 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         self.enableDSP()    
         self.doneTrigger.emit()
-    
+
+    def loadT1Data(self, base, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, plot):
+        '''
+            Loads a GMR T1 dataset, reads binary and ASCII format files 
+        '''
+
+        canvas.reAx3(True,False)
+
+        chan = []
+        for ch in chanin:
+            chan.append(str(ch)) 
+        
+        rchan = []
+        for ch in rchanin:
+            rchan.append(str(ch)) 
+
+        # not in any headers but this has changed, NOT the place to do this. MOVE  
+        #self.prePulseDelay  = 0.01          # delay before pulse
+        self.deadTime       = deadTime       # instrument dead time before measurement
+        self.samp = 50000.                   # in case this is a reproc, these might have 
+        self.dt   = 1./self.samp             # changed
+
+
+        #################################################################################
+        # Data structures     
+        PULSES = [FIDProc]
+
+        self.DATADICT = {}
+        self.DATADICT["nPulseMoments"] = self.nPulseMoments
+        self.DATADICT["stacks"] = procStacks
+        self.DATADICT["PULSES"] = PULSES
+        for pulse in PULSES: 
+            self.DATADICT[pulse] = {}
+            self.DATADICT[pulse]["chan"] = chan        # TODO these should not be a subet of pulse! for GMR all 
+            self.DATADICT[pulse]["rchan"] = rchan      #      data are consistent 
+            self.DATADICT[pulse]["CURRENT"] = {} 
+            for ichan in np.append(chan,rchan):
+                self.DATADICT[pulse][ichan] = {}
+                for ipm in range(self.nPulseMoments):
+                    self.DATADICT[pulse][ichan][ipm] = {} 
+                    self.DATADICT[pulse]["CURRENT"][ipm] = {} 
+                    for istack in procStacks:
+                        self.DATADICT[pulse][ichan][ipm][istack] = np.zeros(3)
+                        self.DATADICT[pulse]["CURRENT"][ipm][istack] = np.zeros(3) 
+
+        ##############################################
+        # Read in binary (.lvm) data
+        iistack = 0
+        fnames = []
+        for istack in procStacks:
+            if self.nDAQVersion < 2.3:
+                #rawfname = base + "_" + str(istack) 
+                #self.loadGMRASCIIFID( base + "_" + str(istack), istack )
+                self.loadGMRASCIIT1( base + "_" + str(istack), istack )
+            else:
+                self.loadGMRBinaryFID( base + "_" + str(istack) + ".lvm", istack )
+                #fnames.append( base + "_" + str(istack) + ".lvm" )
+                
+            percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
+            self.progressTrigger.emit(percent) 
+            iistack += 1
+
+        # multiprocessing load data
+        #info = {}
+        #info["prePulseDelay"] = self.prePulseDelay
+        #with multiprocessing.Pool() as pool: 
+        #    results = pool.starmap( loadGMRBinaryFID, zip(itertools.repeat(self), fnames, info ) ) # zip(np.tile(vc, (ns, 1)), np.tile(vgc, (ns,1)), itertools.repeat(sys.argv[1]), itertools.repeat(sys.argv[2]), EPS_CMR))
+        # Plotting
+
+        if plot: 
+            iistack = 0
+            for istack in procStacks:
+                #for ipm in range(0,7,1):
+                for ipm in range(self.nPulseMoments):
+                    canvas.ax1.clear()
+                    canvas.ax2.clear()
+                    canvas.ax3.clear()
+                    #canvas.fig.patch.set_facecolor('blue')
+                    for ichan in chan:
+                        canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
+                        canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
+
+                    for ichan in rchan:
+                        canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
+
+                    canvas.ax3.legend(prop={'size':6})
+                    canvas.ax2.legend(prop={'size':6})
+                    
+                    canvas.ax1.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
+                    canvas.ax1.set_xlabel("time [s]", fontsize=8)
+                    canvas.ax1.set_ylabel("Current [A]", fontsize=8) 
+                    canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                    
+                    canvas.ax2.set_ylabel("RAW signal [V]", fontsize=8)
+                    canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
+                    canvas.ax2.tick_params(axis='both', which='minor', labelsize=6)
+                    canvas.ax2.set_xlabel("time [s]", fontsize=8)
+                    canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                    canvas.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                    canvas.draw()
+                #canvas.draw()
+
+                percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
+                self.progressTrigger.emit(percent) 
+                iistack += 1
+
+        self.enableDSP()    
+        self.doneTrigger.emit()   
+ 
     def load4PhaseT1Data(self, base, procStacks, chan, rchan, FIDProc, canvas, deadTime, plot): 
 
         """
@@ -2527,7 +2709,6 @@ class GMRDataProcessor(SNMRDataProcessor):
                 # update GUI of where we are
                 percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
                 self.progressTrigger.emit(percent)  
-
             iistack += 1
         
         self.enableDSP()    

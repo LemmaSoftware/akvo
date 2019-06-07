@@ -596,7 +596,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberNQ.display(self.RAWDataProc.nPulseMoments)
         self.ui.DeadTimeSpinBox.setValue(1e3*self.RAWDataProc.deadTime)
         self.ui.CentralVSpinBox.setValue( self.RAWDataProc.transFreq )
-       
+            
         if self.RAWDataProc.pulseType != "FID":
             self.ui.lcdNumberTauPulse2.setEnabled(1)
             self.ui.lcdNumberTauPulse2.display(1e3*self.RAWDataProc.pulseLength[1])
@@ -604,7 +604,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.lcdNumberTauDelay.display(1e3*self.RAWDataProc.interpulseDelay)
 
         self.ui.FIDProcComboBox.clear() 
-        if self.RAWDataProc.pulseType == "4PhaseT1":
+        if self.RAWDataProc.pulseType == "4PhaseT1" or self.RAWDataProc.pulseType == "T1":
             self.ui.FIDProcComboBox.insertItem(0, "Pulse 1") 
             self.ui.FIDProcComboBox.insertItem(1, "Pulse 2") 
             self.ui.FIDProcComboBox.insertItem(2, "Both")    
@@ -716,6 +716,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Add some extra info 
         INFO = {}
         INFO["pulseType"] = self.RAWDataProc.pulseType
+        INFO["interpulseDelay"] = self.RAWDataProc.interpulseDelay
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["pulseLength"] = self.RAWDataProc.pulseLength
         INFO["TuneCapacitance"] = self.RAWDataProc.TuneCapacitance
@@ -780,6 +781,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.transFreq = self.RAWDataProc.DATADICT["INFO"]["transFreq"]
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
 
+
+
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
         # Keep backwards compatibility with prior saved pickles???
         #self.ui.logTextBrowser.clear() 
@@ -795,6 +798,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.YamlNode = AkvoYamlNode( )  #self.logText )
        
         self.YamlNode.Akvo_VERSION = (yaml.load( self.logText, Loader=yaml.Loader )).Akvo_VERSION
+        AKVO_VERSION = np.array(self.YamlNode.Akvo_VERSION.split("."), dtype=int)
+        if  AKVO_VERSION[0] >= 1 and AKVO_VERSION[1] >= 2 and AKVO_VERSION[2] >= 3:
+            self.RAWDataProc.interpulseDelay = self.RAWDataProc.DATADICT["INFO"]["interpulseDelay"]
+
         self.YamlNode.Import = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
         self.YamlNode.Processing = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
         self.Log() 
@@ -859,7 +866,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.lcdNumberTauDelay.display(1e3*self.RAWDataProc.interpulseDelay)
 
         self.ui.FIDProcComboBox.clear() 
-        if self.RAWDataProc.pulseType == "4PhaseT1":
+        if self.RAWDataProc.pulseType == "4PhaseT1" or self.RAWDataProc.pulseType == "T1":
             self.ui.FIDProcComboBox.insertItem(0, "Pulse 1") #, const QVariant & userData = QVariant() )
             self.ui.FIDProcComboBox.insertItem(1, "Pulse 2") #, const QVariant & userData = QVariant() )
             self.ui.FIDProcComboBox.insertItem(2, "Both")    #, const QVariant & userData = QVariant() )
@@ -950,12 +957,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
                  str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
                 1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
-            
         elif self.RAWDataProc.pulseType == "4PhaseT1":
             self.procThread = thread.start_new_thread(self.RAWDataProc.load4PhaseT1Data, \
                 (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
                  str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
                 1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
+        elif self.RAWDataProc.pulseType == "T1":
+            self.procThread = thread.start_new_thread(self.RAWDataProc.loadT1Data, \
+                (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
+                 str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
+                1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
+            #self.procThread = thread.start_new_thread(self.RAWDataProc.load4PhaseT1Data, \
+            #    (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
+            #     str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
+            #    1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
 
         self.YamlNode.Import["GMR Header"] = self.headerstr
         self.YamlNode.Import["opened"] = datetime.datetime.now().isoformat() 

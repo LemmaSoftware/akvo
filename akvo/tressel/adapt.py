@@ -33,7 +33,7 @@ class AdaptiveFilter:
             exit(1)
         
         if PCA == "Yes":
-            print("Performing PCA calculation in noise cancellation")
+            #print("Performing PCA calculation in noise cancellation")
             # PCA decomposition on ref channels so signals are less related
             R, K, means = pca.pca( R )
            
@@ -50,6 +50,7 @@ class AdaptiveFilter:
             #print ("resetting filter")
         else:
             H = H0
+            #H = np.zeros( (len(R)*M))
 
         Rn = np.ones(len(R)*M) / mu 
         
