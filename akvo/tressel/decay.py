@@ -60,9 +60,8 @@ def fun(x, t, y):
         x[3] = T2
     """
     # concatenated real and imaginary parts  
-    pre =  np.concatenate((-x[0]*np.sin(2.*np.pi*x[2]*t + x[1])*np.exp(-t/x[3]), \
-                           +x[0]*np.cos(2.*np.pi*x[2]*t + x[1])*np.exp(-t/x[3])))  
-    return y-pre
+    return y - np.concatenate((-x[0]*np.sin(2.*np.pi*x[2]*t + x[1])*np.exp(-t/x[3]), \
+                               +x[0]*np.cos(2.*np.pi*x[2]*t + x[1])*np.exp(-t/x[3])))  
 
 def fun2(x, t, y):
     """ Cost function for regression, single exponential, no DC term 
@@ -72,32 +71,37 @@ def fun2(x, t, y):
     """
     # concatenated real and imaginary parts  
     pre =  np.concatenate((x[0]*np.cos(x[1])*np.exp(-t/x[2]), \
-                       -1.*x[0]*np.sin(x[1])*np.exp(-t/x[2])))  
+                          -x[0]*np.sin(x[1])*np.exp(-t/x[2])))  
     return y-pre
 
 
-def quadratureDetect2(X, Y, tt, x0="None"): 
+def quadratureDetect2(X, Y, tt, method, loss, x0="None"): 
     """ Pure python quadrature detection using Scipy.  
         X = real part of NMR signal 
         Y = imaginary component of NMR signal 
         tt = time 
     """
-    print("Pure Python Quad Det", "TODO look at loss functions and method")
-    # Loss functions, linear, soft_l1, huber, cauchy, arctan 
-    # df
-    loss = 'cauchy'  #  'soft_l1'
-    method = 'trf'   # trf, dogbox, lm 
+
+    #method = ['trf','dogbox','lm'][method_int]
+    #loss = ['linear','soft_l1','cauchy','huber'][loss_int] 
+    print ("method", method, 'loss', loss) 
     if x0=="None":
-        x0 = np.array( [1., 0., 0., .2] ) # A0, zeta, df, T2 
-        res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
-            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ),
-            method=method 
-            )
+        if method == 'lm':
+            x0 = np.array( [50., 0., 0., .200] ) # A0, zeta, df, T2 
+            res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
+                    method=method 
+                    )
+        else:
+            x0 = np.array( [50., 0., 0., .200] ) # A0, zeta, df, T2 
+            res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
+                    bounds=( [5, -np.pi, -5, .001] , [1000., np.pi, 5, .800] ),
+                    method=method 
+                    )
         x = res_lsq.x 
         print ("A0={} zeta={} df={} T2={}".format(x[0],x[1],x[2],x[3]))
     else:
         res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
-            bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ),
+            #bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ),
             method=method 
             )
 

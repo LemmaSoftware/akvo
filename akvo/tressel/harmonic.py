@@ -40,7 +40,7 @@ def harmonicNorm (f0, sN, fs, t, k1, kN, ks):
 def minHarmonic(sN, fs, t, f0, k1, kN, ks):
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
     res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
-    print(res)
+    #print(res)
     return harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks)#[0]
 
 def harmonicEuler2 ( sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks ): 

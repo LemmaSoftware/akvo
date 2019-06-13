@@ -694,7 +694,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #    self.YamlNode.Processing["Saved"] = []
         #self.YamlNode.Processing["Saved"].append(datetime.datetime.now().isoformat()) 
         #self.Log()
- 
+        
         import pickle, os 
         try:
             with open('.akvo.last.path') as f: 
@@ -725,8 +725,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["deadTime"] = self.RAWDataProc.deadTime
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["headerstr"] = str(self.headerstr)
+        INFO["nDAQVersion"] = self.RAWDataProc.nDAQVersion
         INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
-    
+          
+
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
         pickle.dump(self.RAWDataProc.DATADICT, save)
@@ -779,6 +781,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.nPulseMoments = self.RAWDataProc.DATADICT["INFO"]["nPulseMoments"] 
         self.RAWDataProc.deadTime = self.RAWDataProc.DATADICT["INFO"]["deadTime"] 
         self.RAWDataProc.transFreq = self.RAWDataProc.DATADICT["INFO"]["transFreq"]
+        self.RAWDataProc.nDAQVersion = self.RAWDataProc.DATADICT["INFO"]["nDAQVersion"]
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
 
 
@@ -1138,15 +1141,16 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if "Harmonic modelling" not in self.YamlNode.Processing.keys():
             self.YamlNode.Processing["Harmonic modelling"] = {}
             self.YamlNode.Processing["Harmonic modelling"]["NF"] = str( self.ui.NHarmonicsFreqsSpin.value() ) 
+            self.YamlNode.Processing["Harmonic modelling"]["Segments"] = str( self.ui.NSegments.value() ) 
             self.YamlNode.Processing["Harmonic modelling"]["f0K1"] = str( self.ui.f0K1Spin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["f0KN"] = str( self.ui.f0KNSpin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["f0Ks"] = str( self.ui.f0KsSpin.value() )
             self.YamlNode.Processing["Harmonic modelling"]["f0"] = str( self.ui.f0Spin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f1K1"] = str( self.ui.f0K1Spin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f1KN"] = str( self.ui.f0KNSpin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f1Ks"] = str( self.ui.f0KsSpin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f0Spin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["Segments"] = str( 1 ) # Future 
+            if self.ui.NHarmonicsFreqsSpin.value() > 1:
+                self.YamlNode.Processing["Harmonic modelling"]["f1K1"] = str( self.ui.f1K1Spin.value() )
+                self.YamlNode.Processing["Harmonic modelling"]["f1KN"] = str( self.ui.f1KNSpin.value() )
+                self.YamlNode.Processing["Harmonic modelling"]["f1Ks"] = str( self.ui.f1KsSpin.value() )
+                self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f1Spin.value() )
             self.Log()
         else:
             err_msg = "Harmonic modelling noise cancellation has already been applied!"
@@ -1163,6 +1167,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                  self.ui.f0K1Spin.value(), \
                  self.ui.f0KNSpin.value(), \
                  self.ui.f0KsSpin.value(), \
+                 self.ui.NSegments.value(), \
                  self.ui.f1Spin.value(), \
                  self.ui.f1K1Spin.value(), \
                  self.ui.f1KNSpin.value(), \
@@ -1279,19 +1284,32 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def quadDet(self):
 
-        if "Quadrature detection" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Quadrature detection"] = {}
-            self.YamlNode.Processing["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
-            self.Log()
-        else:
-            err_msg = "Quadrature detection has already been done!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
-                err_msg) 
-            return 
+        method = ['trf','dogbox','lm'][int(self.ui.QDMethod.currentIndex())]
+        loss = ['linear','soft_l1','cauchy','huber'][int(self.ui.QDLoss.currentIndex())]         
 
+
+        # allow overwrite of Quad Det.    
+        self.YamlNode.Processing["Quadrature detection"] = {}
+        self.YamlNode.Processing["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
+        self.YamlNode.Processing["Quadrature detection"]["method"] = method 
+        self.YamlNode.Processing["Quadrature detection"]["loss"] = loss
+        self.Log()
+
+        #if "Quadrature detection" not in self.YamlNode.Processing.keys():
+        #    self.YamlNode.Processing["Quadrature detection"] = {}
+        #    self.YamlNode.Processing["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
+        #    self.Log()
+        #else:
+        #    self.YamlNode.Processing["Quadrature detection"] = {}
+        #    self.YamlNode.Processing["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
+        #    self.Log()
+            #err_msg = "Quadrature detection has already been done!"
+            #reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+            #    err_msg) 
+            #return 
         self.lock("quadrature detection")
         thread.start_new_thread(self.RAWDataProc.quadDet, \
-                (self.ui.trimSpin.value(), int(self.ui.QDType.currentIndex()), self.ui.mplwidget))
+                (self.ui.trimSpin.value(), method, loss, self.ui.mplwidget))
 
         self.ui.plotQD.setEnabled(True)
     
