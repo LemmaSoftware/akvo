@@ -570,7 +570,7 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         for pulse in self.DATADICT["PULSES"]:
             self.DATADICT[pulse]["TIMES"] =  self.DATADICT[pulse]["TIMES"]
-
+            Nseg = int( np.floor(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
             for ipm in range(self.DATADICT["nPulseMoments"]):
                 for istack in self.DATADICT["stacks"]:
                     canvas.ax1.clear()
@@ -584,12 +584,13 @@ class GMRDataProcessor(SNMRDataProcessor):
                         if nF == 1:
                             #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
                             for iseg in range(f0ns):
-                                if iseg < f0ns-2:
-                                    Nseg = int( np.floor(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                else:
-                                    Nseg = int( np.ceil(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], \
+                                if iseg < f0ns-1:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], \
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
+                                            f0, f0K1, f0KN, f0Ks ) 
+                                else:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], \
+                                            self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                             f0, f0K1, f0KN, f0Ks ) 
 
                             #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
@@ -600,12 +601,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                             #    f0-1e-2, f0K1, f0KN, f0Ks,  \
                             #    f1+1e-2, f1K1, f1KN, f1Ks ) 
                             for iseg in range(f0ns):
-                                if iseg < f0ns-2:
-                                    Nseg = int( np.floor(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                else:
-                                    Nseg = int( np.ceil(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
+                                if iseg < f0ns-1:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
+                                     f0-1e-2, f0K1, f0KN, f0Ks,  \
+                                     f1+1e-2, f1K1, f1KN, f1Ks ) 
+                                else:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
+                                     self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                      f0-1e-2, f0K1, f0KN, f0Ks,  \
                                      f1+1e-2, f1K1, f1KN, f1Ks ) 
                         # plot
@@ -624,13 +627,15 @@ class GMRDataProcessor(SNMRDataProcessor):
                             #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
                             #    f0, f0K1, f0KN, f0Ks ) 
                             for iseg in range(f0ns):
-                                if iseg < f0ns-2:
-                                    Nseg = int( np.floor(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                else:
-                                    Nseg = int( np.ceil(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], 
+                                if iseg < f0ns-1:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], 
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
                                             f0, f0K1, f0KN, f0Ks ) 
+                                else:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], 
+                                            self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
+                                            f0, f0K1, f0KN, f0Ks ) 
+
                         elif nF == 2:
                             #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f1+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
                             #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonicEuler( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
@@ -638,12 +643,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                             #    f0-1e-2, f0K1, f0KN, f0Ks,  \
                             #    f1+1e-2, f1K1, f1KN, f1Ks ) 
                             for iseg in range(f0ns):
-                                if iseg < f0ns-2:
-                                    Nseg = int( np.floor(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                else:
-                                    Nseg = int( np.ceil(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
-                                self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
+                                if iseg < f0ns-1:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
+                                     f0-1e-2, f0K1, f0KN, f0Ks,  \
+                                     f1+1e-2, f1K1, f1KN, f1Ks ) 
+                                else:
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
+                                     self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                      f0-1e-2, f0K1, f0KN, f0Ks,  \
                                      f1+1e-2, f1K1, f1KN, f1Ks ) 
                
