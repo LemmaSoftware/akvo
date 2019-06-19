@@ -1154,7 +1154,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.Log()
         else:
             err_msg = "Harmonic modelling noise cancellation has already been applied!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+            reply = QtWidgets.QMessageBox.critical(self, 'Error', 
                 err_msg) 
             return 
 

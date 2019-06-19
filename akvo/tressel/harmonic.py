@@ -41,6 +41,7 @@ def minHarmonic(sN, fs, t, f0, k1, kN, ks):
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
     res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
     #print(res)
+    #print ( "guess", guessf0(  harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks), fs  ) )
     return harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks)#[0]
 
 def harmonicEuler2 ( sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks ): 
@@ -92,7 +93,8 @@ def harmonic2Norm (f0, sN, fs, t, f0k1, f0kN, f0ks, f1k1, f1kN, f1ks):
 def minHarmonic2(sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks):
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
     res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, f0kN, f0ks, f1k1,f1kN, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
-    print(res)
+    #print(res)
+    #print ( "guess", guessf0(harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1k1, f1kN, f1ks), fs)  )
     return harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1k1, f1kN, f1ks)#[0]
 
 def guessf0( sN, fs ):
