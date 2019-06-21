@@ -17,7 +17,7 @@ class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=3, height=4, dpi=100):
         
-        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='darkgrey') # this fucking works...why?
+        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='darkgrey') 
         #self.fig.patch.set_facecolor('blue')
         FigureCanvas.__init__(self, self.fig)
 
@@ -198,11 +198,17 @@ class MyDynamicMplCanvas(MyMplCanvas):
         self.ax1.tick_params(axis='both', which='major', labelsize=8)
         self.ax2.tick_params(axis='both', which='major', labelsize=8)
 
-        self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-        self.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
+        self.ax1.ticklabel_format(style='scientific', scilimits=(0,0), axis='y')  
+        self.ax2.ticklabel_format(style='scientific', scilimits=(0,0), axis='y')  
 
         self.ax1.yaxis.get_offset_text().set_size(8) 
         self.ax2.yaxis.get_offset_text().set_size(8) 
+    
+    def softClear(self):
+        for ax in self.fig.get_axes():
+            for artist in ax.lines + ax.collections:
+                artist.remove()
+            ax.set_prop_cycle(None)
 
     def reAx3(self, shx=True, shy=True):
 
