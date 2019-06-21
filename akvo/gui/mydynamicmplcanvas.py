@@ -235,17 +235,20 @@ class MyDynamicMplCanvas(MyMplCanvas):
         except:
             pass
 
-        self.ax1 = self.fig.add_subplot(211)
+        self.ax2 = self.fig.add_subplot(211)
         if shx and shy:
-            self.ax2 = self.fig.add_subplot(212, sharex=self.ax1, sharey=self.ax1)
+            self.ax1 = self.fig.add_subplot(212, sharex=self.ax2, sharey=self.ax2)
         elif shx:
-            self.ax2 = self.fig.add_subplot(212, sharex=self.ax1) 
+            self.ax1 = self.fig.add_subplot(212, sharex=self.ax2) 
         elif shy:
-            self.ax2 = self.fig.add_subplot(212, sharey=self.ax1) 
+            self.ax1 = self.fig.add_subplot(212, sharey=self.ax2) 
         else:
-            self.ax2 = self.fig.add_subplot(212) 
+            self.ax1 = self.fig.add_subplot(212) 
 
         self.ax3 = self.ax1.twinx()
+        self.ax2.yaxis.set_label_position("right")
+        self.ax2.yaxis.set_ticks_position("right")
+        #self.ax2.yaxis.tick_right()
 
         #self.ax1.set_facecolor('red')
         #self.ax2.set_facecolor('red')

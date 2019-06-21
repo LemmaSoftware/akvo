@@ -36,7 +36,7 @@ plt.register_cmap(name='magma', cmap=cmaps.magma)
 plt.register_cmap(name='magma_r', cmap=cmaps.magma_r)
 
 
-def loadGMRBinaryFID( rawfname, istack, info ):
+def xxloadGMRBinaryFID( rawfname, info ):
     """ Reads a single binary GMR file and fills into DATADICT
     """
 
@@ -556,19 +556,11 @@ class GMRDataProcessor(SNMRDataProcessor):
             plot = should Akvo plot the results 
             canvas = mpl plotting axis      
         """
-        #print("harmonic modelling...", f0)
-        #plot = True
         if plot:
             canvas.reAx2()
-            #canvas.ax1.tick_params(axis='both', which='major', labelsize=8)
-            #canvas.ax1.ticklabel_format(style='sci', axis='y') #, scilimits=(0,0))
-            #canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
-            #canvas.ax2.ticklabel_format(style='sci', axis='y') #, scilimits=(0,0)) 
             canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
             canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
             canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
-            #canvas.ax1.tick_params(axis='both', which='major', labelsize=8)
-            #canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
 
         # Data
         iFID = 0
@@ -585,56 +577,45 @@ class GMRDataProcessor(SNMRDataProcessor):
                 f1p[chan] = f1+1e-1
 
         for pulse in self.DATADICT["PULSES"]:
-            self.DATADICT[pulse]["TIMES"] =  self.DATADICT[pulse]["TIMES"]
             Nseg = int( np.floor(len( self.DATADICT[pulse]["TIMES"] ) / f0ns) )
             for istack in self.DATADICT["stacks"]:
                 for ipm in range(self.DATADICT["nPulseMoments"]):
                     if plot:
-                        #canvas.ax1.clear()
-                        #canvas.ax2.clear()
-                        #for artist in canvas.ax1.lines + canvas.ax1.collections:
-                        #    artist.remove()
-                        #canvas.ax1.set_prop_cycle(None)
-                        #for artist in canvas.ax2.lines + canvas.ax2.collections:
-                        #    artist.remove()
-                        #canvas.ax2.set_prop_cycle(None)
                         canvas.softClear()
+                        mmax = 0
                         for ichan in self.DATADICT[pulse]["rchan"]:
                             canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                            #, label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
-                            
+                            mmax = max( mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
                         for ichan in self.DATADICT[pulse]["chan"]:
                             canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                            #, label = "orig " +  pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
+                            mmax = max( mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
                         canvas.ax1.set_prop_cycle(None)
                         canvas.ax2.set_prop_cycle(None)
+                        canvas.ax1.set_ylim(-mmax, mmax) 
                     for ichan in self.DATADICT[pulse]["rchan"]:
                         if nF == 1:
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
                             for iseg in range(f0ns):
                                 if iseg < f0ns-1:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], \
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = \
+                                        harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], \
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
                                             f0p[ichan], f0K1, f0KN, f0Ks ) 
                                 else:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], \
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = \
+                                        harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], \
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                             f0p[ichan], f0K1, f0KN, f0Ks ) 
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
-                            #    f0, f0K1, f0KN, f0Ks ) 
                         elif nF == 2:
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f1+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
-                            #    f0-1e-2, f0K1, f0KN, f0Ks,  \
-                            #    f1+1e-2, f1K1, f1KN, f1Ks ) 
                             for iseg in range(f0ns):
                                 if iseg < f0ns-1:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan], f1p[ichan] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan], f1p[ichan] = \
+                                        harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
                                      f0p[ichan], f0K1, f0KN, f0Ks,  \
                                      f1p[ichan], f1K1, f1KN, f1Ks ) 
                                 else:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = \
+                                        harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                      f0p[ichan], f0K1, f0KN, f0Ks,  \
                                      f1p[ichan], f1K1, f1KN, f1Ks ) 
@@ -646,33 +627,29 @@ class GMRDataProcessor(SNMRDataProcessor):
                     for ichan in self.DATADICT[pulse]["chan"]:
                         
                         if nF == 1:
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
-                            #    f0, f0K1, f0KN, f0Ks ) 
                             for iseg in range(f0ns):
                                 if iseg < f0ns-1:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], 
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = \
+                                        harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], 
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
                                             f0p[ichan], f0K1, f0KN, f0Ks ) 
                                 else:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], 
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = \
+                                        harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], 
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                             f0p[ichan], f0K1, f0KN, f0Ks )
 
                         elif nF == 2:
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( f0-1e-2, f1+1e-2, self.DATADICT[pulse][ichan][ipm][istack], self.samp, nK, self.DATADICT[pulse]["TIMES"] ) 
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.harmonicEuler( f0, self.DATADICT[pulse][ichan][ipm][istack], self.samp, 20, self.DATADICT[pulse]["TIMES"] ) 
-                            #self.DATADICT[pulse][ichan][ipm][istack] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack], self.samp,  self.DATADICT[pulse]["TIMES"], \
-                            #    f0-1e-2, f0K1, f0KN, f0Ks,  \
-                            #    f1+1e-2, f1K1, f1KN, f1Ks ) 
                             for iseg in range(f0ns):
                                 if iseg < f0ns-1:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan], f1p[ichan] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan], f1p[ichan] = \
+                                        harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
                                      f0p[ichan], f0K1, f0KN, f0Ks,  \
                                      f1p[ichan], f1K1, f1KN, f1Ks ) 
                                 else:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
+                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = \
+                                        harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                      f0p[ichan], f0K1, f0KN, f0Ks,  \
                                      f1p[ichan], f1K1, f1KN, f1Ks ) 
@@ -686,18 +663,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                         canvas.ax1.legend(prop={'size':6}, loc='upper right')
                         canvas.ax2.legend(prop={'size':6}, loc='upper right')
                         canvas.draw() 
-                    
-                #percent = (int)(1e2*((float)(iFID*self.DATADICT["nPulseMoments"]+(ipm))/(len(self.DATADICT["PULSES"])*self.nPulseMoments)))
+                
                 percent = (int)(1e2*((ipm+istack*self.nPulseMoments)/(self.nPulseMoments*len(self.DATADICT["stacks"])))) 
                 self.progressTrigger.emit(percent)  
             iFID += 1
 
         self.doneTrigger.emit() 
         self.updateProcTrigger.emit()  
-
-
         self.doneTrigger.emit() 
-        
     
     def FDSmartStack(self, outlierTest, MADcutoff, canvas):
         
@@ -1639,12 +1612,8 @@ class GMRDataProcessor(SNMRDataProcessor):
     def adaptiveFilter(self, M, flambda, truncate, mu, PCA, canvas):
 
         canvas.reAx2(shx=False, shy=False)
-         
-        canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
-        canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-        
-        canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
-        canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
+        # ax1 is top plot of filter taps 
+        # ax2 is bottom plot of conditioned signal 
         
         if truncate:
             itrunc =(int) ( round( 1e-3*truncate*self.samp ) )
@@ -1667,12 +1636,16 @@ class GMRDataProcessor(SNMRDataProcessor):
         for istack in self.DATADICT["stacks"]:
             for ipm in range(self.DATADICT["nPulseMoments"]):
                 for pulse in self.DATADICT["PULSES"]:
-                    canvas.ax1.clear()
-                    canvas.ax2.clear()
+                    canvas.softClear()
+                    mmax = 0
+                    for ichan in self.DATADICT[pulse]["chan"]:
+                        canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
+                        mmax = max(mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                    canvas.ax2.set_ylim(-mmax, mmax) 
+                    canvas.ax2.set_prop_cycle(None)
+
                     for ichan in self.DATADICT[pulse]["chan"]:
                         #H = np.zeros(M)
-                        canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9* self.DATADICT[pulse][ichan][ipm][istack],\
-                            label = "noisy") 
                         RX = []
                         for irchan in self.DATADICT[pulse]["rchan"]:
                             RX.append(self.DATADICT[pulse][irchan][ipm][istack][::-1])
@@ -1690,23 +1663,23 @@ class GMRDataProcessor(SNMRDataProcessor):
                                                         M, mu, PCA, flambda, H[pulse][ichan])
                         # replace
                         if truncate:
-                            canvas.ax1.plot( self.DATADICT[pulse]["TIMES"][0:itrunc], 1e9* e[::-1][0:itrunc],\
-                            label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
+                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"][0:itrunc], 1e9* e[::-1][0:itrunc],\
+                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
                             self.DATADICT[pulse][ichan][ipm][istack] = e[::-1][0:itrunc]
                         else:
-                            canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9* e[::-1],\
-                            label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
+                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* e[::-1],\
+                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
                             self.DATADICT[pulse][ichan][ipm][istack] = e[::-1]
                             
-                        canvas.ax2.plot( H[pulse][ichan] , label="taps") 
-                        canvas.ax1.legend(prop={'size':6})
-                        canvas.ax2.legend(prop={'size':6})
+                        canvas.ax1.plot( H[pulse][ichan] ) # , label="taps") 
+                        canvas.ax2.legend(prop={'size':6}, loc='upper right')
+                        #canvas.ax2.legend(prop={'size':6}, loc='upper right')
 
-                        canvas.ax1.set_xlabel(r"time [s]", fontsize=8)
-                        canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
+                        canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
+                        canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
 
-                        canvas.ax2.set_xlabel(r"filter index", fontsize=8)
-                        canvas.ax2.set_ylabel(r"scale factor", fontsize=8)
+                        canvas.ax1.set_xlabel(r"filter index", fontsize=8)
+                        canvas.ax1.set_ylabel(r"scale factor", fontsize=8)
 
                     canvas.draw()
 
@@ -2169,21 +2142,30 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         if plot:
             canvas.reAx2()
-            canvas.ax1.tick_params(axis='both', which='major', labelsize=8)
-            canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-            canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
-            canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
+            canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
+            canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
+            canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
 
         ife = (int)( max(self.fe, self.windead) * self.samp )
         # Data
         iFID = 0
         for pulse in self.DATADICT["PULSES"]:
-            self.DATADICT[pulse]["TIMES"] =  self.DATADICT[pulse]["TIMES"][ife:-ife]
+            self.DATADICT[pulse]["TIMES"] = self.DATADICT[pulse]["TIMES"][ife:-ife]
             for ipm in range(self.DATADICT["nPulseMoments"]):
                 for istack in self.DATADICT["stacks"]:
-                    canvas.ax1.clear()
-                    canvas.ax2.clear()
-                    #for ichan in np.append(self.DATADICT[pulse]["chan"], self.DATADICT[pulse]["rchan"]):
+                    if plot:
+                        canvas.softClear()
+                        mmax = 0
+                        for ichan in self.DATADICT[pulse]["rchan"]:
+                            canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack][ife:-ife], alpha=.5)
+                            mmax = max( mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack][ife:-ife])) 
+                        for ichan in self.DATADICT[pulse]["chan"]:
+                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack][ife:-ife], alpha=.5)
+                            mmax = max( mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack][ife:-ife])) 
+                        canvas.ax2.set_prop_cycle(None)
+                        canvas.ax1.set_prop_cycle(None)
+                        canvas.ax1.set_ylim(-mmax, mmax) 
+
                     for ichan in self.DATADICT[pulse]["rchan"]:
                         # reflect signal back on itself to reduce gibbs effects on early times 
                         #nr = len( self.DATADICT[pulse][ichan][ipm][istack] ) - 1 + ife
@@ -2217,12 +2199,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                                 label = "data " + pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
 
                     if plot:
-                        canvas.ax1.set_xlabel(r"time [s]", fontsize=8)
-                        canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
-                        canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
-                        canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
-                        canvas.ax1.legend(prop={'size':6})
-                        canvas.ax2.legend(prop={'size':6})
+                        canvas.ax1.legend(prop={'size':6}, loc='upper right')
+                        canvas.ax2.legend(prop={'size':6}, loc='upper right')
                         canvas.draw() 
                     
                 percent = (int)(1e2*((float)(iFID*self.DATADICT["nPulseMoments"]+(ipm))/(len(self.DATADICT["PULSES"])*self.nPulseMoments)))
@@ -2395,9 +2373,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         for ch in rchanin:
             rchan.append(str(ch)) 
 
-        # not in any headers but this has changed, NOT the place to do this. MOVE  
-        #self.prePulseDelay  = 0.01          # delay before pulse
-        self.deadTime       = deadTime       # instrument dead time before measurement
+        self.deadTime = deadTime             # instrument dead time before measurement
         self.samp = 50000.                   # in case this is a reproc, these might have 
         self.dt   = 1./self.samp             # changed
 
@@ -2428,7 +2404,6 @@ class GMRDataProcessor(SNMRDataProcessor):
         ##############################################
         # Read in binary (.lvm) data
         iistack = 0
-        fnames = []
         for istack in procStacks:
             if self.nDAQVersion <= 1.0:
                 try:
@@ -2436,32 +2411,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                 except:
                     self.loadGMRASCIIFID( base + "_" + str(istack) + ".lvm", istack )
             elif self.nDAQVersion < 2.3:
-                #rawfname = base + "_" + str(istack) 
                 self.loadGMRASCIIFID( base + "_" + str(istack), istack )
             else:
                 self.loadGMRBinaryFID( base + "_" + str(istack) + ".lvm", istack )
-                #fnames.append( base + "_" + str(istack) + ".lvm" )
-                
-            percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
-            self.progressTrigger.emit(percent) 
-            iistack += 1
 
-        # multiprocessing load data
-        #info = {}
-        #info["prePulseDelay"] = self.prePulseDelay
-        #with multiprocessing.Pool() as pool: 
-        #    results = pool.starmap( loadGMRBinaryFID, zip(itertools.repeat(self), fnames, info ) ) # zip(np.tile(vc, (ns, 1)), np.tile(vgc, (ns,1)), itertools.repeat(sys.argv[1]), itertools.repeat(sys.argv[2]), EPS_CMR))
-        # Plotting
-
-        if plot: 
-            iistack = 0
-            for istack in procStacks:
+            if plot: 
                 for ipm in range(self.nPulseMoments):
-                    canvas.ax1.clear()
-                    canvas.ax2.clear()
-                    canvas.ax3.clear()
-                    #canvas.fig.patch.set_facecolor('blue')
-                           
+                    canvas.softClear()                           
+
                     for ichan in chan:
                         canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
                         canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
@@ -2469,25 +2426,27 @@ class GMRDataProcessor(SNMRDataProcessor):
                     for ichan in rchan:
                         canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
 
-                    canvas.ax3.legend(prop={'size':6})
-                    canvas.ax2.legend(prop={'size':6})
+                    canvas.ax3.legend(prop={'size':6}, loc='upper right')
+                    canvas.ax2.legend(prop={'size':6}, loc='upper right')
                     
                     canvas.ax1.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
-                    canvas.ax1.set_xlabel("time [s]", fontsize=8)
                     canvas.ax1.set_ylabel("Current [A]", fontsize=8) 
                     canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
                     
                     canvas.ax2.set_ylabel("RAW signal [V]", fontsize=8)
+                    canvas.ax3.set_ylabel("RAW signal [V]", fontsize=8)
                     canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
                     canvas.ax2.tick_params(axis='both', which='minor', labelsize=6)
                     canvas.ax2.set_xlabel("time [s]", fontsize=8)
-                    canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-                    canvas.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
                     canvas.draw()
 
-                percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
-                self.progressTrigger.emit(percent) 
-                iistack += 1
+            percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
+            self.progressTrigger.emit(percent) 
+            iistack += 1
+
+#                percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
+#                self.progressTrigger.emit(percent) 
+#                iistack += 1
 
         self.enableDSP()    
         self.doneTrigger.emit()
@@ -2556,8 +2515,9 @@ class GMRDataProcessor(SNMRDataProcessor):
         # multiprocessing load data
         #info = {}
         #info["prePulseDelay"] = self.prePulseDelay
+        #info["samp"] = self.samp
         #with multiprocessing.Pool() as pool: 
-        #    results = pool.starmap( loadGMRBinaryFID, zip(itertools.repeat(self), fnames, info ) ) # zip(np.tile(vc, (ns, 1)), np.tile(vgc, (ns,1)), itertools.repeat(sys.argv[1]), itertools.repeat(sys.argv[2]), EPS_CMR))
+        #    results = pool.starmap( xxloadGMRBinaryFID, ( fnames, zip(itertools.repeat(info)) ) ) 
         # Plotting
 
         if plot: 
@@ -2576,8 +2536,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                     for ichan in rchan:
                         canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
 
-                    canvas.ax3.legend(prop={'size':6})
-                    canvas.ax2.legend(prop={'size':6})
+                    canvas.ax3.legend(prop={'size':6}, loc='upper right')
+                    canvas.ax2.legend(prop={'size':6}, loc='upper right')
                     
                     canvas.ax1.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
                     canvas.ax1.set_xlabel("time [s]", fontsize=8)
@@ -2757,7 +2717,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                             canvas.ax1.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID ref ch. "+str(ichan)) #, color='blue')
                 
                 if plot:
-                    canvas.ax1.legend(prop={'size':6})
+                    canvas.ax1.legend(prop={'size':6}, loc='upper right')
                     canvas.ax1.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
                     canvas.ax1.set_xlabel("time [s]", fontsize=8)
                     canvas.ax1.set_ylabel("RAW signal [V]", fontsize=8)
