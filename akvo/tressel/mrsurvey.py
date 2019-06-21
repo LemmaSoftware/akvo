@@ -2588,7 +2588,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         """
 
         import struct
-        canvas.reAx2()
+        canvas.reAx3()
 
         # not in any headers but this has changed, NOT the place to do this. MOVE  
         self.prePulseDelay  = 0.01           # delay before pulse
@@ -2657,8 +2657,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                     for irec in range(N_samp):
                         DATA[irec,ichan] = struct.unpack('>f', DATADUMP[irec*4:irec*4+4])[0]
                 if plot: 
-                    canvas.ax1.clear()
-                    canvas.ax2.clear()
+                    #canvas.ax1.clear()
+                    #canvas.ax2.clear()
+                    canvas.softClear()
                 li = np.shape( DATA[:,4][nd2s:nd2s+nd2] )[0]               
 
                 ######################################
@@ -2671,16 +2672,17 @@ class GMRDataProcessor(SNMRDataProcessor):
                         self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] = DATA[:,1][nps:nps+npul] * invCGain
                         self.DATADICT["Pulse 1"]["PULSE_TIMES"] = TIMES[nps:nps+npul] 
                         if plot:
-                            canvas.ax1.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
-                            canvas.ax2.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
+                            canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
+                            canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
                     elif FIDProc == "Pulse 2":
+                        print("TODO fix y scale")
                         self.DATADICT["Pulse 2"][ichan][ipm][istack] = DATA[:,ichan+3][nd2s:nd2s+nd2] *invGain
                         self.DATADICT["Pulse 2"]["TIMES"] = TIMES[nd2s:nd2s+nd2]
                         self.DATADICT["Pulse 2"]["CURRENT"][ipm][istack] = DATA[:,1][nps2:nps2+np2] * invCGain
                         self.DATADICT["Pulse 2"]["PULSE_TIMES"] = TIMES[nps2:nps2+np2] 
                         if plot:
-                            canvas.ax1.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID data ch. "+str(ichan)) #, color='blue')
-                            canvas.ax2.plot( self.DATADICT["Pulse 2"]["PULSE_TIMES"], self.DATADICT["Pulse 2"]["CURRENT"][ipm][istack], color='black' )
+                            canvas.ax3.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID data ch. "+str(ichan)) #, color='blue')
+                            canvas.ax1.plot( self.DATADICT["Pulse 2"]["PULSE_TIMES"], self.DATADICT["Pulse 2"]["CURRENT"][ipm][istack], color='black' )
                     else:
                         self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,ichan+3][nds:nds+nd1] * invGain
                         self.DATADICT["Pulse 2"][ichan][ipm][istack] = DATA[:,ichan+3][nd2s:nd2s+nd2] * invGain
@@ -2691,41 +2693,43 @@ class GMRDataProcessor(SNMRDataProcessor):
                         self.DATADICT["Pulse 2"]["CURRENT"][ipm][istack] = DATA[:,1][nps2:nps2+np2] * invCGain
                         self.DATADICT["Pulse 2"]["PULSE_TIMES"] = TIMES[nps2:nps2+np2] 
                         if plot:
-                            canvas.ax1.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
-                            canvas.ax1.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID data ch. "+str(ichan)) #, color='blue')
-                            canvas.ax2.plot( self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black' )
-                            canvas.ax2.plot( self.DATADICT["Pulse 2"]["PULSE_TIMES"], self.DATADICT["Pulse 2"]["CURRENT"][ipm][istack] , color='black')
+                            canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
+                            canvas.ax3.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID data ch. "+str(ichan)) #, color='blue')
+                            canvas.ax1.plot( self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black' )
+                            canvas.ax1.plot( self.DATADICT["Pulse 2"]["PULSE_TIMES"], self.DATADICT["Pulse 2"]["CURRENT"][ipm][istack] , color='black')
                 
                 for ichan in rchan:
                     if FIDProc == "Pulse 1":
                         self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,ichan+3][nds:nds+nd1] * invGain 
                         self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
                         if plot:
-                            canvas.ax1.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
+                            canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
                     elif FIDProc == "Pulse 2":
                         self.DATADICT["Pulse 2"][ichan][ipm][istack] = DATA[:,ichan+3][nd2s:nd2s+nd2] * invGain
                         self.DATADICT["Pulse 2"]["TIMES"] = TIMES[nd2s:nd2s+nd2]
                         if plot:
-                            canvas.ax1.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID ref ch. "+str(ichan)) #, color='blue')
+                            canvas.ax2.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID ref ch. "+str(ichan)) #, color='blue')
                     else:
                         self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[:,ichan+3][nds:nds+nd1] * invGain
                         self.DATADICT["Pulse 2"][ichan][ipm][istack] = DATA[:,ichan+3][nd2s:nd2s+nd2] * invGain
                         self.DATADICT["Pulse 1"]["TIMES"] = TIMES[nds:nds+nd1]
                         self.DATADICT["Pulse 2"]["TIMES"] = TIMES[nd2s:nd2s+nd2]
                         if plot:
-                            canvas.ax1.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
-                            canvas.ax1.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID ref ch. "+str(ichan)) #, color='blue')
+                            canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
+                            canvas.ax2.plot(self.DATADICT["Pulse 2"]["TIMES"], self.DATADICT["Pulse 2"][ichan][ipm][istack], label="Pulse 2 FID ref ch. "+str(ichan)) #, color='blue')
                 
                 if plot:
-                    canvas.ax1.legend(prop={'size':6}, loc='upper right')
+                    canvas.ax3.legend(prop={'size':6}, loc='upper right')
+                    canvas.ax2.legend(prop={'size':6}, loc='upper right')
                     canvas.ax1.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
                     canvas.ax1.set_xlabel("time [s]", fontsize=8)
-                    canvas.ax1.set_ylabel("RAW signal [V]", fontsize=8)
-                    canvas.ax2.set_ylabel("Current [A]", fontsize=8) 
-                    canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
-                    canvas.ax2.tick_params(axis='both', which='minor', labelsize=6)
-                    canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-                    canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                    canvas.ax3.set_ylabel("RAW signal [V]", fontsize=8)
+                    canvas.ax2.set_ylabel("RAW signal [V]", fontsize=8)
+                    canvas.ax1.set_ylabel("Current [A]", fontsize=8) 
+                    #canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
+                    #canvas.ax2.tick_params(axis='both', which='minor', labelsize=6)
+                    #canvas.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                    #canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
 
                     canvas.draw()
 

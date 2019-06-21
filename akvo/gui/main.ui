@@ -1068,13 +1068,13 @@ background: dark grey;
                 <widget class="QLCDNumber" name="lcdf0NK2">
                  <property name="styleSheet">
                   <string notr="true">#lcdf0NK2 { 
- color: green;
- background: black;
+color: green;
+background: black;
 }
 
 #lcdf0NK2:disabled {
-  color: grey;
-  background: dark grey;
+color: grey;
+background: dark grey;
 }</string>
                  </property>
                 </widget>
@@ -1083,13 +1083,13 @@ background: dark grey;
                 <widget class="QLCDNumber" name="lcdf0NK">
                  <property name="styleSheet">
                   <string notr="true">#lcdf0NK { 
- color: green;
- background: black;
+color: green;
+background: black;
 }
 
 #lcdf0NK:disabled {
-  color: grey;
-  background: dark grey;
+color: grey;
+background: dark grey;
 }</string>
                  </property>
                  <property name="intValue" stdset="0">
@@ -1132,13 +1132,13 @@ background: dark grey;
                 <widget class="QLCDNumber" name="lcdHNF">
                  <property name="styleSheet">
                   <string notr="true">#lcdHNF {
-  color: green;
-  background: black;
+color: green;
+background: black;
 }
 
 #lcdHNF:disabled {
-  color: grey;
-  background: dark grey;
+color: grey;
+background: dark grey;
 }</string>
                  </property>
                 </widget>
@@ -1147,13 +1147,13 @@ background: dark grey;
                 <widget class="QLCDNumber" name="lcdH1F">
                  <property name="styleSheet">
                   <string notr="true">#lcdH1F {
-  color: green;
-  background: black;
+color: green;
+background: black;
 }
 
 #lcdH1F:disabled {
-  color: grey;
-  background: dark grey;
+color: grey;
+background: dark grey;
 }</string>
                  </property>
                 </widget>
@@ -1162,13 +1162,13 @@ background: dark grey;
                 <widget class="QLCDNumber" name="lcdH1F2">
                  <property name="styleSheet">
                   <string notr="true">#lcdH1F2{ 
- color: green;
- background: black;
+color: green;
+background: black;
 }
 
 #lcdH1F2:disabled {
-  color: grey;
-  background: dark grey;
+color: red;
+background: dark grey;
 }</string>
                  </property>
                 </widget>
