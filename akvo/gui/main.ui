@@ -1077,6 +1077,9 @@ color: grey;
 background: dark grey;
 }</string>
                  </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
                 </widget>
                </item>
                <item row="6" column="2">
@@ -1091,6 +1094,9 @@ background: black;
 color: grey;
 background: dark grey;
 }</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
                  </property>
                  <property name="intValue" stdset="0">
                   <number>0</number>
@@ -1141,10 +1147,16 @@ color: grey;
 background: dark grey;
 }</string>
                  </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
                 </widget>
                </item>
                <item row="4" column="2">
                 <widget class="QLCDNumber" name="lcdH1F">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">#lcdH1F {
 color: green;
@@ -1155,6 +1167,9 @@ background: black;
 color: grey;
 background: dark grey;
 }</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
                  </property>
                 </widget>
                </item>
@@ -1170,6 +1185,9 @@ background: black;
 color: red;
 background: dark grey;
 }</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
                  </property>
                 </widget>
                </item>
@@ -1301,6 +1319,9 @@ background: dark grey;
   color: grey;
   background: dark grey;
 }</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
                  </property>
                 </widget>
                </item>
@@ -2539,8 +2560,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>411</width>
+               <height>77</height>
               </rect>
              </property>
              <attribute name="label">
