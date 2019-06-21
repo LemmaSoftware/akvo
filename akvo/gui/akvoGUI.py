@@ -34,7 +34,12 @@ from akvo.tressel import mrsurvey
 import pkg_resources  # part of setuptools
 version = pkg_resources.require("Akvo")[0].version
 
-import yaml
+from ruamel import yaml
+#import ruamel.yaml 
+#yaml = ruamel.yaml.YAML()
+#yaml.indent(mapping=4)
+
+#import yaml
 # Writes out numpy arrays into Eigen vectors as serialized by Lemma
 class MatrixXr(yaml.YAMLObject):
     yaml_tag = u'MatrixXr'
@@ -614,7 +619,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.FIDProcComboBox.setCurrentIndex (0)
     
     def ExportPreprocess(self):
-        """ This method export to YAML 
+        """ This method exports to YAML 
         """
         try:
             with open('.akvo.last.yaml.path') as f: 
@@ -686,7 +691,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             #for line in self.logText:
             #    outfile.write(line+"\n")
             yaml.dump(self.YamlNode, outfile)   
-            yaml.dump(INFO, outfile, default_flow_style=False)   
+            yaml.dump(INFO, outfile) #, default_flow_style=False)   
  
     def SavePreprocess(self):
      
@@ -1010,9 +1015,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #for line in yaml.dump(self.YamlNode, default_flow_style=False):
         #for line in nlogText: 
         #    self.ui.logTextBrowser.append( line )
-        #    self.logText.append( line ) 
+        #    self.logText.append( line )
         self.ui.logTextBrowser.clear()
-        self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
+        self.ui.logTextBrowser.append( yaml.dump(self.YamlNode )) 
 
     def disable(self):
         self.ui.inputRAWParametersBox.setEnabled(False)
