@@ -1154,9 +1154,6 @@ background: dark grey;
                </item>
                <item row="4" column="2">
                 <widget class="QLCDNumber" name="lcdH1F">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
                  <property name="styleSheet">
                   <string notr="true">#lcdH1F {
 color: green;

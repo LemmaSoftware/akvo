@@ -1024,6 +1024,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.BandPassBox.setEnabled(False)
         self.ui.downSampleGroupBox.setEnabled(False)
         self.ui.windowFilterGroupBox.setEnabled(False)
+        self.ui.harmonicBox.setEnabled(False)
 #        self.ui.despikeGroupBox.setEnabled(False)
         self.ui.adaptBox.setEnabled(False)
         self.ui.adaptFDBox.setEnabled(False)
@@ -1069,12 +1070,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Harmonic
         self.ui.harmonicBox.setEnabled(True)
         self.ui.harmonicBox.setChecked(True)
+        self.LCDHarmonics()
+        self.LCDHarmonics2()
 
         # sum group box
         try:
             if len(self.dataChan) > 1:
                 self.ui.sumDataBox.setEnabled(True)
-                self.ui.sumDataBox.setChecked(True)
+                self.ui.sumDataBox.setChecked(False)
         except:
             pass
 
@@ -1157,11 +1160,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.YamlNode.Processing["Harmonic modelling"]["f1Ks"] = str( self.ui.f1KsSpin.value() )
                 self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f1Spin.value() )
             self.Log()
-        else:
-            err_msg = "Harmonic modelling noise cancellation has already been applied!"
-            reply = QtWidgets.QMessageBox.critical(self, 'Error', 
-                err_msg) 
-            return 
+        #else:
+        #    err_msg = "Harmonic modelling noise cancellation has already been applied!"
+        #    reply = QtWidgets.QMessageBox.critical(self, 'Error', 
+        #        err_msg) 
+        #    return 
 
         self.lock("harmonic noise modelling")
 

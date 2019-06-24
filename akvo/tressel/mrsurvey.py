@@ -2002,10 +2002,12 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.samp /= dec
         self.dt   = 1./self.samp       
 
-        if truncate:
-            itrunc = (int)( 1e-3*truncate*self.samp )
         iFID = 0  
         for pulse in self.DATADICT["PULSES"]:
+            RSTIMES = self.DATADICT[pulse]["TIMES"][::dec]
+            if truncate:
+                itrunc = (int)( 1e-3*truncate*self.samp )
+                RSTIMES = RSTIMES[0:itrunc]
             for ipm in range(self.DATADICT["nPulseMoments"]):
                 for istack in self.DATADICT["stacks"]:
                     if plot:
@@ -2014,16 +2016,18 @@ class GMRDataProcessor(SNMRDataProcessor):
                         # trim off indices that don't divide evenly
                         ndi = np.shape(self.DATADICT[pulse][ichan][ipm][istack])[0]%dec
                         if ndi:
-                            [self.DATADICT[pulse][ichan][ipm][istack], RSTIMES] = signal.resample(self.DATADICT[pulse][ichan][ipm][istack][0:-ndi],\
-                                         len(self.DATADICT[pulse][ichan][ipm][istack][0:-ndi])//dec,\
-                                         self.DATADICT[pulse]["TIMES"][0:-ndi], window='hamm')
+                            #[self.DATADICT[pulse][ichan][ipm][istack], RSTIMES] = signal.resample(self.DATADICT[pulse][ichan][ipm][istack][0:-ndi],\
+                            #             len(self.DATADICT[pulse][ichan][ipm][istack][0:-ndi])//dec,\
+                            #             self.DATADICT[pulse]["TIMES"][0:-ndi], window='hamm')
+                            self.DATADICT[pulse][ichan][ipm][istack] = signal.decimate(self.DATADICT[pulse][ichan][ipm][istack], dec, n=None, ftype='iir', zero_phase=True)
                         else:
-                            [self.DATADICT[pulse][ichan][ipm][istack], RSTIMES] = signal.resample(self.DATADICT[pulse][ichan][ipm][istack],\
-                                         len(self.DATADICT[pulse][ichan][ipm][istack])//dec,\
-                                         self.DATADICT[pulse]["TIMES"], window='hamm')
+                            #[self.DATADICT[pulse][ichan][ipm][istack], RSTIMES] = signal.resample(self.DATADICT[pulse][ichan][ipm][istack],\
+                            #             len(self.DATADICT[pulse][ichan][ipm][istack])//dec,\
+                            #             self.DATADICT[pulse]["TIMES"], window='hamm')
+                            self.DATADICT[pulse][ichan][ipm][istack] = signal.decimate(self.DATADICT[pulse][ichan][ipm][istack], dec, n=None, ftype='iir', zero_phase=True)
                         if truncate:
                             self.DATADICT[pulse][ichan][ipm][istack] = self.DATADICT[pulse][ichan][ipm][istack][0:itrunc]
-                            RSTIMES = RSTIMES[0:itrunc]
+
                     if plot:
                         for ichan in self.DATADICT[pulse]["chan"]:
                             canvas.ax2.plot( RSTIMES, 1e9*self.DATADICT[pulse][ichan][ipm][istack], \

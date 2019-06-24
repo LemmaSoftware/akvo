@@ -40,7 +40,7 @@ def harmonicNorm (f0, sN, fs, t, k1, kN, ks):
 def minHarmonic(sN, fs, t, f0, k1, kN, ks):
     
     # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
-    #res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
+    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
     
     #############
     # Reduced N #
@@ -51,11 +51,12 @@ def minHarmonic(sN, fs, t, f0, k1, kN, ks):
     ########## 
     # Bounds #
     ##########
-    print("bounded search for f0", f0)
-    bnds = ( (f0-0.125, f0+0.125), )
+    #print("bounded search for f0 with 10", f0)
+    #bnds = ( (f0-0.125, f0+0.125), )
     #print("len f0", len( [f0,] ))
     #print("len bnds", len(bnds) )
-    res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
+    #res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
+    #res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, 10, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
     
     #print(res)
     #print ( "guess", guessf0(  harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks), fs  ) )
