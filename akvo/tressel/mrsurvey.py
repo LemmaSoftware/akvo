@@ -1063,7 +1063,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                 if phase == 1: # Amp phase
                     im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,
                          vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse]  )
-                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.phase, rasterized=True,\
+                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.balance, rasterized=True,\
                          vmin=-np.pi, vmax=np.pi)
                 if phase == 2: # CA NR
                     im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,\
@@ -1289,7 +1289,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                     im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IM"], cmap=cmap, vmin=-vmax2, vmax=vmax2)
                 elif phase == 1:
                     im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=cmap, vmin=-vmax1, vmax=vmax1)
-                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.phase, vmin=-vmax2, vmax=vmax2)
+                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.balance, vmin=-vmax2, vmax=vmax2)
+                    #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.phase, vmin=-vmax2, vmax=vmax2)
                 elif phase == 2:
                     im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=cmap, vmin=-vmax1, vmax=vmax1)
                     XS = self.bootstrap_sigma(pulse, chan)

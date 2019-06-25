@@ -6,7 +6,7 @@ from setuptools.command.build_py import build_py
 
 try:
     from pyqt_distutils.build_ui import build_ui
-except:
+except ImportError:
     print("Please install pyqt_distutils")
     print( "(sudo) pip(3) install pyqt-distutils")
     exit()
