@@ -355,13 +355,6 @@
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_5">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_3">
-                 <property name="text">
-                  <string>Truncate [ms]</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="1">
                 <widget class="QSpinBox" name="truncateSpinBox">
                  <property name="maximumSize">
@@ -381,10 +374,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_12">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_3">
                  <property name="text">
-                  <string>Downsample factor</string>
+                  <string>Truncate [ms]</string>
                  </property>
                 </widget>
                </item>
@@ -404,6 +397,13 @@
                  </property>
                  <property name="value">
                   <number>5</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Downsample factor</string>
                  </property>
                 </widget>
                </item>
@@ -466,27 +466,20 @@
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
-               <item row="4" column="1">
-                <widget class="QLCDNumber" name="lcdWinDead">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_55">
+                 <property name="text">
+                  <string>dead time [ms]</string>
                  </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <widget class="QPushButton" name="fdDesignPushButton">
                  <property name="styleSheet">
-                  <string notr="true">#lcdWinDead {
-color: green;
-background: black;
-}
-
-#lcdWinDead:disabled {
-color: grey;
-background: dark grey;
-}</string>
+                  <string notr="true"/>
                  </property>
-                 <property name="segmentStyle">
-                  <enum>QLCDNumber::Flat</enum>
+                 <property name="text">
+                  <string>design</string>
                  </property>
                 </widget>
                </item>
@@ -526,17 +519,34 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
+               <item row="4" column="1">
+                <widget class="QLCDNumber" name="lcdWinDead">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#lcdWinDead {
+color: green;
+background: black;
+}
+
+#lcdWinDead:disabled {
+color: grey;
+background: dark grey;
+}</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_45">
                  <property name="text">
                   <string>Type</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_55">
-                 <property name="text">
-                  <string>dead time [ms]</string>
                  </property>
                 </widget>
                </item>
@@ -564,13 +574,16 @@ background: dark grey;
                  </item>
                 </widget>
                </item>
-               <item row="1" column="3">
-                <widget class="QPushButton" name="fdDesignPushButton">
-                 <property name="styleSheet">
-                  <string notr="true"/>
+               <item row="0" column="3">
+                <widget class="QCheckBox" name="windowTrim">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets whether or not the dead time will be trimmed from the beginning and end of the signal. When doing a cascade of filters, users may wish to hold off on edge effect removal. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
-                  <string>design</string>
+                  <string>Trim dead time </string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -1021,50 +1034,72 @@ background: dark grey;
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_9">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_26">
+               <item row="12" column="0">
+                <widget class="QLabel" name="label_34">
                  <property name="text">
-                  <string>N freqs</string>
+                  <string>First harmonic 2</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="QSpinBox" name="NHarmonicsFreqsSpin">
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_49">
+                 <property name="text">
+                  <string>N segments</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="17" column="2">
+                <widget class="QPushButton" name="harmonicGO">
+                 <property name="layoutDirection">
+                  <enum>Qt::LeftToRight</enum>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#harmonicGO {background: green;}
+#harmonicGO:disabled{background: black;}</string>
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QLabel" name="label_35">
+                 <property name="text">
+                  <string>Last harmonic 2</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="1">
+                <widget class="QSpinBox" name="f1KsSpin">
                  <property name="minimum">
                   <number>1</number>
                  </property>
                  <property name="maximum">
-                  <number>2</number>
-                 </property>
-                 <property name="value">
-                  <number>1</number>
+                  <number>3</number>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
-                <widget class="QSpinBox" name="f0KNSpin">
-                 <property name="minimum">
-                  <number>2</number>
-                 </property>
-                 <property name="value">
-                  <number>40</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QSpinBox" name="f0K1Spin">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
+               <item row="11" column="1">
+                <widget class="QDoubleSpinBox" name="f1Spin">
                  <property name="maximum">
-                  <number>50</number>
+                  <double>25000.000000000000000</double>
                  </property>
                  <property name="value">
-                  <number>1</number>
+                  <double>60.000000000000000</double>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="2">
+               <item row="17" column="1">
+                <widget class="QCheckBox" name="plotHarmonic">
+                 <property name="text">
+                  <string>Plot</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="2">
                 <widget class="QLCDNumber" name="lcdf0NK2">
                  <property name="styleSheet">
                   <string notr="true">#lcdf0NK2 { 
@@ -1082,7 +1117,223 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
+               <item row="12" column="1">
+                <widget class="QSpinBox" name="f1K1Spin">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="0">
+                <widget class="QLabel" name="label_41">
+                 <property name="text">
+                  <string>Sub-harmonics</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="2">
+                <widget class="Line" name="line_6">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="QSpinBox" name="f0KNSpin">
+                 <property name="minimum">
+                  <number>2</number>
+                 </property>
+                 <property name="value">
+                  <number>40</number>
+                 </property>
+                </widget>
+               </item>
                <item row="6" column="2">
+                <widget class="QLCDNumber" name="lcdH1F">
+                 <property name="styleSheet">
+                  <string notr="true">#lcdH1F {
+color: green;
+background: black;
+}
+
+#lcdH1F:disabled {
+color: grey;
+background: dark grey;
+}</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>Last harmonic 1</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="1">
+                <widget class="Line" name="line_5">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QSpinBox" name="f0K1Spin">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>50</number>
+                 </property>
+                 <property name="value">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="1">
+                <widget class="Line" name="line_8">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_50">
+                 <property name="text">
+                  <string>Base freq. search </string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="Line" name="line_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="2">
+                <widget class="Line" name="line_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>Sub-harmonics </string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>First harmonic 1</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="NHarmonicsFreqsSpin">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>2</number>
+                 </property>
+                 <property name="value">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QDoubleSpinBox" name="f0Spin">
+                 <property name="maximum">
+                  <double>25000.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>60.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="2">
+                <widget class="QLCDNumber" name="lcdH1F2">
+                 <property name="styleSheet">
+                  <string notr="true">#lcdH1F2{ 
+color: green;
+background: black;
+}
+
+#lcdH1F2:disabled {
+color: grey;
+background: dark grey;
+}</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="Line" name="line_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="0">
+                <widget class="Line" name="line_7">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0">
+                <widget class="QLabel" name="label_27">
+                 <property name="text">
+                  <string>Base freq. 2 </string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QSpinBox" name="f0KsSpin">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Would you like to calculate subharmonics? For instance, setting this to 1, will calculate only the exact harmonics, setting this to 2 will calculate 1/2 step subharmonics (i.e. if the baseline frequency is 60 Hz, this will result in calcualtion of 30 Hz subharmonics)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>3</number>
+                 </property>
+                 <property name="value">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_26">
+                 <property name="text">
+                  <string>N freqs</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="1">
+                <widget class="QSpinBox" name="f1KNSpin">
+                 <property name="minimum">
+                  <number>2</number>
+                 </property>
+                 <property name="value">
+                  <number>40</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="2">
                 <widget class="QLCDNumber" name="lcdf0NK">
                  <property name="styleSheet">
                   <string notr="true">#lcdf0NK { 
@@ -1103,38 +1354,7 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="label_34">
-                 <property name="text">
-                  <string>First harmonic 2</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="12" column="1">
-                <widget class="QSpinBox" name="f1KsSpin">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>3</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="2">
-                <widget class="Line" name="line_9">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="0">
-                <widget class="QLabel" name="label_35">
-                 <property name="text">
-                  <string>Last harmonic 2</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="2">
+               <item row="7" column="2">
                 <widget class="QLCDNumber" name="lcdHNF">
                  <property name="styleSheet">
                   <string notr="true">#lcdHNF {
@@ -1152,233 +1372,8 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="4" column="2">
-                <widget class="QLCDNumber" name="lcdH1F">
-                 <property name="styleSheet">
-                  <string notr="true">#lcdH1F {
-color: green;
-background: black;
-}
-
-#lcdH1F:disabled {
-color: grey;
-background: dark grey;
-}</string>
-                 </property>
-                 <property name="segmentStyle">
-                  <enum>QLCDNumber::Flat</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="2">
-                <widget class="QLCDNumber" name="lcdH1F2">
-                 <property name="styleSheet">
-                  <string notr="true">#lcdH1F2{ 
-color: green;
-background: black;
-}
-
-#lcdH1F2:disabled {
-color: grey;
-background: dark grey;
-}</string>
-                 </property>
-                 <property name="segmentStyle">
-                  <enum>QLCDNumber::Flat</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="12" column="0">
-                <widget class="QLabel" name="label_41">
-                 <property name="text">
-                  <string>Sub-harmonics</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
-                <widget class="QSpinBox" name="f1K1Spin">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="0">
-                <widget class="QLabel" name="label_27">
-                 <property name="text">
-                  <string>Base freq. 2 </string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1">
-                <widget class="Line" name="line_5">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="2">
-                <widget class="Line" name="line_6">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QDoubleSpinBox" name="f0Spin">
-                 <property name="maximum">
-                  <double>25000.000000000000000</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.100000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>60.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="1">
-                <widget class="QDoubleSpinBox" name="f1Spin">
-                 <property name="maximum">
-                  <double>25000.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>60.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2">
-                <widget class="Line" name="line_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="15" column="2">
-                <widget class="QPushButton" name="harmonicGO">
-                 <property name="layoutDirection">
-                  <enum>Qt::LeftToRight</enum>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">#harmonicGO {background: green;}
-#harmonicGO:disabled{background: black;}</string>
-                 </property>
-                 <property name="text">
-                  <string>GO</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QSpinBox" name="f0KsSpin">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Would you like to calculate subharmonics? For instance, setting this to 1, will calculate only the exact harmonics, setting this to 2 will calculate 1/2 step subharmonics (i.e. if the baseline frequency is 60 Hz, this will result in calcualtion of 30 Hz subharmonics)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>3</number>
-                 </property>
-                 <property name="value">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
+               <item row="4" column="1">
                 <widget class="Line" name="line">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_31">
-                 <property name="text">
-                  <string>Last harmonic 1</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_25">
-                 <property name="text">
-                  <string>Base freq. 1</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="2">
-                <widget class="QLCDNumber" name="lcdHNF2">
-                 <property name="styleSheet">
-                  <string notr="true">#lcdHNF2 { 
- color: green;
- background: black;
-}
-
-#lcdHNF2:disabled {
-  color: grey;
-  background: dark grey;
-}</string>
-                 </property>
-                 <property name="segmentStyle">
-                  <enum>QLCDNumber::Flat</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="1">
-                <widget class="QSpinBox" name="f1KNSpin">
-                 <property name="minimum">
-                  <number>2</number>
-                 </property>
-                 <property name="value">
-                  <number>40</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="15" column="1">
-                <widget class="QCheckBox" name="plotHarmonic">
-                 <property name="text">
-                  <string>Plot</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="1">
-                <widget class="Line" name="line_8">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="0">
-                <widget class="Line" name="line_7">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="label_33">
-                 <property name="text">
-                  <string>Sub-harmonics </string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_11">
-                 <property name="text">
-                  <string>First harmonic 1</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="Line" name="line_3">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0">
-                <widget class="Line" name="line_4">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1397,10 +1392,106 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_49">
+               <item row="13" column="2">
+                <widget class="QLCDNumber" name="lcdHNF2">
+                 <property name="styleSheet">
+                  <string notr="true">#lcdHNF2 { 
+ color: green;
+ background: black;
+}
+
+#lcdHNF2:disabled {
+  color: grey;
+  background: dark grey;
+}</string>
+                 </property>
+                 <property name="segmentStyle">
+                  <enum>QLCDNumber::Flat</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_25">
                  <property name="text">
-                  <string>N segments</string>
+                  <string>Base freq. 1</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="2">
+                <widget class="Line" name="line_9">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QSpinBox" name="Nsearch">
+                 <property name="prefix">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="searchAll">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When searching for the fundamental frequency, should the entire ensemble of harmonics be included? Reducing this number can accelerate the algorithm significantly. If a selection other than &amp;quot;All&amp;quot; is chosen, once the fundamental frequency is found, the whole set of harmonics will be included in the modelling.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>All</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>First</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QDoubleSpinBox" name="bounds">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If bounds is selected, this is the variance in the fundamental frequency which will be searched from the &lt;span style=&quot; font-weight:600;&quot;&gt;prior &lt;/span&gt;result. As such, for each record, the fundamental frequency can shift by this much (in either direction) from the prior record. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
+                 <property name="minimum">
+                  <double>0.005000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.001000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.125000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QCheckBox" name="boundsCheck">
+                 <property name="text">
+                  <string>Bounded search</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QCheckBox" name="harmRef">
+                 <property name="text">
+                  <string>proc ref. channels</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -2544,8 +2635,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <attribute name="label">

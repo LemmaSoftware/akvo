@@ -37,29 +37,21 @@ def harmonicNorm (f0, sN, fs, t, k1, kN, ks):
     ii =  sN < (3.* np.std(sN))
     return np.linalg.norm( harmonicEuler(sN, fs, t, f0, k1, kN, ks)[ii] ) 
 
-def minHarmonic(sN, fs, t, f0, k1, kN, ks):
+def minHarmonic(sN, fs, t, f0, k1, kN, ks, Bounds, Nsearch):
     
-    # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
-    res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
+    kNs = kN
+    if Nsearch != False:
+        kNs = k1+Nsearch    
+    if Bounds == 0:
+        print("UNbounded search from ", k1, " to ", kNs) # for f0 with fN=10 in search", f0)
+        # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
+        res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kNs, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
     
-    #############
-    # Reduced N #
-    #############
-    #print("min 10")
-    #res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, 10, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
-    
-    ########## 
-    # Bounds #
-    ##########
-    #print("bounded search for f0 with 10", f0)
-    #bnds = ( (f0-0.125, f0+0.125), )
-    #print("len f0", len( [f0,] ))
-    #print("len bnds", len(bnds) )
-    #res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, kN, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
-    #res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, 10, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
-    
-    #print(res)
-    #print ( "guess", guessf0(  harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks), fs  ) )
+    else:
+        bnds = ( (f0-Bounds, f0+Bounds), )
+        print("bounded ( +-", Bounds, ") search from ", k1, "to", kNs) # for f0 with fN=10 in search", f0)
+        res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, kNs, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
+
     return harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks), res.x[0]#[0]
 
 def harmonicEuler2 ( sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks ): 
@@ -70,7 +62,7 @@ def harmonicEuler2 ( sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks ):
         fs = sampling frequency
         t = time samples 
         f0 = first base frequency of the sinusoidal noise 
-        f0k1 = First harmonic to calulate for f0 
+        f0k1 = First harmonic to calula11te for f0 
         f0kN = Last base harmonic to calulate for f0
         f0ks = subharmonics to calculate 
         f1 = second base frequency of the sinusoidal noise 
@@ -108,26 +100,40 @@ def harmonic2Norm (f0, sN, fs, t, f0k1, f0kN, f0ks, f1k1, f1kN, f1ks):
     ii =  sN < (3.* np.std(sN))
     return np.linalg.norm( harmonicEuler2(sN, fs, t, f0[0], f0k1, f0kN, f0ks, f0[1], f1k1, f1kN, f1ks)[ii] ) 
 
-def minHarmonic2(sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks):
-    
-    # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
-    #res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, f0kN, f0ks, f1k1,f1kN, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
-    
-    print("search 10")
-    res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, 10, f0ks, f1k1, 10, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
-    
-    #print(res)
-    #print ( "guess", guessf0(harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1k1, f1kN, f1ks), fs)  )
+def minHarmonic2(sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks, Bounds, Nsearch):
+
+    kNs0 = f0kN
+    kNs1 = f1kN
+    if Nsearch != False:
+        kNs0 = f0k1+Nsearch    
+        kNs1 = f1k1+Nsearch    
+
+    if Bounds == 0:
+
+        # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
+        print("2 UNbounded ( +-", Bounds,") search length ", kNs0, kNs1 ,"for f0", f0, f1)
+        res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, f0k1+kNs0, f0ks, f1k1, f1k1+kNs1, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
+    else:
+        # Bounded
+        bnds = ( (f0-Bounds, f0+Bounds),(f1-Bounds, f1+Bounds) )
+        print("2 bounded ( +-", Bounds,") search length ", kNs0, kNs1 ,"for f0", f0, f1)
+        # L-BFGS-B hess=None, bounds=None )
+        res = minimize(harmonic2Norm, ((f0,f1)), args=(sN, fs, t, f0k1, f0k1+kNs0, f0ks, f1k1, f1k1+kNs1, f1ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) 
+
     return harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1k1, f1kN, f1ks), res.x[0], res.x[1]#[0]
 
 def guessf0( sN, fs ):
     S = np.fft.fft(sN)
     w = np.fft.fftfreq( len(sN), 1/fs )
     imax = np.argmax( np.abs(S) )
+
+    #np.save( "sN.npy", S )
+    #np.save( "w.npy", w )
+    #exit()
     #plt.plot( w, np.abs(S) )
     #plt.show()
     #print(w)
-    #print ( w[imax], w[imax+1] )
+    #print ( w[imax], w[imax+1] )esta bien in english
     return abs(w[imax])
 
 if __name__ == "__main__":

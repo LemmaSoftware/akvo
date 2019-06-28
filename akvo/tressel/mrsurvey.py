@@ -536,12 +536,11 @@ class GMRDataProcessor(SNMRDataProcessor):
         #canvas.fig.tight_layout() 
         canvas.draw()
         self.doneTrigger.emit() 
-
-    #def harmonicModel(self, nF, nK, f0, f1, plot, canvas):
     
     def harmonicModel(self, nF, \
         f0, f0K1, f0KN, f0Ks, f0ns, \
         f1, f1K1, f1KN, f1Ks,  \
+        Nsearch, Bounds, procRefs, \
         plot, canvas):
         """ nF = number of base frequencies, must be 1 or 2 
             f0 = first base frequency  
@@ -553,15 +552,20 @@ class GMRDataProcessor(SNMRDataProcessor):
             f1K1 = first harmonic to model for second base frequency 
             f1KN = last harmonic to model for the second base frequency 
             f1Ks = subharmonic spacing for the second base frequency, set to 1 for no subharmonics.
+            Nsearch = the number of harmonics to use when determining base frequency 
+            bounds = 1/2 the width of the space where baseline frequency will be searched  
+            procRefs = should the reference loops be processed as well  
             plot = should Akvo plot the results 
             canvas = mpl plotting axis      
         """
         if plot:
-            canvas.reAx2()
+            canvas.reAx2(shy=False)
             canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
-            canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
+            #canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
             canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
-
+            canvas.ax2.set_xlabel(r"frequency [Hz]", fontsize=8)
+            canvas.ax1.set_yscale('log')
+            canvas.ax2.set_yscale('log')
         # Data
         iFID = 0
 
@@ -582,62 +586,75 @@ class GMRDataProcessor(SNMRDataProcessor):
                 for ipm in range(self.DATADICT["nPulseMoments"]):
                     if plot:
                         canvas.softClear()
-                        mmax = 0
-                        for ichan in self.DATADICT[pulse]["rchan"]:
-                            canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                            mmax = max( mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                        mmaxr = 0
+                        mmaxd = 0
+                        if procRefs: 
+                            for ichan in self.DATADICT[pulse]["rchan"]:
+                                #canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
+                                #mmaxr = max( mmaxr, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                                ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                                X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                                canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
+                            canvas.ax1.set_prop_cycle(None)
+                            #canvas.ax1.set_ylim(-mmaxr, mmaxr) 
                         for ichan in self.DATADICT[pulse]["chan"]:
-                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                            mmax = max( mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
-                        canvas.ax1.set_prop_cycle(None)
+                            #canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
+                            #mmaxd = max( mmaxd, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                            ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                            X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                            canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
                         canvas.ax2.set_prop_cycle(None)
-                        canvas.ax1.set_ylim(-mmax, mmax) 
-                    for ichan in self.DATADICT[pulse]["rchan"]:
-                        if nF == 1:
-                            for iseg in range(f0ns):
-                                if iseg < f0ns-1:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = \
-                                        harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], \
+                        #canvas.ax2.set_ylim(-mmaxd, mmaxd)
+                    if procRefs: 
+                        for ichan in self.DATADICT[pulse]["rchan"]:
+                            if nF == 1:
+                                for iseg in range(f0ns):
+                                    if iseg < f0ns-1:
+                                        self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = \
+                                            harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], \
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
-                                            f0p[ichan], f0K1, f0KN, f0Ks ) 
-                                else:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = \
-                                        harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], \
+                                            f0p[ichan], f0K1, f0KN, f0Ks, Bounds, Nsearch ) 
+                                    else:
+                                        self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = \
+                                            harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], \
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
-                                            f0p[ichan], f0K1, f0KN, f0Ks ) 
-                        elif nF == 2:
-                            for iseg in range(f0ns):
-                                if iseg < f0ns-1:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan], f1p[ichan] = \
-                                        harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
-                                     self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
-                                     f0p[ichan], f0K1, f0KN, f0Ks,  \
-                                     f1p[ichan], f1K1, f1KN, f1Ks ) 
-                                else:
-                                    self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = \
-                                        harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
-                                     self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
-                                     f0p[ichan], f0K1, f0KN, f0Ks,  \
-                                     f1p[ichan], f1K1, f1KN, f1Ks ) 
-                        # plot
-                        if plot:
-                            canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                            f0p[ichan], f0K1, f0KN, f0Ks, Bounds, Nsearch ) 
+                            elif nF == 2:
+                                for iseg in range(f0ns):
+                                    if iseg < f0ns-1:
+                                        self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan], f1p[ichan] = \
+                                            harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
+                                        self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
+                                        f0p[ichan], f0K1, f0KN, f0Ks,  \
+                                        f1p[ichan], f1K1, f1KN, f1Ks, Bounds, Nsearch ) 
+                                    else:
+                                        self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = \
+                                            harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
+                                        self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
+                                        f0p[ichan], f0K1, f0KN, f0Ks,  \
+                                        f1p[ichan], f1K1, f1KN, f1Ks, Bounds, Nsearch ) 
+                            # plot
+                            if plot:
+                                #canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                #    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
+                                ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                                X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                                canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X),\
                                 label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
 
                     for ichan in self.DATADICT[pulse]["chan"]:
-                        
                         if nF == 1:
                             for iseg in range(f0ns):
                                 if iseg < f0ns-1:
                                     self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], f0p[ichan] = \
                                         harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg], 
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
-                                            f0p[ichan], f0K1, f0KN, f0Ks ) 
+                                            f0p[ichan], f0K1, f0KN, f0Ks, Bounds, Nsearch ) 
                                 else:
                                     self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan] = \
                                         harmonic.minHarmonic( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], 
                                             self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
-                                            f0p[ichan], f0K1, f0KN, f0Ks )
+                                            f0p[ichan], f0K1, f0KN, f0Ks, Bounds, Nsearch )
 
                         elif nF == 2:
                             for iseg in range(f0ns):
@@ -646,21 +663,26 @@ class GMRDataProcessor(SNMRDataProcessor):
                                         harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg:(iseg+1)*Nseg],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg:(iseg+1)*Nseg], \
                                      f0p[ichan], f0K1, f0KN, f0Ks,  \
-                                     f1p[ichan], f1K1, f1KN, f1Ks ) 
+                                     f1p[ichan], f1K1, f1KN, f1Ks, Bounds, Nsearch ) 
                                 else:
                                     self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::], f0p[ichan], f1p[ichan] = \
                                         harmonic.minHarmonic2( self.DATADICT[pulse][ichan][ipm][istack][iseg*Nseg::],\
                                      self.samp,  self.DATADICT[pulse]["TIMES"][iseg*Nseg::], \
                                      f0p[ichan], f0K1, f0KN, f0Ks,  \
-                                     f1p[ichan], f1K1, f1KN, f1Ks ) 
+                                     f1p[ichan], f1K1, f1KN, f1Ks, Bounds, Nsearch ) 
                
                         # plot
                         if plot:
-                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                            #canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                            #    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
+                            ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                            X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                            canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), \
                                 label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
 
                     if plot:
-                        canvas.ax1.legend(prop={'size':6}, loc='upper right')
+                        if procRefs: 
+                            canvas.ax1.legend(prop={'size':6}, loc='upper right')
                         canvas.ax2.legend(prop={'size':6}, loc='upper right')
                         canvas.draw() 
                 
@@ -1063,7 +1085,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                 if phase == 1: # Amp phase
                     im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,
                          vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse]  )
-                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.balance, rasterized=True,\
+                    #im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.balance, rasterized=True,\
+                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.delta, rasterized=True,\
                          vmin=-np.pi, vmax=np.pi)
                 if phase == 2: # CA NR
                     im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,\
@@ -2065,7 +2088,7 @@ class GMRDataProcessor(SNMRDataProcessor):
     def computeWindow(self, pulse, band, centre, ftype, canvas=None):
         
         # Compute window
-        nd = len(self.DATADICT[pulse][self.DATADICT[pulse]["chan"][0]][0][self.DATADICT["stacks"][0]])
+        nd = len(self.DATADICT[pulse][self.DATADICT[pulse]["chan"][0]][0][self.DATADICT["stacks"][0]]) # num. data 
         fft1 = np.fft.rfft(self.DATADICT[pulse][self.DATADICT[pulse]["chan"][0]][0][self.DATADICT["stacks"][0]])
         freqs   = np.fft.fftfreq(nd, self.dt)
         df      = freqs[1] - freqs[0]
@@ -2119,26 +2142,31 @@ class GMRDataProcessor(SNMRDataProcessor):
             canvas.ax2.set_title("IFFT")
             canvas.draw()
 
-        return [WINDOW, nd, istart, iend, dead]
+        return [WINDOW, nd, istart, iend, dead, ift]
 
-    def windowFilter(self, ftype, band, centre, canvas):
+    def windowFilter(self, ftype, band, centre, trunc, canvas):
 
         ###############################
         # Window Filter (Ormsby filter http://www.xsgeo.com/course/filt.htm) 
         # apply window
         iFID = 0
         for pulse in self.DATADICT["PULSES"]:
-            [WINDOW, nd, istart, iend,dead] = self.computeWindow(pulse, band, centre, ftype)
+            [WINDOW, nd, istart, iend, dead, idead] = self.computeWindow(pulse, band, centre, ftype)
             for istack in self.DATADICT["stacks"]:
                 for ipm in range(self.DATADICT["nPulseMoments"]):
                     for ichan in np.append(self.DATADICT[pulse]["chan"], self.DATADICT[pulse]["rchan"]):
                         fft = np.fft.rfft( self.DATADICT[pulse][ichan][ipm][istack]  )
                         fft *= WINDOW
-                        self.DATADICT[pulse][ichan][ipm][istack] = np.fft.irfft(fft , nd)
+                        if trunc:
+                            self.DATADICT[pulse][ichan][ipm][istack] = np.fft.irfft(fft, nd)[idead:-idead]
+                        else:
+                            self.DATADICT[pulse][ichan][ipm][istack] = np.fft.irfft(fft, nd)
                 
                     percent = (int)(1e2*((float)(iFID*self.DATADICT["nPulseMoments"]+(ipm))/(len(self.DATADICT["PULSES"])*self.nPulseMoments)))
                     self.progressTrigger.emit(percent)  
                 iFID += 1
+            if trunc:
+                self.DATADICT[pulse]["TIMES"] = self.DATADICT[pulse]["TIMES"][idead:-idead]
 
         self.plotFT(canvas, istart, iend)
         self.doneTrigger.emit() 

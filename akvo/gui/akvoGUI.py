@@ -17,7 +17,7 @@ each time you launch Akvo.
 """
 
 import matplotlib
-#matplotlib.use("QT4Agg")
+matplotlib.use("QT5Agg")
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import numpy as np
@@ -81,16 +81,16 @@ class AkvoYamlNode(yaml.YAMLObject):
     def __init__(self):
         self.Akvo_VERSION = version
         self.Import = OrderedDict() # {}
-        self.Processing = OrderedDict() 
+        self.Processing = [] # OrderedDict() 
+        self.Stacking = OrderedDict() 
     #def __init__(self, node):
     #    self.Akvo_VERSION = node["version"]
     #    self.Import = OrderedDict( node["Import"] ) # {}
     #    self.Processing = OrderedDict( node["Processing"] ) 
     def __repr__(self):
         return "%s(name=%r, Akvo_VERSION=%r, Import=%r, Processing=%r)" % (
-            #self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing )
-            self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
-            #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing)) 
+            self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing, self.Stacking )
+            #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
     
 try:    
     import thread 
@@ -141,14 +141,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberTauDelay.setEnabled(0)
         self.ui.lcdNumberNQ.setEnabled(0)
 
-        #MAK 20170126: add in a list to hold processing steps
         self.logText = []      
 
-        ####################
-        # Make connections #
-        ####################
+        #######################
+        ##################### #
+        ## Make connections # #
+        ##################### #
+        #######################
 
-        # Menu items 
+        ##############
+        # Menu items #
+        ##############
         self.ui.actionOpen_GMR.triggered.connect(self.openGMRRAWDataset)
         self.ui.actionSave_Preprocessed_Dataset.triggered.connect(self.SavePreprocess)
         self.ui.actionExport_Preprocessed_Dataset.triggered.connect(self.ExportPreprocess)
@@ -156,7 +159,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.actionOpen_Preprocessed_Dataset.triggered.connect(self.OpenPreprocess)
         self.ui.actionAboutAkvo.triggered.connect(self.about)
 
-        # Buttons
+        ###########
+        # Buttons #
+        ###########
 #         #QtCore.QObject.connect(self.ui.fullWorkflowPushButton, QtCore.SIGNAL("clicked()"), self.preprocess )
         self.ui.loadDataPushButton.pressed.connect(self.loadRAW) 
         self.ui.sumDataGO.pressed.connect( self.sumDataChans )
@@ -812,7 +817,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.YamlNode.Import = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
         self.YamlNode.Processing = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
-        self.Log() 
+        self.YamlNode.Stacking = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Stacking)
+        self.Log()
+ 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         #except KeyError:
         #    pass
@@ -1128,9 +1135,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def calcQ(self):
-        if "Calc Q" not in self.YamlNode.Processing.keys():
+        if "Calc Q" not in self.YamlNode.Stacking.keys():
             #print("In CalcQ", yaml.dump(self.YamlNode.Processing)  )
-            self.YamlNode.Processing["Calc Q"] = True
+            self.YamlNode.Stacking["Calc Q"] = True
             #print( yaml.dump(self.YamlNode.Processing)  )
             self.Log()
         else:
@@ -1145,28 +1152,41 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def harmonicModel(self):
-
-        if "Harmonic modelling" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Harmonic modelling"] = {}
-            self.YamlNode.Processing["Harmonic modelling"]["NF"] = str( self.ui.NHarmonicsFreqsSpin.value() ) 
-            self.YamlNode.Processing["Harmonic modelling"]["Segments"] = str( self.ui.NSegments.value() ) 
-            self.YamlNode.Processing["Harmonic modelling"]["f0K1"] = str( self.ui.f0K1Spin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f0KN"] = str( self.ui.f0KNSpin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f0Ks"] = str( self.ui.f0KsSpin.value() )
-            self.YamlNode.Processing["Harmonic modelling"]["f0"] = str( self.ui.f0Spin.value() )
-            if self.ui.NHarmonicsFreqsSpin.value() > 1:
-                self.YamlNode.Processing["Harmonic modelling"]["f1K1"] = str( self.ui.f1K1Spin.value() )
-                self.YamlNode.Processing["Harmonic modelling"]["f1KN"] = str( self.ui.f1KNSpin.value() )
-                self.YamlNode.Processing["Harmonic modelling"]["f1Ks"] = str( self.ui.f1KsSpin.value() )
-                self.YamlNode.Processing["Harmonic modelling"]["f1"] = str( self.ui.f1Spin.value() )
-            self.Log()
-        #else:
-        #    err_msg = "Harmonic modelling noise cancellation has already been applied!"
-        #    reply = QtWidgets.QMessageBox.critical(self, 'Error', 
-        #        err_msg) 
-        #    return 
-
+        
         self.lock("harmonic noise modelling")
+        
+        Harm = OrderedDict()
+        Harm["STEP"] = "Harmonic modelling"
+        Harm["NF"] = str( self.ui.NHarmonicsFreqsSpin.value() ) 
+        Harm["Segments"] = str( self.ui.NSegments.value() ) 
+        Harm["Proc. ref."] = self.ui.harmRef.isChecked() 
+        
+        
+        if self.ui.searchAll.currentText() == "All":
+            Harm["search"] = self.ui.searchAll.currentText()
+            Search = False  
+        else:
+            #Harm["search"] = self.ui.searchAll.currentText() 
+            Harm["search"] = str(self.ui.Nsearch.value()) 
+            Search = self.ui.Nsearch.value() 
+        if self.ui.boundsCheck.isChecked():
+            Harm["Bounds"] = str(self.ui.bounds.value()) 
+            Bounds = self.ui.bounds.value() 
+        else:
+            Harm["Bounds"] = self.ui.boundsCheck.isChecked() 
+            Bounds = 0
+
+        Harm["f0K1"] = str( self.ui.f0K1Spin.value() )
+        Harm["f0KN"] = str( self.ui.f0KNSpin.value() )
+        Harm["f0Ks"] = str( self.ui.f0KsSpin.value() )
+        Harm["f0"] = str( self.ui.f0Spin.value() )
+        if self.ui.NHarmonicsFreqsSpin.value() > 1:
+            Harm["f1K1"] = str( self.ui.f1K1Spin.value() )
+            Harm["f1KN"] = str( self.ui.f1KNSpin.value() )
+            Harm["f1Ks"] = str( self.ui.f1KsSpin.value() )
+            Harm["f1"] = str( self.ui.f1Spin.value() )
+        self.YamlNode.Processing.append(Harm)
+        self.Log()
 
         thread.start_new_thread(self.RAWDataProc.harmonicModel, \
                 ( \
@@ -1180,6 +1200,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                  self.ui.f1K1Spin.value(), \
                  self.ui.f1KNSpin.value(), \
                  self.ui.f1KsSpin.value(), \
+                 Search, \
+                 Bounds, \
+                 self.ui.harmRef.isChecked(), \
                  self.ui.plotHarmonic.isChecked(), \
                  self.ui.mplwidget \
                 ) \
@@ -1187,10 +1210,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def FDSmartStack(self):
 
-        if "TD stack" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["TD stack"] = {}
-            self.YamlNode.Processing["TD stack"]["outlier"] = str( self.ui.outlierTestCB.currentText() ) 
-            self.YamlNode.Processing["TD stack"]["cutoff"] = str( self.ui.MADCutoff.value() )
+        if "TD stack" not in self.YamlNode.Stacking.keys():
+            self.YamlNode.Stacking["TD stack"] = {}
+            self.YamlNode.Stacking["TD stack"]["outlier"] = str( self.ui.outlierTestCB.currentText() ) 
+            self.YamlNode.Stacking["TD stack"]["cutoff"] = str( self.ui.MADCutoff.value() )
             self.Log()
         else:
             err_msg = "TD noise cancellation has already been applied!"
@@ -1205,21 +1228,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def adaptFilter(self):
-
-        if "TD noise cancellation" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["TD noise cancellation"] = {}
-            self.YamlNode.Processing["TD noise cancellation"]["n_Taps"] = str(self.ui.MTapsSpinBox.value())
-            self.YamlNode.Processing["TD noise cancellation"]["lambda"] = str(self.ui.adaptLambdaSpinBox.value())
-            self.YamlNode.Processing["TD noise cancellation"]["truncate"] = str(self.ui.adaptTruncateSpinBox.value())
-            self.YamlNode.Processing["TD noise cancellation"]["mu"] = str(self.ui.adaptMuSpinBox.value()) 
-            self.YamlNode.Processing["TD noise cancellation"]["PCA"] = str(self.ui.PCAComboBox.currentText())
-            self.Log()
-        else:
-            err_msg = "TD noise cancellation has already been applied!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
-            #return 
         
         self.lock("TD noise cancellation filter")
+        
+        # Log processing 
+        Adapt = OrderedDict()
+        Adapt["STEP"] = "TD noise cancellation"
+        Adapt["n_Taps"] = str(self.ui.MTapsSpinBox.value())
+        Adapt["lambda"] = str(self.ui.adaptLambdaSpinBox.value())
+        Adapt["truncate"] = str(self.ui.adaptTruncateSpinBox.value())
+        Adapt["mu"] = str(self.ui.adaptMuSpinBox.value()) 
+        Adapt["PCA"] = str(self.ui.PCAComboBox.currentText())
+        self.YamlNode.Processing.append(Adapt)
+        self.Log( )
+
         thread.start_new_thread(self.RAWDataProc.adaptiveFilter, \
                 (self.ui.MTapsSpinBox.value(), \
                 self.ui.adaptLambdaSpinBox.value(), \
@@ -1230,16 +1252,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def sumDataChans(self): 
 
-        if "Data sum" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Data sum"] = True
-            self.Log()
-        else:
-            err_msg = "Data channels have already been summed!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
-                err_msg) 
-            return 
-
         self.lock("Summing data channels")
+        
+        Sum = OrderedDict()
+        Sum["STEP"] = "Channel sum"
+        self.YamlNode.Processing.append(Sum)
+        self.Log( )
+
         self.dataChan = [self.dataChan[0]]
         self.ui.sumDataBox.setEnabled(False)    
         thread.start_new_thread( self.RAWDataProc.sumData, ( self.ui.mplwidget, 7 ) )
@@ -1253,35 +1272,36 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget))
 
     def bandPassFilter(self):
-        if "Bandpass filter" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Bandpass filter"] = {}
-            self.YamlNode.Processing["Bandpass filter"]["central_nu"] = str(self.ui.CentralVSpinBox.value())
-            self.YamlNode.Processing["Bandpass filter"]["passband"] = str(self.ui.passBandSpinBox.value())
-            self.YamlNode.Processing["Bandpass filter"]["stopband"] = str(self.ui.stopBandSpinBox.value()) 
-            self.YamlNode.Processing["Bandpass filter"]["gpass"] = str(self.ui.gpassSpinBox.value())
-            self.YamlNode.Processing["Bandpass filter"]["gstop"] = str(self.ui.gstopSpinBox.value())
-            self.YamlNode.Processing["Bandpass filter"]["type"] = str(self.ui.fTypeComboBox.currentText())
-            self.Log()
-        else:
-            err_msg = "Bandpass filter has already been applied!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
-                err_msg) 
-            return 
+        
         self.lock("bandpass filter")        
+        
+        # Log processing 
+        Band = OrderedDict()
+        Band["STEP"] = "Bandpass filter"
+        Band["central_nu"] = str(self.ui.CentralVSpinBox.value())
+        Band["passband"] = str(self.ui.passBandSpinBox.value())
+        Band["stopband"] = str(self.ui.stopBandSpinBox.value()) 
+        Band["gpass"] = str(self.ui.gpassSpinBox.value())
+        Band["gstop"] = str(self.ui.gstopSpinBox.value())
+        Band["type"] = str(self.ui.fTypeComboBox.currentText())
+        self.YamlNode.Processing.append(Band)
+        self.Log( )
+
         nv = self.ui.lcdTotalDeadTime.value( ) + self.ui.lcdNumberFTauDead.value()
         self.ui.lcdTotalDeadTime.display( nv )
         thread.start_new_thread(self.RAWDataProc.bandpassFilter, \
                 (self.ui.mplwidget, 0, self.ui.plotBP.isChecked() ))
 
     def downsample(self):
+
         self.lock("resampling")
-        
-        if "Resample" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Resample"] = {}
-            self.YamlNode.Processing["Resample"]["downsample factor"] = [] 
-            self.YamlNode.Processing["Resample"]["truncate length"] = []  
-        self.YamlNode.Processing["Resample"]["downsample factor"].append( str(self.ui.downSampleSpinBox.value() ) )
-        self.YamlNode.Processing["Resample"]["truncate length"].append(  str( self.ui.truncateSpinBox.value() ) )
+
+        # Log processing 
+        Resample = OrderedDict() 
+        Resample["STEP"] = "Resample"
+        Resample["downsample factor"] = str(self.ui.downSampleSpinBox.value())
+        Resample["truncate length"] = str(self.ui.truncateSpinBox.value()) 
+        self.YamlNode.Processing.append(Resample)
         self.Log( )
         
         thread.start_new_thread(self.RAWDataProc.downsample, \
@@ -1295,12 +1315,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         method = ['trf','dogbox','lm'][int(self.ui.QDMethod.currentIndex())]
         loss = ['linear','soft_l1','cauchy','huber'][int(self.ui.QDLoss.currentIndex())]         
 
-
         # allow overwrite of Quad Det.    
-        self.YamlNode.Processing["Quadrature detection"] = {}
-        self.YamlNode.Processing["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
-        self.YamlNode.Processing["Quadrature detection"]["method"] = method 
-        self.YamlNode.Processing["Quadrature detection"]["loss"] = loss
+        self.YamlNode.Stacking["Quadrature detection"] = {}
+        self.YamlNode.Stacking["Quadrature detection"]["trim"] = str( self.ui.trimSpin.value() )
+        self.YamlNode.Stacking["Quadrature detection"]["method"] = method 
+        self.YamlNode.Stacking["Quadrature detection"]["loss"] = loss
         self.Log()
 
         #if "Quadrature detection" not in self.YamlNode.Processing.keys():
@@ -1330,9 +1349,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
     def gateIntegrate(self):
         
-        if "Gate integrate" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Gate integrate"] = {}
-        self.YamlNode.Processing["Gate integrate"]["gpd"] = str(self.ui.GPDspinBox.value( ) )
+        if "Gate integrate" not in self.YamlNode.Stacking.keys():
+            self.YamlNode.Stacking["Gate integrate"] = {}
+        self.YamlNode.Stacking["Gate integrate"]["gpd"] = str(self.ui.GPDspinBox.value( ) )
         self.Log()
  
         self.lock("gate integration")
@@ -1361,7 +1380,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberFilterOrder.display(bord)
         self.ui.lcdNumberFTauDead.display(1e3*fe)
         self.ui.bandPassGO.setEnabled(1)
+
+        ################################################################
         # Hack for MacOS to force refresh of group box and plot
+        # this has an undesirable effect that it causes the groupbox to 'jump' up
+        # TODO come up with a better solution  
         self.ui.mplwidget.hide()
         self.ui.mplwidget.show()
         self.ui.BandPassBox.hide()
@@ -1369,39 +1392,37 @@ class ApplicationWindow(QtWidgets.QMainWindow):
  
     def windowFilter(self):
         
-        if "Window filter" not in self.YamlNode.Processing.keys():
-            self.YamlNode.Processing["Window filter"] = {}
-            self.YamlNode.Processing["Window filter"]["type"] = str(self.ui.windowTypeComboBox.currentText()) 
-            self.YamlNode.Processing["Window filter"]["width"] = str(self.ui.windowBandwidthSpinBox.value()) 
-            self.YamlNode.Processing["Window filter"]["centre"] = str(self.ui.CentralVSpinBox.value() )
-            self.Log()
-        else:
-            err_msg = "FD window has already been applied!"
-            reply =QtWidgets.QMessageBox.critical(self, 'Error', 
-                err_msg) 
-            return 
         self.lock("window filter")
+        
+        # Log processing 
+        Window = OrderedDict()
+        Window["STEP"] = "Window filter"
+        Window["type"] = str(self.ui.windowTypeComboBox.currentText()) 
+        Window["width"] = str(self.ui.windowBandwidthSpinBox.value()) 
+        Window["centre"] = str(self.ui.CentralVSpinBox.value() )
+        Window["trim"] = str(self.ui.windowTrim.isChecked())
+        self.YamlNode.Processing.append(Window)
+        self.Log( )
+        
+        if self.ui.windowTrim.isChecked():
+            nv = self.ui.lcdTotalDeadTime.value( ) + self.ui.lcdWinDead.value()
+            self.ui.lcdTotalDeadTime.display( nv )
         
         thread.start_new_thread(self.RAWDataProc.windowFilter, \
                 (str(self.ui.windowTypeComboBox.currentText()), \
                 self.ui.windowBandwidthSpinBox.value(), \
                 self.ui.CentralVSpinBox.value(), \
+                self.ui.windowTrim.isChecked(), \
                 self.ui.mplwidget))
 
     def designFDFilter(self):
-#         thread.start_new_thread(self.RAWDataProc.computeWindow, ( \
-#                 "Pulse 1",
-#                 self.ui.windowBandwidthSpinBox.value(), \
-#                 self.ui.CentralVSpinBox.value(), \
-#                 str(self.ui.windowTypeComboBox.currentText()), \
-#                 self.ui.mplwidget ))
 
         mPulse = "None"
         if u"Pulse 1" in self.RAWDataProc.DATADICT.keys():
             mPulse = u"Pulse 1"
         elif u"Pulse 2" in self.RAWDataProc.DATADICT.keys():
             mPulse = u"Pulse 2"
-        a,b,c,d,dead = self.RAWDataProc.computeWindow( \
+        a,b,c,d,dead,ndead = self.RAWDataProc.computeWindow( \
                 mPulse,
                 self.ui.windowBandwidthSpinBox.value(), \
                 self.ui.CentralVSpinBox.value(), \
@@ -1409,7 +1430,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.mplwidget )
 
         self.ui.lcdWinDead.display(dead)
+
+        ################################################################
         # Hack for MacOS to force refresh of group box and plot
+        # this has an undesirable effect that it causes the groupbox to 'jump' up
+        # TODO come up with a better solution  
         self.ui.mplwidget.hide()
         self.ui.mplwidget.show()
         self.ui.windowFilterGroupBox.hide()
