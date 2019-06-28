@@ -2126,7 +2126,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.windead = 0.    
         for ift in np.arange(100,0,-1):
             #print( ift, fft1[ift] )
-            if fft1[ift] > .001:
+            if (abs(fft1[ift])/abs(fft1[0])) > 1e-2:
                 #print ("DEAD TIME", 1e3*self.DATADICT[pulse]["TIMES"][ift] - 1e3*self.DATADICT[pulse]["TIMES"][0] ) 
                 dead = 1e3*self.DATADICT[pulse]["TIMES"][ift] - 1e3*self.DATADICT[pulse]["TIMES"][0]
                 self.windead = self.DATADICT[pulse]["TIMES"][ift] - self.DATADICT[pulse]["TIMES"][0]
@@ -2167,8 +2167,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                 iFID += 1
             if trunc:
                 self.DATADICT[pulse]["TIMES"] = self.DATADICT[pulse]["TIMES"][idead:-idead]
+                [WINDOWxx, ndxx, istart, iend, deadxx, ideadxx] = self.computeWindow(pulse, band, centre, ftype)
 
-        self.plotFT(canvas, istart, iend)
+            self.plotFT(canvas, istart, iend)
         self.doneTrigger.emit() 
 
     def bandpassFilter(self, canvas, blank, plot=True):

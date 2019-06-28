@@ -112,13 +112,13 @@ def minHarmonic2(sN, fs, t, f0, f0k1, f0kN, f0ks, f1, f1k1, f1kN, f1ks, Bounds, 
 
         # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
         print("2 UNbounded ( +-", Bounds,") search length ", kNs0, kNs1 ,"for f0", f0, f1)
-        res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, f0k1+kNs0, f0ks, f1k1, f1k1+kNs1, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
+        res = minimize(harmonic2Norm, np.array((f0, f1)), args=(sN, fs, t, f0k1, kNs0, f0ks, f1k1, kNs1, f1ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
     else:
         # Bounded
         bnds = ( (f0-Bounds, f0+Bounds),(f1-Bounds, f1+Bounds) )
         print("2 bounded ( +-", Bounds,") search length ", kNs0, kNs1 ,"for f0", f0, f1)
         # L-BFGS-B hess=None, bounds=None )
-        res = minimize(harmonic2Norm, ((f0,f1)), args=(sN, fs, t, f0k1, f0k1+kNs0, f0ks, f1k1, f1k1+kNs1, f1ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) 
+        res = minimize(harmonic2Norm, ((f0,f1)), args=(sN, fs, t, f0k1, kNs0, f0ks, f1k1, kNs1, f1ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) 
 
     return harmonicEuler2(sN, fs, t, res.x[0], f0k1, f0kN, f0ks, res.x[1], f1k1, f1kN, f1ks), res.x[0], res.x[1]#[0]
 

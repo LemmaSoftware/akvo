@@ -794,8 +794,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.nDAQVersion = self.RAWDataProc.DATADICT["INFO"]["nDAQVersion"]
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
 
-
-
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
         # Keep backwards compatibility with prior saved pickles???
         #self.ui.logTextBrowser.clear() 
@@ -816,7 +814,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.RAWDataProc.interpulseDelay = self.RAWDataProc.DATADICT["INFO"]["interpulseDelay"]
 
         self.YamlNode.Import = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
-        self.YamlNode.Processing = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
+        self.YamlNode.Processing = list((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
         self.YamlNode.Stacking = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Stacking)
         self.Log()
  
