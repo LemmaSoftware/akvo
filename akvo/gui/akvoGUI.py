@@ -737,7 +737,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["headerstr"] = str(self.headerstr)
         INFO["nDAQVersion"] = self.RAWDataProc.nDAQVersion
         INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
-          
 
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
@@ -851,7 +850,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberResampFreq.setEnabled(1)
         self.ui.lcdTotalDeadTime.setEnabled(1)
         
-        self.ui.lcdTotalDeadTime.display( 1e3*self.RAWDataProc.DATADICT["INFO"]["deadTime"] )
+        #self.ui.lcdTotalDeadTime.display( 1e3*self.RAWDataProc.DATADICT["INFO"]["deadTime"] )
+        self.ui.lcdTotalDeadTime.display( 1e3 * (self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1]) )
+
         self.ui.headerFileTextBrowser.clear( ) 
         self.ui.headerFileTextBrowser.append( self.RAWDataProc.DATADICT["INFO"]["headerstr"] )
         
