@@ -1039,6 +1039,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                                        (float)(self.DATADICT["nPulseMoments"] * len(self.DATADICT[pulse]["chan"])))
                     self.progressTrigger.emit(percent)
                 ichan += 1
+            self.DATADICT[pulse]["TIMES"] = self.DATADICT[pulse]["TIMES"][clip::]
 
         self.DATADICT["CA"] = CA
         self.DATADICT["IP"] = IP
@@ -1067,10 +1068,11 @@ class GMRDataProcessor(SNMRDataProcessor):
             axes = canvas.fig.axes
             mmaxr = 0.
             mmaxi = 0.
-            if clip > 0:
-                time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"][clip-1::] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
-            else:
-                time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
+            #if clip > 0:
+            #    time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"][clip-1::] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
+            #else:
+            #    time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
+            time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
                 
             QQ = np.average(self.DATADICT[pulse]["Q"], axis=1 )
  
@@ -1257,10 +1259,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                 if self.GATED[chan]["isum"][it] < 8:
                     XS[ii, it] = self.sigma[pulse][chan]
                 else:
-                                
                     if it == 0:                
-                        X = self.bootstrap_resample( np.concatenate( (self.GATED[chan]["NR"][:,it], self.GATED[chan]["NR"][:,it+1], \
-                            self.GATED[chan]["NR"][:,it+2], self.GATED[chan]["NR"][:,it+3] ) ), n=nt )
+                        X = self.bootstrap_resample( np.concatenate( (self.GATED[chan]["NR"][:,it],   \
+                                                                      self.GATED[chan]["NR"][:,it+1], \
+                                                                      self.GATED[chan]["NR"][:,it+2], \
+                                                                      self.GATED[chan]["NR"][:,it+3] ) ), n=nt )
                     elif it == 1:                
                         X = self.bootstrap_resample( np.concatenate( (self.GATED[chan]["NR"][:,it-1], self.GATED[chan]["NR"][:,it], \
                             self.GATED[chan]["NR"][:,it+1], self.GATED[chan]["NR"][:,it+2] ) ), n=nt )
@@ -1282,7 +1285,8 @@ class GMRDataProcessor(SNMRDataProcessor):
         
         canvas.reAxH2(  len(self.DATADICT[ self.DATADICT["PULSES"][0] ]["chan"] ), False, False)
         axes = canvas.fig.axes
-        cmap = cmocean.cm.balance_r 
+        #cmap = cmocean.cm.balance_r 
+        dcmap = cmocean.cm.curl_r  #"seismic_r" #cmocean.cm.balance_r #"RdBu" #YlGn" # "coolwarm_r"  # diverging 
     
         # Calculate maximum for plotting...TODO move into loop above
         vmax1 = 0
@@ -1308,14 +1312,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ax2 = axes[2*ichan+1] 
                 
                 if phase == 0:
-                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["RE"], cmap=cmap, vmin=-vmax1, vmax=vmax1)
-                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IM"], cmap=cmap, vmin=-vmax2, vmax=vmax2)
+                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["RE"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
+                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IM"], cmap=dcmap, vmin=-vmax2, vmax=vmax2)
                 elif phase == 1:
-                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=cmap, vmin=-vmax1, vmax=vmax1)
-                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.balance, vmin=-vmax2, vmax=vmax2)
+                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
+                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.delta, vmin=-vmax2, vmax=vmax2)
                     #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.phase, vmin=-vmax2, vmax=vmax2)
                 elif phase == 2:
-                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=cmap, vmin=-vmax1, vmax=vmax1)
+                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
                     XS = self.bootstrap_sigma(pulse, chan)
                     #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["NR"], cmap=cmap, vmin=-vmax2, vmax=vmax2)
                     # bootstrap resample
@@ -1358,7 +1362,6 @@ class GMRDataProcessor(SNMRDataProcessor):
                 if phase != 2:
                     im2.set_edgecolor('face')
 
-
                 plt.setp(ax1.get_xticklabels(), visible=False)
         
                 ax1.set_ylim( np.min(self.GATED[chan]["QQ"]), np.max(self.GATED[chan]["QQ"]) )
@@ -1379,14 +1382,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                 #formatter = matplotlib.ticker.LogFormatter(10, labelOnlyBase=False)
                 formatter = matplotlib.ticker.FuncFormatter(lambda x, pos: str((round(x,1)))) 
                 
+                ax1.set_xscale('log')
+                ax2.set_xscale('log')
+                
                 ax1.yaxis.set_major_formatter(formatter) #matplotlib.ticker.FormatStrFormatter('%d.1'))
                 ax2.yaxis.set_major_formatter(formatter) #matplotlib.ticker.FormatStrFormatter('%d.1'))
 
                 ax1.xaxis.set_major_formatter(formatter) #matplotlib.ticker.FormatStrFormatter('%d.1'))
                 ax2.xaxis.set_major_formatter(formatter) #matplotlib.ticker.FormatStrFormatter('%d.1'))
-                
-                ax1.set_xscale('log')
-                ax2.set_xscale('log')
                 
                 if ichan == 0:
                     ax1.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=8)
@@ -1410,8 +1413,8 @@ class GMRDataProcessor(SNMRDataProcessor):
         cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
         cb1.ax.tick_params(axis='both', which='major', labelsize=8)
         cb1.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
-        cb1.locator = tick_locator
-        cb1.update_ticks()
+        #cb1.locator = tick_locator
+        #cb1.update_ticks()
 
         if phase != 2:
             cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30, pad=.2)

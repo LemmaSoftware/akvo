@@ -128,6 +128,33 @@ def RotateAmplitude(X, Y, zeta, df, t):
     return np.abs(V) * np.exp( 1j * ( np.angle(V) - zeta - 2.*np.pi*df*t ) )
     #return np.abs(V) * np.exp( 1j * ( np.angle(V) - zeta - df*t ) )
 
+def bootstrapWindows(N, nboot, isum, adapt=False):
+    """ Bootstraps noise as a function of gate width
+        N = input noise signal 
+        nboot = number of boostrap windows to perform 
+        isum = length of windows (L_i)
+        adapt = reduce nboot as window size increases
+    """
+    nc = np.shape(N)[0]
+    Means = {}
+
+    if adapt:
+        Means = -9999*np.ones((len(isum), nboot//isum[0])) # dummy value
+        for ii, nwin in enumerate(isum):  
+            for iboot in range(nboot//isum[ii]):
+                cs = np.random.randint(0,nc-nwin)
+                Means[ii,iboot] = np.mean( N[cs:cs+nwin] )
+        Means = np.ma.masked_less(Means, -9995)
+
+    else:
+        Means = np.zeros((len(isum), nboot))
+        for ii, nwin in enumerate(isum):  
+            for iboot in range(nboot):
+                cs = np.random.randint(0,nc-nwin)
+                Means[ii,iboot] = np.mean( N[cs:cs+nwin] )
+
+    return Means, np.array(isum)
+
 def gateIntegrate(T2D, T2T, gpd, sigma, stackEfficiency=2.):
     """ Gate integrate the signal to gpd, gates per decade
         T2D = the time series to gate integrate, complex 

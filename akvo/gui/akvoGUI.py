@@ -726,6 +726,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Add some extra info 
         INFO = {}
         INFO["pulseType"] = self.RAWDataProc.pulseType
+        INFO["prePulseDelay"] = self.RAWDataProc.prePulseDelay
         INFO["interpulseDelay"] = self.RAWDataProc.interpulseDelay
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["pulseLength"] = self.RAWDataProc.pulseLength
@@ -791,6 +792,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.deadTime = self.RAWDataProc.DATADICT["INFO"]["deadTime"] 
         self.RAWDataProc.transFreq = self.RAWDataProc.DATADICT["INFO"]["transFreq"]
         self.RAWDataProc.nDAQVersion = self.RAWDataProc.DATADICT["INFO"]["nDAQVersion"]
+        #self.RAWDataProc.prePulseDelay = self.RAWDataProc.DATADICT["INFO"]["prePulseDelay"]
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
 
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
@@ -851,15 +853,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdTotalDeadTime.setEnabled(1)
         
         #self.ui.lcdTotalDeadTime.display( 1e3*self.RAWDataProc.DATADICT["INFO"]["deadTime"] )
-        self.ui.lcdTotalDeadTime.display( 1e3 * (self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1]) )
 
         self.ui.headerFileTextBrowser.clear( ) 
         self.ui.headerFileTextBrowser.append( self.RAWDataProc.DATADICT["INFO"]["headerstr"] )
         
         if u"Pulse 1" in self.RAWDataProc.DATADICT.keys():
             self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0])
+            self.ui.lcdTotalDeadTime.display( round(1e3*(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1]), 3) )
+            print("CALC DEAD",    (1e3*(self.RAWDataProc.prePulseDelay))) # -  (self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1])), 3) )
         if u"Pulse 2" in self.RAWDataProc.DATADICT.keys():
             self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][0])
+            self.ui.lcdTotalDeadTime.display( 1e3 * (self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 2"]["PULSE_TIMES"][-1]) )
  
         # Update info from the header into the GUI
         self.ui.pulseTypeTextBrowser.clear()
@@ -1009,6 +1013,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdTotalDeadTime.setEnabled(1)
 
         self.ui.lcdTotalDeadTime.display( self.ui.DeadTimeSpinBox.value( ) )
+        #self.ui.lcdTotalDeadTime.display( round(1e3*(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1]), 3) )
         
         #self.ui.lcdNumberFID1Length.display(0)
         #self.ui.lcdNumberFID2Length.display(0)
