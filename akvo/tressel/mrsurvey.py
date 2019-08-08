@@ -363,7 +363,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ax1.set_xlabel(r"time (ms)", fontsize=8)
 
                 if ichan == 0:
-                    ax1.set_ylabel(r"signal [nV]", fontsize=8)
+                    ax1.set_ylabel(r"signal (nV)", fontsize=8)
                 else:
                     plt.setp(ax1.get_yticklabels(), visible=False)
                     plt.setp(ax1.get_yaxis().get_offset_text(), visible=False) 
@@ -499,7 +499,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                 #im2.append(ax2.matshow( db, aspect='auto', vmin=vvmin, vmax=vvmax))
                 #im2 = ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax)
                 if ichan == 0:
-                    ax2.set_ylabel(r"$q$ (A $\cdot$ s)", fontsize=8)
+                    #ax2.set_ylabel(r"$q$ (A $\cdot$ s)", fontsize=8)
+                    ax2.set_ylabel(r"pulse index", fontsize=8)
+                    #ax1.set_ylabel(r"FID (nV)", fontsize=8)
                 else:
                     #ax2.yaxis.set_ticklabels([])
                     plt.setp(ax2.get_yticklabels(), visible=False)
@@ -1084,8 +1086,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ax1 = axes[2*ichan  ]
                 ax2 = axes[2*ichan+1] # TODO fix hard coded number
                 if phase == 0: # Re Im 
-                    print("plot dog", np.shape(QQ), np.shape(self.DATADICT["RE"][pulse][chan]))
-                    print("QQ", QQ) 
+                    #print("plot dog", np.shape(QQ), np.shape(self.DATADICT["RE"][pulse][chan]))
+                    #print("QQ", QQ) 
                     im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["RE"][pulse][chan][iQ], cmap=dcmap, \
                          vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
                     im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["IM"][pulse][chan][iQ], cmap=dcmap, \
@@ -1575,7 +1577,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         
         canvas.reAxH(2)
         nstack = len(self.DATADICT["stacks"]) 
-        canvas.ax1.set_yscale('log')
+        #canvas.ax1.set_yscale('log')
 
         for pulse in self.DATADICT["PULSES"]:
             self.DATADICT[pulse]["qeff"] = {}
@@ -1600,17 +1602,28 @@ class GMRDataProcessor(SNMRDataProcessor):
                     v = np.fft.fftfreq(len(x), self.dt)
                     v = v[0:len(X)]
                     v[-1] = np.abs(v[-1])
+
                     # calculate effective current/moment
                     I0 = np.abs(X)/len(X) 
-                    qeff = I0 * (self.DATADICT[pulse]["PULSE_TIMES"][-1]-self.DATADICT[pulse]["PULSE_TIMES"][0])
-                    canvas.ax1.set_title(r"pulse moment index " +str(ipm), fontsize=10)
-                    canvas.ax1.set_xlabel(r"$\nu$ [Hz]", fontsize=8)
-                    canvas.ax1.set_ylabel(r"$q_{eff}$ [A$\cdot$sec]", fontsize=8)
-                    canvas.ax1.plot(v, qeff, color=scolours[iistack] ) # eff current
+                    qeff = I0 #* (self.DATADICT[pulse]["PULSE_TIMES"][-1]-self.DATADICT[pulse]["PULSE_TIMES"][0])
+
+                    # frequency plot
+                    #canvas.ax1.set_title(r"pulse moment index " +str(ipm), fontsize=10)
+                    #canvas.ax1.set_xlabel(r"$\nu$ [Hz]", fontsize=8)
+                    #canvas.ax1.set_ylabel(r"$q_{eff}$ [A$\cdot$sec]", fontsize=8)
+                    #canvas.ax1.plot(v, qeff, color=scolours[iistack] ) # eff current
+                    
+                    # time plot
+                    canvas.ax1.plot(1e2*(self.DATADICT[pulse]["PULSE_TIMES"]-self.DATADICT[pulse]["PULSE_TIMES"][0]), x, color=scolours[iistack])
+
                     self.DATADICT[pulse]["qeff"][ipm][istack] = qeff
                     self.DATADICT[pulse]["q_nu"][ipm][istack] = v
                     iistack += 1
+
+                canvas.ax1.set_xlabel("time (ms)", fontsize=8)
+                canvas.ax1.set_ylabel("current (A)", fontsize=8)
                 canvas.draw()
+
                         
                 percent = int(1e2* (float)((istack)+ipm*self.DATADICT["nPulseMoments"]) / 
                                    (float)(len(self.DATADICT["PULSES"])*self.DATADICT["nPulseMoments"]*nstack))
@@ -1640,7 +1653,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                 istack = 0
                 for stack in self.DATADICT["stacks"]:
                     # find index 
-                    icv = int (round(cv / self.DATADICT[pulse]["q_nu"][ipm][stack][1]))
+                    icv = int(round(cv / self.DATADICT[pulse]["q_nu"][ipm][stack][1]))
                     self.DATADICT[pulse]["Q"][ipm,istack] = self.DATADICT[pulse]["qeff"][ipm][stack][icv]
                     if ilabel:
                         ax.scatter(ipm, self.DATADICT[pulse]["qeff"][ipm][stack][icv], facecolors='none', edgecolors=scolours[istack], label=(str(pulse)))
