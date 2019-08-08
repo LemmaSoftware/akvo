@@ -662,10 +662,16 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 #    print ("stack q", self.RAWDataProc.DATADICT[pulse]["Q"][ipm,istack-1])
                 qq.append(np.mean(    self.RAWDataProc.DATADICT[pulse]["Q"][ipm,:]) )
                 qv.append(np.std(     self.RAWDataProc.DATADICT[pulse]["Q"][ipm,:]/self.RAWDataProc.pulseLength[ip] ))
+            qq = np.array(qq)
+            qv = np.array(qv)
+            iQ = np.argsort(np.array(qq))
+            qq = np.array(qq)[iQ]
+            print("qq", qq, iQ)
+            qv = np.array(qv)[iQ]
             INFO["Pulses"][pulse] = {}
             INFO["Pulses"][pulse]["units"] = "A"
-            INFO["Pulses"][pulse]["current"] = VectorXr(np.array(qq)/self.RAWDataProc.pulseLength[ip])
-            INFO["Pulses"][pulse]["variance"] = VectorXr(np.array(qv))
+            INFO["Pulses"][pulse]["current"] = VectorXr(qq/self.RAWDataProc.pulseLength[ip])
+            INFO["Pulses"][pulse]["variance"] = VectorXr(qv)
             ip += 1
 
         # Data

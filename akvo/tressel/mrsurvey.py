@@ -1004,6 +1004,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                 NR[pulse][chan] = np.zeros( (self.DATADICT["nPulseMoments"],  len(self.DATADICT[pulse]["TIMES"])-clip )  )
                 RE[pulse][chan] = np.zeros( (self.DATADICT["nPulseMoments"],  len(self.DATADICT[pulse]["TIMES"])-clip )  )
                 IM[pulse][chan] = np.zeros( (self.DATADICT["nPulseMoments"],  len(self.DATADICT[pulse]["TIMES"])-clip )  )
+        
+                #QQ = np.average(self.DATADICT[pulse]["Q"], axis=1 )
+                #for ipm in np.argsort(QQ):
                 for ipm in range(0, self.DATADICT["nPulseMoments"]):
                     #t = self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1]
                     xn = self.DATADICT["stack"][pulse][chan][ipm,:]
@@ -1040,7 +1043,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     self.progressTrigger.emit(percent)
                 ichan += 1
             self.DATADICT[pulse]["TIMES"] = self.DATADICT[pulse]["TIMES"][clip::]
-
+            
         self.DATADICT["CA"] = CA
         self.DATADICT["IP"] = IP
         self.DATADICT["NR"] = NR
@@ -1075,25 +1078,32 @@ class GMRDataProcessor(SNMRDataProcessor):
             time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
                 
             QQ = np.average(self.DATADICT[pulse]["Q"], axis=1 )
- 
+            iQ = np.argsort(QQ)
+
             for chan in self.DATADICT[pulse]["chan"]: 
                 ax1 = axes[2*ichan  ]
                 ax2 = axes[2*ichan+1] # TODO fix hard coded number
-                if phase == 0: # Re Im  
-                    im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["RE"][pulse][chan], cmap=dcmap, rasterized=True,\
+                if phase == 0: # Re Im 
+                    print("plot dog", np.shape(QQ), np.shape(self.DATADICT["RE"][pulse][chan]))
+                    print("QQ", QQ) 
+                    im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["RE"][pulse][chan][iQ], cmap=dcmap, \
                          vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
-                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IM"][pulse][chan], cmap=dcmap, rasterized=True,\
+                    im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["IM"][pulse][chan][iQ], cmap=dcmap, \
                          vmin=-self.DATADICT["IMmax"][pulse], vmax=self.DATADICT["IMmax"][pulse]  )
+                    #im1 = ax1.matshow( self.DATADICT["RE"][pulse][chan][iQ], cmap=dcmap, aspect='auto', \
+                    #     vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
+                    #im2 = ax2.matshow( self.DATADICT["IM"][pulse][chan][iQ], cmap=dcmap, aspect='auto', \
+                    #     vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
                 if phase == 1: # Amp phase
-                    im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,
+                    im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["CA"][pulse][chan][iQ], cmap=dcmap, \
                          vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse]  )
                     #im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.balance, rasterized=True,\
-                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.delta, rasterized=True,\
+                    im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["IP"][pulse][chan][iQ], cmap=cmocean.cm.delta, \
                          vmin=-np.pi, vmax=np.pi)
                 if phase == 2: # CA NR
-                    im1 = ax1.pcolormesh( time_sp, QQ, self.DATADICT["CA"][pulse][chan], cmap=dcmap, rasterized=True,\
+                    im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["CA"][pulse][chan][iQ], cmap=dcmap, \
                          vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse] )
-                    im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["NR"][pulse][chan], cmap=dcmap, rasterized=True,\
+                    im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["NR"][pulse][chan][iQ], cmap=dcmap, \
                          vmin=-self.DATADICT["NRmax"][pulse] , vmax=self.DATADICT["NRmax"][pulse] )
 #                     cb2 = canvas.fig.colorbar(im2, ax=ax2, format='%1.0e')
 #                     cb2.set_label("Noise residual (nV)", fontsize=8)
@@ -1154,7 +1164,10 @@ class GMRDataProcessor(SNMRDataProcessor):
         tick_locator2 = MaxNLocator(nbins=3)
         cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30, pad=.2)
         cb2.ax.tick_params(axis='both', which='major', labelsize=8)
-        cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+        if phase == 1: # Amp phase
+            cb2.set_label(r"$\angle \mathcal{V}_N$", fontsize=8)
+        else:
+            cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
 
 
         cb2.locator = tick_locator2
@@ -1176,12 +1189,13 @@ class GMRDataProcessor(SNMRDataProcessor):
         
         for pulse in self.DATADICT["PULSES"]:
             QQ = np.average(self.DATADICT[pulse]["Q"], axis=1 )
+            iQ = np.argsort(QQ)
             ichan = 0
             for chan in self.DATADICT[pulse]["chan"]:
                 self.GATED[chan] = {}
                 for ipm in range(0, self.DATADICT["nPulseMoments"]):
-
-                    # Time since pulse rather than since record starts...
+                #for ipm in iQ: 
+                    # Time since pulse end rather than since record starts...
                     #if clip > 0:
                     #    time_sp =  1e3 * (self.DATADICT[pulse]["TIMES"][clip:] - self.DATADICT[pulse]["PULSE_TIMES"][-1] )
                     #else:
@@ -1190,12 +1204,13 @@ class GMRDataProcessor(SNMRDataProcessor):
                     #GT, GD, GTT, sig_stack, isum      = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
                     #GT2, GP, GTT, sig_stack_err, isum = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 ) 
                     
-                    GT, GCA, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GNR, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GRE, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["RE"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GIM, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IM"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
-                    GT, GIP, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IP"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
+                    GT, GCA, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
+                    GT, GNR, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
+                    GT, GRE, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["RE"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
+                    GT, GIM, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IM"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
+                    GT, GIP, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["IP"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
                     
+                    #if ipm == iQ[0]:
                     if ipm == 0:
                     #    self.GATED[chan]["DATA"]  = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
                     #    self.GATED[chan]["ERR"]   = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
@@ -1213,6 +1228,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                     #self.GATED[chan]["SIGMA"][ipm] =  sig_stack #_err # GP.real
                     #self.GATED[chan]["ERR"][ipm] =  GP.real
                     
+                    #self.GATED[chan]["CA"][iQ[ipm]] = GCA.real[clip:]
+                    #self.GATED[chan]["NR"][iQ[ipm]] = GNR.real[clip:]
+                    #self.GATED[chan]["RE"][iQ[ipm]] = GRE.real[clip:]
+                    #self.GATED[chan]["IM"][iQ[ipm]] = GIM.real[clip:]
+                    #self.GATED[chan]["IP"][iQ[ipm]] = GIP.real[clip:]
                     self.GATED[chan]["CA"][ipm] = GCA.real[clip:]
                     self.GATED[chan]["NR"][ipm] = GNR.real[clip:]
                     self.GATED[chan]["RE"][ipm] = GRE.real[clip:]
@@ -1223,9 +1243,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                                        (float)(self.DATADICT["nPulseMoments"] * len(self.DATADICT[pulse]["chan"])))
                     self.progressTrigger.emit(percent)
 
+                self.GATED[chan]["CA"] = self.GATED[chan]["CA"][iQ,:]
+                self.GATED[chan]["NR"] = self.GATED[chan]["NR"][iQ,:]
+                self.GATED[chan]["RE"] = self.GATED[chan]["RE"][iQ,:]
+                self.GATED[chan]["IM"] = self.GATED[chan]["IM"][iQ,:]
+                self.GATED[chan]["IP"] = self.GATED[chan]["IP"][iQ,:]
                 self.GATED[chan]["GTT"] = GTT[clip:]
                 self.GATED[chan]["GT"] = GT[clip:]
-                self.GATED[chan]["QQ"] = QQ
+                self.GATED[chan]["QQ"] = QQ[iQ]
                 ichan += 1
         self.doneTrigger.emit() 
 
@@ -1314,6 +1339,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                 if phase == 0:
                     im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["RE"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
                     im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IM"], cmap=dcmap, vmin=-vmax2, vmax=vmax2)
+                    #im1 = ax1.matshow(self.GATED[chan]["RE"], cmap=dcmap, vmin=-vmax1, vmax=vmax1, aspect='auto')
+                    #im2 = ax2.matshow(self.GATED[chan]["IM"], cmap=dcmap, vmin=-vmax2, vmax=vmax2, aspect='auto')
                 elif phase == 1:
                     im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
                     im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.delta, vmin=-vmax2, vmax=vmax2)
