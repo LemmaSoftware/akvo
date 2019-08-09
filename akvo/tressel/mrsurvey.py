@@ -560,16 +560,24 @@ class GMRDataProcessor(SNMRDataProcessor):
             plot = should Akvo plot the results 
             canvas = mpl plotting axis      
         """
+        TDPlot = True
+        
         if plot:
             canvas.reAx2(shy=False)
-            canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
-            #canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
-            canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
-            canvas.ax2.set_xlabel(r"frequency [Hz]", fontsize=8)
-            canvas.ax1.set_yscale('log')
-            canvas.ax2.set_yscale('log')
+            canvas.ax1.set_ylabel(r"signal (nV)", fontsize=8)
+            canvas.ax2.set_ylabel(r"signal (nV)", fontsize=8)
+            if TDPlot:
+                canvas.ax2.set_xlabel(r"time (s)", fontsize=8)
+            else:
+                canvas.ax2.set_xlabel(r"frequency (Hz)", fontsize=8)
+                canvas.ax1.set_yscale('log')
+                canvas.ax2.set_yscale('log')
+
+
+
         # Data
         iFID = 0
+
 
         # stores previous f0 as starting point in non-linear search 
         f0p = {} 
@@ -592,19 +600,23 @@ class GMRDataProcessor(SNMRDataProcessor):
                         mmaxd = 0
                         if procRefs: 
                             for ichan in self.DATADICT[pulse]["rchan"]:
-                                #canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                                #mmaxr = max( mmaxr, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
-                                ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
-                                X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
-                                canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
+                                if TDPlot:
+                                    canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
+                                    mmaxr = max( mmaxr, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                                else:
+                                    ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                                    X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                                    canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
                             canvas.ax1.set_prop_cycle(None)
                             #canvas.ax1.set_ylim(-mmaxr, mmaxr) 
                         for ichan in self.DATADICT[pulse]["chan"]:
-                            #canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                            #mmaxd = max( mmaxd, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
-                            ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
-                            X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
-                            canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
+                            if TDPlot:
+                                canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
+                                mmaxd = max( mmaxd, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                            else:
+                                ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                                X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                                canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
                         canvas.ax2.set_prop_cycle(None)
                         #canvas.ax2.set_ylim(-mmaxd, mmaxd)
                     if procRefs: 
@@ -637,12 +649,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                                         f1p[ichan], f1K1, f1KN, f1Ks, Bounds, Nsearch ) 
                             # plot
                             if plot:
-                                #canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
-                                #    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
-                                ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
-                                X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
-                                canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X),\
-                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
+                                if TDPlot:
+                                    canvas.ax1.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                        label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
+                                else:
+                                    ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                                    X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                                    canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X),\
+                                    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " rchan="  + str(ichan))
 
                     for ichan in self.DATADICT[pulse]["chan"]:
                         if nF == 1:
@@ -675,12 +689,14 @@ class GMRDataProcessor(SNMRDataProcessor):
                
                         # plot
                         if plot:
-                            #canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
-                            #    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
-                            ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
-                            X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
-                            canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), \
-                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
+                            if TDPlot:
+                                canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
+                                    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
+                            else:
+                                ww = np.fft.fftfreq(len(self.DATADICT[pulse][ichan][ipm][istack]), d=self.dt)
+                                X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
+                                canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), \
+                                    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " chan="  + str(ichan))
 
                     if plot:
                         if procRefs: 
