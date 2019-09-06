@@ -3,6 +3,10 @@
         [
             "akvo/gui/main.ui",
             "akvo/gui"
+        ],
+        [
+            "akvo/gui/addCircularLoop.ui",
+            "akvo/gui"
         ]
     ],
     "pyrcc": "pyrcc5",

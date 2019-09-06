@@ -16,6 +16,8 @@ Clicking ignore will prevent this warning from showing
 each time you launch Akvo.                  
 """
 
+from akvo.gui.addCircularLoop_ui import Ui_circularLoopAdd
+
 import matplotlib
 matplotlib.use("QT5Agg")
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -33,6 +35,8 @@ from akvo.tressel import mrsurvey
 
 import pkg_resources  # part of setuptools
 version = pkg_resources.require("Akvo")[0].version
+
+from collections import OrderedDict
 
 from ruamel import yaml
 #import ruamel.yaml 
@@ -59,16 +63,6 @@ class VectorXr(yaml.YAMLObject):
         # Converts to numpy array on import 
         return "np.array(%r)" % (self.data)
 
-from collections import OrderedDict
-#def represent_ordereddict(dumper, data):
-#    print("representing IN DA HOUSE!!!!!!!!!!!!!!!!!!!!!")
-#    value = []
-#    for item_key, item_value in data.items():
-#        node_key = dumper.represent_data(item_key)
-#        node_value = dumper.represent_data(item_value)
-#        value.append((node_key, node_value))
-#    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
-#yaml.add_representer(OrderedDict, represent_ordereddict)
 
 def setup_yaml():
     """ https://stackoverflow.com/a/8661021 """
@@ -82,14 +76,15 @@ class AkvoYamlNode(yaml.YAMLObject):
         self.Akvo_VERSION = version
         self.Import = OrderedDict() # {}
         self.Processing = [] # OrderedDict() 
-        self.Stacking = OrderedDict() 
+        self.Stacking = OrderedDict()
+        self.META = OrderedDict() 
     #def __init__(self, node):
     #    self.Akvo_VERSION = node["version"]
     #    self.Import = OrderedDict( node["Import"] ) # {}
     #    self.Processing = OrderedDict( node["Processing"] ) 
     def __repr__(self):
-        return "%s(name=%r, Akvo_VERSION=%r, Import=%r, Processing=%r)" % (
-            self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing, self.Stacking )
+        return "%s(name=%r, Akvo_VERSION=%r, Import=%r, Processing=%r, self.Stacking=%r, self.META=%r)" % (
+            self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing, self.Stacking, self.META )
             #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
     
 try:    
@@ -196,6 +191,23 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         self.ui.plotGI.setEnabled(False) 
         self.ui.plotGI.pressed.connect( self.plotGI )
+
+        # META 
+        self.ui.locEdit.editingFinished.connect( self.logSite )
+        self.ui.UTMzone.currentIndexChanged.connect( self.logSite )
+        self.ui.latBand.currentIndexChanged.connect( self.logSite )
+        self.ui.ellipsoid.currentIndexChanged.connect( self.logSite )
+        self.ui.incSpinBox.valueChanged.connect( self.logSite )
+        self.ui.decSpinBox.valueChanged.connect( self.logSite )
+        self.ui.intensitySpinBox.valueChanged.connect( self.logSite )
+        self.ui.tempSpinBox.valueChanged.connect( self.logSite )
+        self.ui.timeEdit.timeChanged.connect( self.logSite )
+        self.ui.dateEdit.dateChanged.connect( self.logSite )
+        # this may call the yaml stuff too often... 
+        self.ui.txtComments.textChanged.connect( self.logSite )
+ 
+        # invert
+        self.ui.addLoopButton.pressed.connect( self.loopAdd )
  
         # hide header info box 
         #self.ui.headerFileBox.setVisible(False) 
@@ -340,6 +352,29 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         else:
             self.ui.ProcTabs.removeTab(0)    
             self.ui.ProcTabs.removeTab(0)    
+    
+    def loopAdd(self):
+
+        print(self.ui.loopLabel.text())
+        print(self.ui.loopGeom.currentText())
+        print(self.ui.loopType.currentText())
+           
+        print( "label len", len(self.ui.loopLabel.text()) ) 
+        if len(self.ui.loopLabel.text().strip()) == 0: 
+            Error = QtWidgets.QMessageBox()
+            Error.setWindowTitle("Error!")
+            Error.setText("Loop label cannot be blank or repeated")
+            Error.setDetailedText("Each loop label must be unique and comprise at least one character. Leading and trailing whitespace will be trimmed.")
+            Error.exec_()
+        else:
+            if self.ui.loopGeom.currentText() == "Circular":
+                dialog = QtWidgets.QDialog()
+                dialog.ui = Ui_circularLoopAdd()
+                dialog.ui.setupUi(dialog)
+                dialog.exec_()
+                dialog.show()
+                if dialog.result():
+                    print("centre north", dialog.ui.centreNorth.value())
 
     def headerBoxShrink(self):
         #self.ui.headerFileBox.setVisible(False)
@@ -396,7 +431,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     Error.setText("Non-increasing layer detected")
                     Error.setDetailedText("Each layer interface must be below the one above it.")
                     Error.exec_()
-            
+                    #err_msg = "Quadrature detection has already been done!"
+                    #reply =QtWidgets.QMessageBox.critical(self, 'Error', 
+                    #    err_msg) 
+
                     pCell2 = self.ui.layerTableWidget.item(ii, jj)
                     pCell2.setText(str(""))
                     self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
@@ -512,6 +550,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                             nor[idx] = list()
                             eas[idx] = list()
                             dep[idx] = list()
+                    if jj == 4:
+                        # circular loop 
+                        m2pi = np.linspace(0,2*np.pi,10)
+                        rad = 30.
+                        nor[idx] = np.concatenate((np.array(nor[idx]),  rad * np.sin(m2pi))) 
+                        eas[idx] = np.concatenate((np.array(eas[idx]),  rad * np.cos(m2pi))) 
+                        dep[idx] = np.concatenate((np.array(dep[idx]),  np.ones(len(m2pi)))) 
+                        print("nor", nor[idx]) 
                     if jj == 1: 
                         nor[idx].append( eval(self.ui.loopTableWidget.item(ii, 1).text()) )
                     elif jj == 2:
@@ -595,7 +641,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # make plots as you import the dataset
         self.ui.plotImportCheckBox.setEnabled(True)
         self.ui.plotImportCheckBox.setChecked(True)
- 
+         
         # Update info from the header into the GUI
         self.ui.pulseTypeTextBrowser.clear()
         self.ui.pulseTypeTextBrowser.append(self.RAWDataProc.pulseType)
@@ -743,7 +789,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["transFreq"] = self.RAWDataProc.transFreq
         INFO["headerstr"] = str(self.headerstr)
         INFO["nDAQVersion"] = self.RAWDataProc.nDAQVersion
-        INFO["log"] = yaml.dump( self.YamlNode )  #self.logText  #MAK 20170127
+        INFO["log"] = yaml.dump( self.YamlNode )  
 
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
@@ -820,9 +866,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if  AKVO_VERSION[0] >= 1 and AKVO_VERSION[1] >= 2 and AKVO_VERSION[2] >= 3:
             self.RAWDataProc.interpulseDelay = self.RAWDataProc.DATADICT["INFO"]["interpulseDelay"]
 
-        self.YamlNode.Import = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
+        self.YamlNode.Import =   OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
         self.YamlNode.Processing = list((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
         self.YamlNode.Stacking = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Stacking)
+        self.YamlNode.META =     OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).META)
         self.Log()
  
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
@@ -857,6 +904,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberFID2Length.setEnabled(1)
         self.ui.lcdNumberResampFreq.setEnabled(1)
         self.ui.lcdTotalDeadTime.setEnabled(1)
+
+        # enable META tab 
+        self.ui.METATab.setEnabled(1)
+        self.ui.siteBox.setEnabled(1)
         
         #self.ui.lcdTotalDeadTime.display( 1e3*self.RAWDataProc.DATADICT["INFO"]["deadTime"] )
 
@@ -1006,6 +1057,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.YamlNode.Import["instrument dead time"] = (1e-3 * self.ui.DeadTimeSpinBox.value( ))    
 
         self.Log (  )     
+        
+        # enable META tab 
+        self.ui.METATab.setEnabled(1)
+        self.ui.siteBox.setEnabled(1)
 
         # should be already done
 #        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("updateProgress(int)"), self.updateProgressBar)
@@ -1244,11 +1299,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Log processing 
         Adapt = OrderedDict()
         Adapt["STEP"] = "TD noise cancellation"
+        #print(Adapt)
         Adapt["n_Taps"] = str(self.ui.MTapsSpinBox.value())
         Adapt["lambda"] = str(self.ui.adaptLambdaSpinBox.value())
         Adapt["truncate"] = str(self.ui.adaptTruncateSpinBox.value())
         Adapt["mu"] = str(self.ui.adaptMuSpinBox.value()) 
         Adapt["PCA"] = str(self.ui.PCAComboBox.currentText())
+        #print(Adapt)
         self.YamlNode.Processing.append(Adapt)
         self.Log( )
 
@@ -1280,6 +1337,22 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.windowBandwidthSpinBox.value(), \
                 self.ui.CentralVSpinBox.value(), \
                 self.ui.mplwidget))
+
+    def logSite(self):
+        self.YamlNode.META["Location"] = self.ui.locEdit.text()
+        self.YamlNode.META["Coordinates"] = OrderedDict() 
+        self.YamlNode.META["Coordinates"]["UTM"] = self.ui.UTMzone.currentText()
+        self.YamlNode.META["Coordinates"]["LatBand"] = self.ui.latBand.currentText() 
+        self.YamlNode.META["Coordinates"]["ellipsoid"] =  self.ui.ellipsoid.currentText()
+        self.YamlNode.META["DateTime"] = self.ui.dateEdit.date().toString("yyyy-MM-dd") + "T" + str( self.ui.timeEdit.time().toString("hh:mm") )
+        self.YamlNode.META["Temp"] = self.ui.tempSpinBox.value()
+        self.YamlNode.META["B_0"] = OrderedDict()
+        self.YamlNode.META["B_0"]["inc"] = self.ui.incSpinBox.value()
+        self.YamlNode.META["B_0"]["dec"] = self.ui.decSpinBox.value()
+        self.YamlNode.META["B_0"]["intensity"] = self.ui.intensitySpinBox.value()
+        self.YamlNode.META["Field Notes"] = self.ui.txtComments.toPlainText()
+
+        self.Log()
 
     def bandPassFilter(self):
         
