@@ -1653,7 +1653,7 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="NCTab">
            <attribute name="title">
-            <string>Noise cancelation</string>
+            <string>Noise removal</string>
            </attribute>
            <attribute name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This tab contains noise cancellation algorithms. The frequency-domain algorithm is often less effective than the time domain approach. We often discourage using the frequency domain algorithm. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -3527,15 +3527,15 @@ background: dark grey;
               <property name="title">
                <string>Surface Loops</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_17">
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_58">
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="2" column="2">
+                <widget class="QPushButton" name="removeLoopButton">
                  <property name="text">
-                  <string>Label</string>
+                  <string>Remove</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="5">
+               <item row="0" column="3">
                 <widget class="QComboBox" name="loopType">
                  <item>
                   <property name="text">
@@ -3559,13 +3559,10 @@ background: dark grey;
                  </item>
                 </widget>
                </item>
-               <item row="1" column="2">
-                <widget class="QLineEdit" name="loopLabel"/>
-               </item>
                <item row="0" column="0">
-                <widget class="QLabel" name="label_54">
+                <widget class="QPushButton" name="addLoopButton">
                  <property name="text">
-                  <string>Geometry</string>
+                  <string>Add </string>
                  </property>
                 </widget>
                </item>
@@ -3598,31 +3595,20 @@ background: dark grey;
                  </item>
                 </widget>
                </item>
-               <item row="2" column="5">
+               <item row="1" column="0" colspan="4">
+                <widget class="QTableWidget" name="txRxTable"/>
+               </item>
+               <item row="2" column="3">
                 <widget class="QPushButton" name="plotLoops">
                  <property name="text">
                   <string>Plot loops</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="5">
-                <widget class="QPushButton" name="removeLoopButton">
-                 <property name="text">
-                  <string>Remove</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="4">
-                <widget class="QPushButton" name="addLoopButton">
-                 <property name="text">
-                  <string>Add </string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="4">
-                <widget class="QLabel" name="label_60">
-                 <property name="text">
-                  <string>Type</string>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="loopLabel">
+                 <property name="placeholderText">
+                  <string>Enter loop name</string>
                  </property>
                 </widget>
                </item>
@@ -3875,8 +3861,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">

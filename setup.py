@@ -50,9 +50,9 @@ setup(name='Akvo',
           'pandas',
           'pyqt-distutils',
           'cmocean',
-          'pyLemma=0.0.9'
+          'pyLemma >= 0.0.9'
       ],
-      packages=['akvo', 'akvo.tressel', 'akvo.gui','akvo.lemma'],
+      packages=['akvo', 'akvo.tressel', 'akvo.gui'],
       license=['GPL 4.0'],
       entry_points = {
               'console_scripts': [

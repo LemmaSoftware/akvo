@@ -7,21 +7,48 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>395</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Centre Northing </string>
+      <string>height (m)</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="6" column="2">
+    <widget class="QDoubleSpinBox" name="dip">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The dip designates the angle between the normal and the ground. Zero designates a loop that is flat on the ground, whereas 90 is a vertical loop. This value in turn with azimuth allows for arbitrary orientation of the loops. If azimuth is zero, and dip is 90, the loop has a normal aligned in the northing direction. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="maximum">
+      <double>90.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>azimuth (°)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>centre northing (m)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
     <widget class="QDoubleSpinBox" name="centreNorth">
      <property name="minimum">
       <double>-999999999.000000000000000</double>
@@ -31,32 +58,41 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_7">
      <property name="text">
-      <string>Centre Easting</string>
+      <string>dip (°)</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QDoubleSpinBox" name="centreEast">
+   <item row="10" column="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QDoubleSpinBox" name="loopRadius">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Radius of the loop&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="minimum">
-      <double>-99999999.000000000000000</double>
+      <double>0.100000000000000</double>
      </property>
      <property name="maximum">
-      <double>99999999.989999994635582</double>
+      <double>600.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>50.000000000000000</double>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>height </string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QDoubleSpinBox" name="doubleSpinBox">
+   <item row="2" column="2">
+    <widget class="QDoubleSpinBox" name="loopHeight">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Akvo uses a positive down convention, a slight negative value to the loop height improves numerical stability using digital filtering hankel transforms. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
@@ -71,50 +107,68 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>radius</string>
+      <string>centre easting (m)</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Radius of the loop&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   <item row="7" column="2">
+    <widget class="QDoubleSpinBox" name="az">
+     <property name="enabled">
+      <bool>false</bool>
      </property>
-     <property name="minimum">
-      <double>0.100000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>299.990000000000009</double>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>radius (m)</string>
      </property>
     </widget>
    </item>
    <item row="4" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>turns</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QDoubleSpinBox" name="centreEast">
+     <property name="minimum">
+      <double>-99999999.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>99999999.989999994635582</double>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
       <string>segments</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QSpinBox" name="spinBox">
+   <item row="4" column="2">
+    <widget class="QSpinBox" name="loopTurns">
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>100000</number>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QSpinBox" name="segments">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Currently Akvo/Merlin calculates circular loops using segments of wire, forming a polygon. Analytic circular loops may be added in the future. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="minimum">
       <number>5</number>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>

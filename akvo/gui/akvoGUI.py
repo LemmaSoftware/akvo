@@ -29,9 +29,11 @@ from copy import deepcopy
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT #as NavigationToolbar
 import datetime, time
 
-
 from akvo.tressel import mrsurvey 
-#from akvo.lemma import pyLemmaCore  # Looking ahead! 
+
+from pyLemma import LemmaCore  
+from pyLemma import FDEM1D 
+from pyLemma import Merlin
 
 import pkg_resources  # part of setuptools
 version = pkg_resources.require("Akvo")[0].version
@@ -205,9 +207,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.dateEdit.dateChanged.connect( self.logSite )
         # this may call the yaml stuff too often... 
         self.ui.txtComments.textChanged.connect( self.logSite )
+        
+        self.ui.plotLoops.pressed.connect( self.plotLoops2 )       
  
-        # invert
+        # Loops
         self.ui.addLoopButton.pressed.connect( self.loopAdd )
+        self.loops = {}          
  
         # hide header info box 
         #self.ui.headerFileBox.setVisible(False) 
@@ -262,8 +267,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.loopTableWidget.setDragEnabled(False)
         #self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
-        self.loops = {}          
-
+        self.ui.txRxTable.setColumnCount(4)
+        self.ui.txRxTable.setRowCount(0)
+        self.ui.txRxTable.setHorizontalHeaderLabels( ["Label", "Geom.","Turns","Tx/Rx"] )
+        
         ##########################################################################
         # layer Table 
         self.ui.layerTableWidget.setRowCount(80)       
@@ -355,11 +362,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     
     def loopAdd(self):
 
-        print(self.ui.loopLabel.text())
-        print(self.ui.loopGeom.currentText())
-        print(self.ui.loopType.currentText())
-           
-        print( "label len", len(self.ui.loopLabel.text()) ) 
+        #print(self.ui.loopLabel.text())
+        #print(self.ui.loopGeom.currentText())
+        #print(self.ui.loopType.currentText())
+        #print( "label len", len(self.ui.loopLabel.text()) ) 
         if len(self.ui.loopLabel.text().strip()) == 0: 
             Error = QtWidgets.QMessageBox()
             Error.setWindowTitle("Error!")
@@ -374,7 +380,52 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 dialog.exec_()
                 dialog.show()
                 if dialog.result():
-                    print("centre north", dialog.ui.centreNorth.value())
+                    cn = dialog.ui.centreNorth.value()
+                    ce = dialog.ui.centreEast.value()
+                    ht = dialog.ui.loopHeight.value()
+                    rad = dialog.ui.loopRadius.value()
+                    turns = dialog.ui.loopTurns.value()
+                    ns = dialog.ui.segments.value()
+                    #print("dip", dialog.ui.dip.value())
+                    #print("azimuth", dialog.ui.az.value())
+                    
+                    self.loops[self.ui.loopLabel.text()] = FDEM1D.PolygonalWireAntenna()
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfPoints( dialog.ui.segments.value() + 1 )
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfTurns( dialog.ui.loopTurns.value() )
+
+                    points = np.linspace(0, 2*np.pi, dialog.ui.segments.value()+1)
+                    for iseg, ipt in enumerate(points):
+                        #self.loops[self.ui.loopLabel.text()].SetPoint(iseg,( dialog.ui.centreNorth.value(),  dialog.ui.centreEast.value(), dialog.ui.loopHeight.value()))
+                        self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht ))
+                        #self.loops[self.ui.loopLabel.text()].SetPoint(1,(150,  50, -1e-3))
+                    
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfFrequencies(1)
+                    #self.loops[self.ui.loopLabel.text].SetFrequency(0,2246) 
+                    self.loops[self.ui.loopLabel.text()].SetCurrent(1.)
+                   
+                    # update the table 
+                    self.ui.txRxTable.setRowCount( len(self.loops.keys()) )
+                    
+                    pCell = QtWidgets.QTableWidgetItem()
+                    pCell.setText( self.ui.loopLabel.text() ) 
+                    pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled )
+                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 0, pCell)
+                    
+                    gCell = QtWidgets.QTableWidgetItem()
+                    gCell.setText( self.ui.loopGeom.currentText() ) 
+                    gCell.setFlags( QtCore.Qt.ItemIsEnabled )
+                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 1, gCell)
+                    
+                    tCell = QtWidgets.QTableWidgetItem()
+                    tCell.setText( str(dialog.ui.loopTurns.value()) ) 
+                    tCell.setFlags( QtCore.Qt.ItemIsEnabled )
+                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 2, tCell)
+                    
+                    txCell = QtWidgets.QTableWidgetItem()
+                    txCell.setText( str(self.ui.loopType.currentText()) ) 
+                    txCell.setFlags( QtCore.Qt.ItemIsEnabled )
+                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 3, txCell)
+
 
     def headerBoxShrink(self):
         #self.ui.headerFileBox.setVisible(False)
@@ -525,10 +576,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.plotLoops()
         self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
 
+    def plotLoops2(self):
+        self.ui.mplwidget.reAxH(1)
+
+        for loop in self.loops:
+            POINTS = self.loops[loop].GetPoints().T
+            self.ui.mplwidget.ax1.plot( POINTS[:,0], POINTS[:,1] )
+        
+        self.ui.mplwidget.ax1.set_aspect('equal') #, adjustable='box')
+        self.ui.mplwidget.draw()
 
     def plotLoops(self):
-
-        print("Plotting loopz")        
        
         self.ui.mplwidget.reAxH(1)
         #self.ui.mplwidget.ax1.clear() 
@@ -1565,7 +1623,7 @@ import pkg_resources
 from pkg_resources import resource_string
 import matplotlib.image as mpimg 
 import matplotlib.pyplot as plt 
-
+from akvo.gui.logo import plotLogo
 
 def main():
     
@@ -1582,15 +1640,31 @@ def main():
     
     aw = ApplicationWindow()
 
-    img=mpimg.imread(logo)
+    #img=mpimg.imread(logo)
     for ax in [ aw.ui.mplwidget ]: 
         ax.fig.clear()
-        subplot = ax.fig.add_subplot(111)
-        #ax.fig.patch.set_facecolor( None )
-        #ax.fig.patch.set_alpha( .0 )
-        subplot.imshow(img) 
+        subplot = ax.fig.add_subplot(211)
+        # old logo plot
+        ax.fig.patch.set_facecolor( None )
+        ax.fig.patch.set_alpha( .0 )
+        #subplot.imshow(img)
+        #ax.fig.patch.set_visible(False)
+        subplot.axis('off')
+        
+        plotLogo(subplot) 
         subplot.xaxis.set_major_locator(plt.NullLocator()) 
         subplot.yaxis.set_major_locator(plt.NullLocator()) 
+        
+        subplot2 = ax.fig.add_subplot(212)
+        subplot2.text(0.5, 1.,'surface NMR workbench',
+            horizontalalignment='center',
+            verticalalignment='center',
+            size=22,
+            transform = subplot2.transAxes)
+        subplot2.xaxis.set_major_locator(plt.NullLocator()) 
+        subplot2.yaxis.set_major_locator(plt.NullLocator()) 
+        subplot2.axis('off')
+        
         ax.draw()
 
     if ssplash:
