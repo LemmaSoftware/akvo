@@ -19,6 +19,8 @@ from matplotlib.ticker import MaxNLocator
 import multiprocessing 
 import itertools 
 
+import padasip as pa
+
 import akvo.tressel.adapt as adapt
 #import akvo.tressel.cadapt as adapt # cython for more faster
 import akvo.tressel.decay as decay
@@ -608,7 +610,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                                     X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
                                     canvas.ax1.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
                             canvas.ax1.set_prop_cycle(None)
-                            #canvas.ax1.set_ylim(-mmaxr, mmaxr) 
+                            canvas.ax1.set_ylim(-mmaxr, mmaxr) 
                         for ichan in self.DATADICT[pulse]["chan"]:
                             if TDPlot:
                                 canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9*self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
@@ -618,7 +620,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                                 X = np.fft.rfft(self.DATADICT[pulse][ichan][ipm][istack])
                                 canvas.ax2.plot(np.abs(ww[0:len(X)]), np.abs(X), alpha=.5)
                         canvas.ax2.set_prop_cycle(None)
-                        #canvas.ax2.set_ylim(-mmaxd, mmaxd)
+                        canvas.ax2.set_ylim(-mmaxd, mmaxd)
                     if procRefs: 
                         for ichan in self.DATADICT[pulse]["rchan"]:
                             if nF == 1:
@@ -1621,7 +1623,7 @@ class GMRDataProcessor(SNMRDataProcessor):
 
                     # calculate effective current/moment
                     I0 = np.abs(X)/len(X) 
-                    qeff = I0 #* (self.DATADICT[pulse]["PULSE_TIMES"][-1]-self.DATADICT[pulse]["PULSE_TIMES"][0])
+                    qeff = I0 * (self.DATADICT[pulse]["PULSE_TIMES"][-1]-self.DATADICT[pulse]["PULSE_TIMES"][0])
 
                     # frequency plot
                     #canvas.ax1.set_title(r"pulse moment index " +str(ipm), fontsize=10)
@@ -1708,7 +1710,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         for pulse in self.DATADICT["PULSES"]:
             H[pulse] = {}
             for ichan in self.DATADICT[pulse]["chan"]:
-                H[pulse][ichan] = np.zeros(M)
+                H[pulse][ichan] = np.zeros(M*len( self.DATADICT[pulse]["rchan"] ))
         
         iFID = 0 
         # original ordering... 
@@ -1726,20 +1728,48 @@ class GMRDataProcessor(SNMRDataProcessor):
                         mmax = max(mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
                     canvas.ax2.set_ylim(-mmax, mmax) 
                     canvas.ax2.set_prop_cycle(None)
-
                     for ichan in self.DATADICT[pulse]["chan"]:
                         #H = np.zeros(M)
                         RX = []
                         for irchan in self.DATADICT[pulse]["rchan"]:
                             RX.append(self.DATADICT[pulse][irchan][ipm][istack][::-1])
-                        if all(H[pulse][ichan]) == 0:
-                            # call twice to reconcile filter wind-up
-                            [e,H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
+                        # Reset each time? 
+                        #H[pulse][ichan] *= 0
+                        #if all(H[pulse][ichan]) == 0:
+                        if False: 
+                            ####################################################################################
+                            # Padasip adaptive filter implimentations, do not allow for variable filter length
+                            ####################################################################################
+                            # identification                                                                   #
+                            #f = pa.filters.FilterRLS(n=len(self.DATADICT[pulse]["rchan"]), mu=0.99, w="zeros") #
+                            #f = pa.filters.FilterGNGD(n=len(self.DATADICT[pulse]["rchan"]), mu=0.1)           #                          # Nope
+                            #f = pa.filters.FilterLMS(n=len(self.DATADICT[pulse]["rchan"]), mu=0.1)            #                          # NOPE
+                            #f = pa.filters.AdaptiveFilter(model="NLMS", n=len(self.DATADICT[pulse]["rchan"]), mu=0.1, w="random")        # NOPE  
+                            #f = pa.filters.AdaptiveFilter(model="GNGD", n=len(self.DATADICT[pulse]["rchan"]), mu=0.1)                    # horrendous
+                            #f = pa.filters.FilterNLMF(n=len(self.DATADICT[pulse]["rchan"]), mu=0.005, w="random")                        # BAD
+                            
+                            #f = pa.filters.FilterSSLMS(n=len(self.DATADICT[pulse]["rchan"]), mu=0.01, w="zeros")                         # pretty good
+                            f = pa.filters.FilterNSSLMS(n=len(self.DATADICT[pulse]["rchan"]), mu=0.1, w="zeros")                          # pretty good 
+
+                            y, e, H[pulse][ichan] = f.run(self.DATADICT[pulse][ichan][ipm][istack][::-1], np.array(RX).T)    #
+                            ####################################################################################
+                            e = self.DATADICT[pulse][ichan][ipm][istack][::-1] - y
+                        elif True:
+                            # check for change in filter coefficients and rerun if things are changing too rapidly, 
+                            #       this is especially true for the first run 
+                            hm1 = np.copy(H[pulse][ichan]) 
+                            [e, H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
+                                                     RX,\
+                                                     M, mu, PCA, flambda, H[pulse][ichan])
+                            iloop = 0
+                            #while False: 
+                            while (np.linalg.norm( H[pulse][ichan] - hm1) > .05):
+                                hm1 = np.copy(H[pulse][ichan]) 
+                                [e, H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
                                                         RX,\
                                                         M, mu, PCA, flambda, H[pulse][ichan])
-                            [e,H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
-                                                        RX,\
-                                                        M, mu, PCA, flambda, H[pulse][ichan])
+                                iloop += 1
+                            print("Recalled ", iloop, "times with norm=", np.linalg.norm(hm1-H[pulse][ichan]))
                         else:
                             [e,H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
                                                         RX,\
@@ -1753,10 +1783,15 @@ class GMRDataProcessor(SNMRDataProcessor):
                             canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* e[::-1],\
                                 label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
                             self.DATADICT[pulse][ichan][ipm][istack] = e[::-1]
-                            
-                        canvas.ax1.plot( H[pulse][ichan] ) # , label="taps") 
+                           
+     
+                        canvas.ax1.plot( H[pulse][ichan].reshape(-1, len(RX)) ) # , label="taps") 
+
                         canvas.ax2.legend(prop={'size':6}, loc='upper right')
                         #canvas.ax2.legend(prop={'size':6}, loc='upper right')
+
+                        mh = np.max(np.abs( H[pulse][ichan] ))
+                        canvas.ax1.set_ylim( -mh, mh )
 
                         canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
                         canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
@@ -1930,7 +1965,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         Filt = adapt.AdaptiveFilter(0.)
         for pulse in self.DATADICT["PULSES"]:
             # Compute window function and dimensions      
-            [WINDOW, nd, wstart, wend, dead] = self.computeWindow(pulse, band, centre, ftype) 
+            [WINDOW, nd, wstart, wend, dead, idead] = self.computeWindow(pulse, band, centre, ftype) 
             for istack in self.DATADICT["stacks"]:
                 for ichan in self.DATADICT[pulse]["chan"]:
                     # FFT of stack
@@ -2521,16 +2556,17 @@ class GMRDataProcessor(SNMRDataProcessor):
 
                     canvas.ax3.legend(prop={'size':6}, loc='upper right')
                     canvas.ax2.legend(prop={'size':6}, loc='upper right')
-                    
-                    canvas.ax1.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
+
                     canvas.ax1.set_ylabel("Current [A]", fontsize=8) 
                     canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                    canvas.ax1.set_xlabel("time [s]", fontsize=8)
                     
+                    canvas.ax2.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
                     canvas.ax2.set_ylabel("RAW signal [V]", fontsize=8)
                     canvas.ax3.set_ylabel("RAW signal [V]", fontsize=8)
                     canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
                     canvas.ax2.tick_params(axis='both', which='minor', labelsize=6)
-                    canvas.ax2.set_xlabel("time [s]", fontsize=8)
+
                     canvas.draw()
 
             percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))

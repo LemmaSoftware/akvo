@@ -38,6 +38,33 @@ def plotLogo(ax):
     ax.plot(x[o],  y4[o], linewidth=3, color='black')
     ax.plot(x[o], -y4[o], linewidth=3, color='black')
     ax.fill_between(x[o],  y4[o], y2=-y4[o],  where=y4[o]<=1, interpolate=True, linewidth=0, alpha=.95, color='maroon')
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt 
+
+    fig = plt.figure( figsize=(6,3) )
+    #ax = fig.add_axes([.1,.1,.8,.8])
+    ax = fig.add_subplot(211)
+
+    fig.patch.set_facecolor( None )
+    fig.patch.set_alpha( .0 )
+    ax.axis('off')
+    plotLogo(ax)
+    ax.xaxis.set_major_locator(plt.NullLocator()) 
+    ax.yaxis.set_major_locator(plt.NullLocator()) 
+
+    subplot2 = fig.add_subplot(212)
+    subplot2.text(0.5, 1.,'surface NMR workbench',
+            horizontalalignment='center',
+            verticalalignment='center',
+            size=22,
+            transform = subplot2.transAxes)
+    subplot2.xaxis.set_major_locator(plt.NullLocator()) 
+    subplot2.yaxis.set_major_locator(plt.NullLocator()) 
+    subplot2.axis('off')
+    plt.savefig("logo.pdf")
+    plt.show()
+
 #ax.fill_between(x[o], -y4[o], y2=0, where=-y4[o]<=1, interpolate=True, linewidth=0, alpha=.5, color='black')
 #ax.plot(x[o], y2[o], linewidth=3, color='black')
 #ax.plot(x[o],-y2[o], linewidth=3, color='black')

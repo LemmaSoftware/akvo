@@ -43,14 +43,14 @@ def minHarmonic(sN, fs, t, f0, k1, kN, ks, Bounds, Nsearch):
     if Nsearch != False:
         kNs = k1+Nsearch    
     if Bounds == 0:
-        print("UNbounded search from ", k1, " to ", kNs) # for f0 with fN=10 in search", f0)
         # CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, dogleg, trust-ncg, trust-krylov, trust-exact and trust-constr
         res = minimize(harmonicNorm, np.array((f0)), args=(sN, fs, t, k1, kNs, ks), jac='2-point', method='BFGS') # hess=None, bounds=None )
+        print("UNbounded search from ", k1, " to ", kNs, res.x[0]) # for f0 with fN=10 in search", f0)
     
     else:
         bnds = ( (f0-Bounds, f0+Bounds), )
-        print("bounded ( +-", Bounds, ") search from ", k1, "to", kNs) # for f0 with fN=10 in search", f0)
         res = minimize(harmonicNorm, (f0,), args=(sN, fs, t, k1, kNs, ks), jac='2-point', method='L-BFGS-B', bounds=bnds ) # hess=None, bounds=None )
+        print("bounded ( +-", Bounds, ") search from ", k1, "to", kNs, res.x[0]) # for f0 with fN=10 in search", f0)
 
     return harmonicEuler(sN, fs, t, res.x[0], k1, kN, ks), res.x[0]#[0]
 

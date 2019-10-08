@@ -1,51 +1,30 @@
 #/usr/bin/env python 
 import sys
-#import readline
-try: 
-    from akvo.gui.main_ui import Ui_MainWindow
-    uicerr = False
-except: # Fallback 
-    from akvo.gui.mainui import Ui_MainWindow
-    uicerr = """
-USING THE DEFAULT GUI FILES, AKVO MAY NOT WORK CORRECTLY!
-
-See INSTALL.txt for details regarding GUI configuration 
-if you are encountering problems.     
-
-Clicking ignore will prevent this warning from showing 
-each time you launch Akvo.                  
-"""
-
-from akvo.gui.addCircularLoop_ui import Ui_circularLoopAdd
 
 import matplotlib
 matplotlib.use("QT5Agg")
-from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PyQt5 import QtCore, QtGui, QtWidgets #, uic
 import numpy as np
 import time
 import os
 from copy import deepcopy
 from matplotlib.backends.backend_qt4 import NavigationToolbar2QT #as NavigationToolbar
 import datetime, time
+import pkg_resources  # part of setuptools
+from collections import OrderedDict
+from ruamel import yaml
 
+from akvo.gui.main_ui import Ui_MainWindow
+from akvo.gui.addCircularLoop_ui import Ui_circularLoopAdd
+from akvo.gui.addFigure8Loop_ui import Ui_figure8LoopAdd
 from akvo.tressel import mrsurvey 
 
 from pyLemma import LemmaCore  
 from pyLemma import FDEM1D 
 from pyLemma import Merlin
 
-import pkg_resources  # part of setuptools
-version = pkg_resources.require("Akvo")[0].version
+VERSION = pkg_resources.require("Akvo")[0].version
 
-from collections import OrderedDict
-
-from ruamel import yaml
-#import ruamel.yaml 
-#yaml = ruamel.yaml.YAML()
-#yaml.indent(mapping=4)
-
-#import yaml
 # Writes out numpy arrays into Eigen vectors as serialized by Lemma
 class MatrixXr(yaml.YAMLObject):
     yaml_tag = u'MatrixXr'
@@ -75,19 +54,14 @@ setup_yaml()
 class AkvoYamlNode(yaml.YAMLObject):
     yaml_tag = u'AkvoData'
     def __init__(self):
-        self.Akvo_VERSION = version
+        self.Akvo_VERSION = VERSION
         self.Import = OrderedDict() # {}
         self.Processing = [] # OrderedDict() 
         self.Stacking = OrderedDict()
         self.META = OrderedDict() 
-    #def __init__(self, node):
-    #    self.Akvo_VERSION = node["version"]
-    #    self.Import = OrderedDict( node["Import"] ) # {}
-    #    self.Processing = OrderedDict( node["Processing"] ) 
     def __repr__(self):
         return "%s(name=%r, Akvo_VERSION=%r, Import=%r, Processing=%r, self.Stacking=%r, self.META=%r)" % (
             self.__class__.__name__, self.Akvo_VERSION, self.Import, self.Processing, self.Stacking, self.META )
-            #self.__class__.__name__, self.Akvo_VERSION, self.Import, OrderedDict(self.Processing) ) 
     
 try:    
     import thread 
@@ -107,26 +81,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     
     def __init__(self):
         
-        QtWidgets.QMainWindow.__init__(self)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)       
- 
-        akvohome = os.path.expanduser("~") + "/.akvo"
-        if not os.path.exists(akvohome):
-            os.makedirs(akvohome)
+        super().__init__() 
+        #QtWidgets.QMainWindow.__init__(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)      
+
+        # alternative to calling pyuic 
+        #self.ui = uic.loadUi('main.ui', self) 
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        if uicerr != False and not os.path.exists(akvohome+"/pyuic-warned"):
-            reply = QtGui.QMessageBox.warning(self, 'Warning', uicerr, QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ignore) 
-            if reply == 1024:      # "0x400" in hex
-                pass
-            elif reply == 1048576: # "0x100000" in hex
-                warn = open( akvohome+"/pyuic-warned" ,"w" )
-                warn.write("Gui files were not compiled locally using pyuic! Further warnings have been supressed")
-                warn.close()
+    
         self.RAWDataProc = None 
-
         self.YamlNode = AkvoYamlNode()           
  
         # initialise some stuff
@@ -159,7 +124,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         ###########
         # Buttons #
         ###########
-#         #QtCore.QObject.connect(self.ui.fullWorkflowPushButton, QtCore.SIGNAL("clicked()"), self.preprocess )
         self.ui.loadDataPushButton.pressed.connect(self.loadRAW) 
         self.ui.sumDataGO.pressed.connect( self.sumDataChans )
         self.ui.bandPassGO.pressed.connect( self.bandPassFilter )
@@ -167,7 +131,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.fdDesignPushButton.pressed.connect( self.designFDFilter )
         self.ui.downSampleGO.pressed.connect( self.downsample )
         self.ui.windowFilterGO.pressed.connect( self.windowFilter )
-#        self.ui.despikeGO.pressed.connect( self.despikeFilter ) # use smart stack instead 
         self.ui.adaptGO.pressed.connect( self.adaptFilter )
         self.ui.adaptFDGO.pressed.connect( self.adaptFilterFD )
         self.ui.qdGO.pressed.connect( self.quadDet )
@@ -207,8 +170,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.dateEdit.dateChanged.connect( self.logSite )
         # this may call the yaml stuff too often... 
         self.ui.txtComments.textChanged.connect( self.logSite )
-        
         self.ui.plotLoops.pressed.connect( self.plotLoops2 )       
+        self.ui.removeLoopButton.pressed.connect( self.removeLoop )       
  
         # Loops
         self.ui.addLoopButton.pressed.connect( self.loopAdd )
@@ -373,12 +336,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             Error.setDetailedText("Each loop label must be unique and comprise at least one character. Leading and trailing whitespace will be trimmed.")
             Error.exec_()
         else:
+            
+            ### Circular loop
             if self.ui.loopGeom.currentText() == "Circular":
                 dialog = QtWidgets.QDialog()
                 dialog.ui = Ui_circularLoopAdd()
                 dialog.ui.setupUi(dialog)
                 dialog.exec_()
                 dialog.show()
+
                 if dialog.result():
                     cn = dialog.ui.centreNorth.value()
                     ce = dialog.ui.centreEast.value()
@@ -386,8 +352,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     rad = dialog.ui.loopRadius.value()
                     turns = dialog.ui.loopTurns.value()
                     ns = dialog.ui.segments.value()
-                    #print("dip", dialog.ui.dip.value())
-                    #print("azimuth", dialog.ui.az.value())
+                    cwise = dialog.ui.cwiseBox.currentIndex()
+                    print("cwise", cwise)
+                    #dip = dialog.ui.dip.value()
+                    #azimuth = dialog.ui.az.value()
                     
                     self.loops[self.ui.loopLabel.text()] = FDEM1D.PolygonalWireAntenna()
                     self.loops[self.ui.loopLabel.text()].SetNumberOfPoints( dialog.ui.segments.value() + 1 )
@@ -395,37 +363,56 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
                     points = np.linspace(0, 2*np.pi, dialog.ui.segments.value()+1)
                     for iseg, ipt in enumerate(points):
-                        #self.loops[self.ui.loopLabel.text()].SetPoint(iseg,( dialog.ui.centreNorth.value(),  dialog.ui.centreEast.value(), dialog.ui.loopHeight.value()))
-                        self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht ))
-                        #self.loops[self.ui.loopLabel.text()].SetPoint(1,(150,  50, -1e-3))
-                    
+                        if cwise == 0:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, (  cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht) )
+                        else:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( -cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht) )
                     self.loops[self.ui.loopLabel.text()].SetNumberOfFrequencies(1)
-                    #self.loops[self.ui.loopLabel.text].SetFrequency(0,2246) 
                     self.loops[self.ui.loopLabel.text()].SetCurrent(1.)
-                   
-                    # update the table 
-                    self.ui.txRxTable.setRowCount( len(self.loops.keys()) )
+            
+            if self.ui.loopGeom.currentText() == "figure-8":
+                dialog = QtWidgets.QDialog()
+                dialog.ui = Ui_figure8LoopAdd()
+                dialog.ui.setupUi(dialog)
+                dialog.exec_()
+                dialog.show()
+                
+                if dialog.result():
+                    cn1 = dialog.ui.centreNorth1.value()
+                    ce1 = dialog.ui.centreEast1.value()
+                    cn2 = dialog.ui.centreNorth2.value()
+                    ce2 = dialog.ui.centreEast2.value()
+                    ht = dialog.ui.loopHeight.value()
+                    rad = dialog.ui.loopRadius.value()
+                    turns = dialog.ui.loopTurns.value()
+                    ns = dialog.ui.segments.value()
+                    #cwise = dialog.ui.cwiseBox.currentIndex()
+                    print(cn1, ce1, cn2, ce2, ht, rad, turns, ns)   
+ 
+            # general across all types   
+            if dialog.result():
+                # update the table 
+                self.ui.txRxTable.setRowCount( len(self.loops.keys()) )
                     
-                    pCell = QtWidgets.QTableWidgetItem()
-                    pCell.setText( self.ui.loopLabel.text() ) 
-                    pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled )
-                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 0, pCell)
+                pCell = QtWidgets.QTableWidgetItem()
+                pCell.setText( self.ui.loopLabel.text() ) 
+                pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled )
+                self.ui.txRxTable.setItem( len(self.loops.keys())-1, 0, pCell)
                     
-                    gCell = QtWidgets.QTableWidgetItem()
-                    gCell.setText( self.ui.loopGeom.currentText() ) 
-                    gCell.setFlags( QtCore.Qt.ItemIsEnabled )
-                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 1, gCell)
+                gCell = QtWidgets.QTableWidgetItem()
+                gCell.setText( self.ui.loopGeom.currentText() ) 
+                gCell.setFlags( QtCore.Qt.ItemIsEnabled )
+                self.ui.txRxTable.setItem( len(self.loops.keys())-1, 1, gCell)
                     
-                    tCell = QtWidgets.QTableWidgetItem()
-                    tCell.setText( str(dialog.ui.loopTurns.value()) ) 
-                    tCell.setFlags( QtCore.Qt.ItemIsEnabled )
-                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 2, tCell)
+                tCell = QtWidgets.QTableWidgetItem()
+                tCell.setText( str(dialog.ui.loopTurns.value()) ) 
+                tCell.setFlags( QtCore.Qt.ItemIsEnabled )
+                self.ui.txRxTable.setItem( len(self.loops.keys())-1, 2, tCell)
                     
-                    txCell = QtWidgets.QTableWidgetItem()
-                    txCell.setText( str(self.ui.loopType.currentText()) ) 
-                    txCell.setFlags( QtCore.Qt.ItemIsEnabled )
-                    self.ui.txRxTable.setItem( len(self.loops.keys())-1, 3, txCell)
-
+                txCell = QtWidgets.QTableWidgetItem()
+                txCell.setText( str(self.ui.loopType.currentText()) ) 
+                txCell.setFlags( QtCore.Qt.ItemIsEnabled )
+                self.ui.txRxTable.setItem( len(self.loops.keys())-1, 3, txCell)
 
     def headerBoxShrink(self):
         #self.ui.headerFileBox.setVisible(False)
@@ -536,8 +523,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
 
     def loopCellChanged(self):
-        self.ui.loopTableWidget.cellChanged.disconnect(self.loopCellChanged) 
         
+        self.ui.loopTableWidget.cellChanged.disconnect(self.loopCellChanged) 
         jj = self.ui.loopTableWidget.currentColumn()
         ii = self.ui.loopTableWidget.currentRow()
 
@@ -581,10 +568,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         for loop in self.loops:
             POINTS = self.loops[loop].GetPoints().T
-            self.ui.mplwidget.ax1.plot( POINTS[:,0], POINTS[:,1] )
-        
+            self.ui.mplwidget.ax1.plot( POINTS[:,1], POINTS[:,0], label=loop )
+       
+        self.ui.mplwidget.ax1.spines['right'].set_visible(False)
+        self.ui.mplwidget.ax1.spines['top'].set_visible(False) 
+        self.ui.mplwidget.ax1.set_xlabel("easting (m)")
+        self.ui.mplwidget.ax1.set_ylabel("northing (m)")
+        self.ui.mplwidget.ax1.legend()
         self.ui.mplwidget.ax1.set_aspect('equal') #, adjustable='box')
         self.ui.mplwidget.draw()
+    
+    def removeLoop(self):
+        del self.loops[ self.ui.txRxTable.item( self.ui.txRxTable.currentRow(), 0).text() ]
+        self.ui.txRxTable.removeRow(self.ui.txRxTable.currentRow()) 
 
     def plotLoops(self):
        
@@ -1639,7 +1635,6 @@ def main():
         splash.show()
     
     aw = ApplicationWindow()
-
     #img=mpimg.imread(logo)
     for ax in [ aw.ui.mplwidget ]: 
         ax.fig.clear()
@@ -1672,7 +1667,7 @@ def main():
         splash.finish(aw)
         #time.sleep(1) 
 
-    aw.setWindowTitle("Akvo v"+str(version)) 
+    aw.setWindowTitle("Akvo v"+str(VERSION)) 
     aw.show()
     qApp.setWindowIcon(QtGui.QIcon(logo2))
     sys.exit(qApp.exec_())

@@ -760,7 +760,7 @@ background: dark grey;
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>0</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideLeft</enum>
@@ -2253,8 +2253,11 @@ background: dark grey;
                  <property name="toolTip">
                   <string>Forgetting factor, how quickly does the filter adapt.</string>
                  </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
                  <property name="minimum">
-                  <double>0.200000000000000</double>
+                  <double>0.950000000000000</double>
                  </property>
                  <property name="maximum">
                   <double>1.000000000000000</double>
@@ -3874,8 +3877,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>411</width>
-               <height>67</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">

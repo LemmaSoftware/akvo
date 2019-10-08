@@ -7,6 +7,10 @@
         [
             "akvo/gui/addCircularLoop.ui",
             "akvo/gui"
+        ],
+        [
+            "akvo/gui/addFigure8Loop.ui",
+            "akvo/gui"
         ]
     ],
     "pyrcc": "pyrcc5",
