@@ -401,12 +401,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 dialog.ui.loopTableWidget.resizeColumnsToContents()       
                 dialog.exec_()
                 dialog.show()
-
                 
                 if dialog.result():
                     self.loops[self.ui.loopLabel.text()] = FDEM1D.PolygonalWireAntenna()
                     self.loops[self.ui.loopLabel.text()].SetNumberOfTurns( dialog.ui.loopTurns.value() )
-
                
                     npts = 0 
                     for ir in range(0, dialog.ui.loopTableWidget.rowCount() ):
@@ -770,7 +768,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["nDAQVersion"] = self.RAWDataProc.nDAQVersion
         INFO["log"] = yaml.dump( self.YamlNode )  
 
+        TXRX = []
+        for ir in range(0, self.ui.txRxTable.rowCount() ):
+            txrx = []
+            for ic in range(0, self.ui.txRxTable.columnCount() ):
+                txrx.append( self.ui.txRxTable.item(ir, ic).text() )
+            TXRX.append(txrx)
+        INFO["TXRX"] = TXRX       
+
         self.RAWDataProc.DATADICT["INFO"] = INFO 
+
+        print ("TXRX", TXRX)
 
         pickle.dump(self.RAWDataProc.DATADICT, save)
         save.close()
@@ -827,6 +835,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
 
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
+
         # Keep backwards compatibility with prior saved pickles???
         #self.ui.logTextBrowser.clear() 
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
@@ -835,6 +844,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             #self.ui.logTextBrowser
             #self.ui.logTextBrowser.clear()
             #print ( self.RAWDataProc.DATADICT["INFO"]["log"] )
+
+        if "TXRX" in self.RAWDataProc.DATADICT["INFO"].keys():
+            TXRX = self.RAWDataProc.DATADICT["INFO"]["TXRX"]
+            self.ui.txRxTable.setRowCount( len(TXRX)) 
+            for irow, row in enumerate(TXRX):        
+                for icol, val in enumerate(row):        
+                    pCell = QtWidgets.QTableWidgetItem()
+                    pCell.setText( val ) 
+                    pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled )
+                    self.ui.txRxTable.setItem(irow, icol, pCell)
+
         
         self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
 
