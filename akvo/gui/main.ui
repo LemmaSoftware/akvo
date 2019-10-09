@@ -3578,22 +3578,12 @@ background: dark grey;
                  </item>
                  <item>
                   <property name="text">
-                   <string>figure-8</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>square-8</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>New Item</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
                    <string>polygon</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>figure-8</string>
                   </property>
                  </item>
                 </widget>
@@ -3864,8 +3854,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <attribute name="label">
@@ -3877,8 +3867,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>411</width>
+               <height>67</height>
               </rect>
              </property>
              <attribute name="label">
@@ -3929,15 +3919,7 @@ background: red;
             <property name="title">
              <string>Surface Loops</string>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_8">
-             <item>
-              <widget class="QTableWidget" name="loopTableWidget">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This table is used to enter coil geometries the format is as follows: each row specifies a single point on a coil. The first column is the coil index (using the GMR channel is useful), the next three colums specify the point in Northing, Easting, and Elevation. These can either be local coordinates or global ones. The final column specifies the loop radius if it is a circle or figure 8, for non circular or figure 8 loops leave this column blank. For figure-8 loops the coils do not need to be touching (see Irons and Kass, 2017). If a given index has 1 row it will be a circular loop, two rows will be a figure 8, and more than that will be a polygonal representation of the points, linearlly interpolated between them. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <layout class="QVBoxLayout" name="verticalLayout_8"/>
            </widget>
           </widget>
           <widget class="QWidget" name="LogTab">
@@ -4005,7 +3987,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="actionOpen_GMR"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_Preprocessed_Dataset"/>
-    <addaction name="actionOpen_VC_Preprocessed_dataset"/>
     <addaction name="separator"/>
     <addaction name="actionSave_Preprocessed_Dataset"/>
     <addaction name="actionExport_Preprocessed_Dataset"/>

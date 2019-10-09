@@ -11,6 +11,10 @@
         [
             "akvo/gui/addFigure8Loop.ui",
             "akvo/gui"
+        ],
+        [
+            "akvo/gui/addPolygonalLoop.ui",
+            "akvo/gui"
         ]
     ],
     "pyrcc": "pyrcc5",

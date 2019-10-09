@@ -17,6 +17,7 @@ from ruamel import yaml
 from akvo.gui.main_ui import Ui_MainWindow
 from akvo.gui.addCircularLoop_ui import Ui_circularLoopAdd
 from akvo.gui.addFigure8Loop_ui import Ui_figure8LoopAdd
+from akvo.gui.addPolygonalLoop_ui import Ui_polygonalLoopAdd
 from akvo.tressel import mrsurvey 
 
 from pyLemma import LemmaCore  
@@ -205,31 +206,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.mplwidget_navigator.setCanvas(self.ui.mplwidget)
         #self.ui.mplwidget_navigator_2.setCanvas(self.ui.mplwidget)
 
-
-        ##########################################################################
-        # Loop Table 
-        self.ui.loopTableWidget.setRowCount(80)       
-        self.ui.loopTableWidget.setColumnCount(6)      
-        self.ui.loopTableWidget.setHorizontalHeaderLabels( ["ch. tag", \
-            "Northing [m]","Easting [m]","Height [m]", "Radius","Tx"] )
-        
-        for ir in range(0, self.ui.loopTableWidget.rowCount() ):
-            for ic in range(1, self.ui.loopTableWidget.columnCount() ):
-                pCell = QtWidgets.QTableWidgetItem()
-                #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-                pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
-                pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
-                self.ui.loopTableWidget.setItem(ir, ic, pCell)
-
-        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged)
-        #self.ui.loopTableWidget.cellPressed.connect(self.loopCellChanged) 
-        self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
-        #self.ui.loopTableWidget.cellPressed.connect(self.loopCellClicked) 
-
-        self.ui.loopTableWidget.setDragDropOverwriteMode(False)
-        self.ui.loopTableWidget.setDragEnabled(False)
-        #self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-
         self.ui.txRxTable.setColumnCount(4)
         self.ui.txRxTable.setRowCount(0)
         self.ui.txRxTable.setHorizontalHeaderLabels( ["Label", "Geom.","Turns","Tx/Rx"] )
@@ -388,9 +364,71 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     ns = dialog.ui.segments.value()
                     #cwise = dialog.ui.cwiseBox.currentIndex()
                     print(cn1, ce1, cn2, ce2, ht, rad, turns, ns)   
+            
+            if self.ui.loopGeom.currentText() == "polygon":
+                
+                dialog = QtWidgets.QDialog()
+                dialog.ui = Ui_polygonalLoopAdd()
+                dialog.ui.setupUi(dialog)
+
+                ##########################################################################
+                # Loop Table 
+                dialog.ui.loopTableWidget.setRowCount(80)       
+                dialog.ui.loopTableWidget.setColumnCount(3)  
+                #dialog.ui.loopTableWidget.horizontalHeader().setSectionResizeMode(0, QtGui.Qt.QHeaderView.Stretch)  
+                dialog.ui.loopTableWidget.setHorizontalHeaderLabels( \
+                    ["Northing [m]","Easting [m]","Height [m]"])
+
  
+                for ir in range(0, dialog.ui.loopTableWidget.rowCount() ):
+                    for ic in range(0, 3): #dialog.ui.loopTableWidget.columnCount() ):
+                        pCell = QtWidgets.QTableWidgetItem()
+                        #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+                        #pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+                        #pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+                        dialog.ui.loopTableWidget.setItem(ir, ic, pCell)
+
+                #dialog.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged)
+                #dialog.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
+                
+                #self.ui.loopTableWidget.cellPressed.connect(self.loopCellChanged) 
+                #self.ui.loopTableWidget.cellPressed.connect(self.loopCellClicked) 
+
+                dialog.ui.loopTableWidget.setDragDropOverwriteMode(False)
+                dialog.ui.loopTableWidget.setDragEnabled(False)
+                #self.ui.loopTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+
+                dialog.ui.loopTableWidget.resizeColumnsToContents()       
+                dialog.exec_()
+                dialog.show()
+
+                
+                if dialog.result():
+                    self.loops[self.ui.loopLabel.text()] = FDEM1D.PolygonalWireAntenna()
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfTurns( dialog.ui.loopTurns.value() )
+
+               
+                    npts = 0 
+                    for ir in range(0, dialog.ui.loopTableWidget.rowCount() ):
+                        if len(dialog.ui.loopTableWidget.item(ir, 0).text()) == 0:
+                            break
+                        npts += 1 
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfPoints( npts )
+                    for ir in range( 0, npts ):
+                        self.loops[self.ui.loopLabel.text()].SetPoint(ir, eval(dialog.ui.loopTableWidget.item(ir, 0).text()),  \
+                                                                          eval(dialog.ui.loopTableWidget.item(ir, 1).text()),  \
+                                                                          eval(dialog.ui.loopTableWidget.item(ir, 2).text())   \
+                                                                     ) 
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfFrequencies(1)
+                    self.loops[self.ui.loopLabel.text()].SetCurrent(1.)
+
+
             # general across all types   
             if dialog.result():
+
+                yml = open( self.ui.loopLabel.text() + ".yml", 'w' )
+                print( self.loops[self.ui.loopLabel.text()], file=yml)
+
                 # update the table 
                 self.ui.txRxTable.setRowCount( len(self.loops.keys()) )
                     
@@ -495,74 +533,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
 
-    def loopCellClicked(self, item):
-        print("checkstate", item.checkState(),item.row())
-
-        #self.ui.loopTableWidget.itemClicked.disconnect(self.loopCellClicked)
-        jj = item.column() 
-        ii = item.row()
-        tp = type(self.ui.loopTableWidget.item(ii, 0))
-        print("tp", tp, ii, jj)
-        if str(tp) == "<class 'NoneType'>": 
-            return 
-        #print("Clicked", ii, jj)
-        if jj == 5 and self.ui.loopTableWidget.item(ii, 0).text() in self.loops.keys():
-            #print("jj=5")
-            self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"] = self.ui.loopTableWidget.item(ii, 5).checkState()
-            # update surrogates  
-            print("updating surrogates")
-            for point in self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["points"][1:]:
-                pCell = self.ui.loopTableWidget.item(point, 5)
-                if self.ui.loopTableWidget.item(ii, 5).checkState():
-                    pCell.setCheckState(QtCore.Qt.Checked);
-                else:
-                    pCell.setCheckState(QtCore.Qt.Unchecked);
- 
-            #print( "loops",  self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"]) 
-         
-        #self.ui.loopTableWidget.itemClicked.connect(self.loopCellClicked) 
-
-    def loopCellChanged(self):
-        
-        self.ui.loopTableWidget.cellChanged.disconnect(self.loopCellChanged) 
-        jj = self.ui.loopTableWidget.currentColumn()
-        ii = self.ui.loopTableWidget.currentRow()
-
-        if jj == 0 and len( self.ui.loopTableWidget.item(ii, jj).text().strip()) == 0:
-            for jjj in range(jj+1,jj+6): 
-                pCell = self.ui.loopTableWidget.item(ii, jjj)
-                pCell.setBackground( QtGui.QColor("white") )
-                pCell.setFlags( QtCore.Qt.NoItemFlags | QtCore.Qt.ItemIsUserCheckable   ) # not selectable 
-        elif jj == 0 and len( self.ui.loopTableWidget.item(ii, jj).text().strip() ): # ch. tag modified
-            for jjj in range(jj+1,jj+5): 
-                pCell = self.ui.loopTableWidget.item(ii, jjj)
-                pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
-                pCell.setBackground( QtGui.QColor("lightblue") )
-            if self.ui.loopTableWidget.item(ii, jj).text() not in self.loops.keys():
-                # This is a new loop ID 
-                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ] = {}
-                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["Tx"] = self.ui.loopTableWidget.item(ii, 5).checkState()
-                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["points"] = [ii] 
-                # Transmitter cell 
-                pCell = self.ui.loopTableWidget.item(ii, jj+5)
-                pCell.setCheckState(QtCore.Qt.Unchecked)
-                pCell.setFlags( QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled  )
-                pCell.setBackground( QtGui.QColor("lightblue") ) 
-            else:
-                # This is an existing loop ID 
-                self.loops[ self.ui.loopTableWidget.item(ii, jj).text() ]["points"].append( ii ) 
-                pCell = self.ui.loopTableWidget.item(ii, jj+5)
-                pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
-                if self.loops[ self.ui.loopTableWidget.item(ii, 0).text() ]["Tx"]:
-                    pCell.setCheckState(QtCore.Qt.Checked);
-                else:
-                    pCell.setCheckState(QtCore.Qt.Unchecked);
-                #pCell.setFlags( )
-                pCell.setBackground( QtGui.QColor("lightblue") )
-
-        self.plotLoops()
-        self.ui.loopTableWidget.cellChanged.connect(self.loopCellChanged) 
-
     def plotLoops2(self):
         self.ui.mplwidget.reAxH(1)
 
@@ -582,52 +552,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         del self.loops[ self.ui.txRxTable.item( self.ui.txRxTable.currentRow(), 0).text() ]
         self.ui.txRxTable.removeRow(self.ui.txRxTable.currentRow()) 
 
-    def plotLoops(self):
-       
-        self.ui.mplwidget.reAxH(1)
-        #self.ui.mplwidget.ax1.clear() 
-        #self.ui.mplwidget.ax2.clear()
-        nor = dict()
-        eas = dict()
-        dep = dict() 
-        for ii in range( self.ui.loopTableWidget.rowCount() ):
-            for jj in range( self.ui.loopTableWidget.columnCount() ):
-                tp = type(self.ui.loopTableWidget.item(ii, jj))
-                if str(tp) == "<class 'NoneType'>":  
-                    pass 
-                elif not len(self.ui.loopTableWidget.item(ii, jj).text()): 
-                    pass
-                else:
-                    if jj == 0: 
-                        idx = self.ui.loopTableWidget.item(ii, 0).text()
-                        if idx not in nor.keys():
-                            nor[idx] = list()
-                            eas[idx] = list()
-                            dep[idx] = list()
-                    if jj == 4:
-                        # circular loop 
-                        m2pi = np.linspace(0,2*np.pi,10)
-                        rad = 30.
-                        nor[idx] = np.concatenate((np.array(nor[idx]),  rad * np.sin(m2pi))) 
-                        eas[idx] = np.concatenate((np.array(eas[idx]),  rad * np.cos(m2pi))) 
-                        dep[idx] = np.concatenate((np.array(dep[idx]),  np.ones(len(m2pi)))) 
-                        print("nor", nor[idx]) 
-                    if jj == 1: 
-                        nor[idx].append( eval(self.ui.loopTableWidget.item(ii, 1).text()) )
-                    elif jj == 2:
-                        eas[idx].append( eval(self.ui.loopTableWidget.item(ii, 2).text()) )
-                    elif jj == 3:
-                        dep[idx].append( eval(self.ui.loopTableWidget.item(ii, 3).text()) )
-
-        for ii in nor.keys():            
-            try:    
-                self.ui.mplwidget.ax1.plot(  np.array(nor[ii]), np.array(eas[ii])  )
-            except:
-                pass 
-        #self.ui.mplwidget.figure.axes().set
-        self.ui.mplwidget.ax1.set_aspect('equal') #, adjustable='box')
-        self.ui.mplwidget.draw()
-
     def about(self):
         # TODO proper popup with info
         #self.w = MyPopup("""About Akvo \n
@@ -635,9 +559,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #""")
         #self.w.setGeometry(100, 100, 400, 200)
         #self.w.show()
+        #print("ABOUT")
 
         # Just a splash screen for now
-        logo = pkg_resources.resource_filename(__name__, 'akvo_about.png')
+        logo = pkg_resources.resource_filename(__name__, 'akvo-about.png')
         pixmap = QtGui.QPixmap(logo)
         self.splash = QtWidgets.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
         self.splash.show()
@@ -1405,6 +1330,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.YamlNode.META["B_0"]["dec"] = self.ui.decSpinBox.value()
         self.YamlNode.META["B_0"]["intensity"] = self.ui.intensitySpinBox.value()
         self.YamlNode.META["Field Notes"] = self.ui.txtComments.toPlainText()
+
+        self.YamlNode.META["Loops"] = OrderedDict()
+        for loop in self.loops:
+            print(self.loops[loop])
+            self.YamlNode.META["Loops"][loop] = loop + ".yml" 
 
         self.Log()
 
