@@ -745,7 +745,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         fdir = os.path.dirname(fpath)
         # Pickle the preprocessed data dictionary 
         SaveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save as", fdir, r"Pickle (*.dmp)")
-        print(SaveStr)
  
         spath,filen=os.path.split(str(SaveStr[0]))
         f = open('.akvo.last.path', 'w')
@@ -776,9 +775,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             TXRX.append(txrx)
         INFO["TXRX"] = TXRX       
 
-        self.RAWDataProc.DATADICT["INFO"] = INFO 
+        # 
+        print("META SAVE")
+        print("INFO log", INFO["log"])
 
-        print ("TXRX", TXRX)
+        self.RAWDataProc.DATADICT["INFO"] = INFO 
 
         pickle.dump(self.RAWDataProc.DATADICT, save)
         save.close()
@@ -857,6 +858,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         
         self.logText = self.RAWDataProc.DATADICT["INFO"]["log"] # YAML 
+        parse = yaml.load( self.logText, Loader=yaml.Loader )
 
         self.YamlNode = AkvoYamlNode( )  #self.logText )
        
@@ -865,12 +867,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if  AKVO_VERSION[0] >= 1 and AKVO_VERSION[1] >= 2 and AKVO_VERSION[2] >= 3:
             self.RAWDataProc.interpulseDelay = self.RAWDataProc.DATADICT["INFO"]["interpulseDelay"]
 
-        self.YamlNode.Import =   OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Import)
-        self.YamlNode.Processing = list((yaml.load( self.logText, Loader=yaml.Loader )).Processing)
-        self.YamlNode.Stacking = OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).Stacking)
-        self.YamlNode.META =     OrderedDict((yaml.load( self.logText, Loader=yaml.Loader )).META)
+        self.YamlNode.Import =   OrderedDict(parse.Import)
+        self.YamlNode.Processing = list(parse.Processing)
+        self.YamlNode.Stacking = OrderedDict(parse.Stacking)
+        self.YamlNode.META =     OrderedDict(parse.META)
+        
+        self.logGUI()
         self.Log()
- 
+
             #self.ui.logTextBrowser.append( yaml.dump(self.YamlNode)) #, default_flow_style=False)  )
         #except KeyError:
         #    pass
@@ -1298,7 +1302,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Log processing 
         Adapt = OrderedDict()
         Adapt["STEP"] = "TD noise cancellation"
-        #print(Adapt)
+        print(Adapt) # this locks STEP in as first...
         Adapt["n_Taps"] = str(self.ui.MTapsSpinBox.value())
         Adapt["lambda"] = str(self.ui.adaptLambdaSpinBox.value())
         Adapt["truncate"] = str(self.ui.adaptTruncateSpinBox.value())
@@ -1336,6 +1340,43 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.windowBandwidthSpinBox.value(), \
                 self.ui.CentralVSpinBox.value(), \
                 self.ui.mplwidget))
+
+    def logGUI(self):
+        # You have a race condiditon where the GUI is modifying the Yaml node while you are updating it
+        # hence, we need to cache these. More elegant solutions exist       
+        if "B_0" in self.YamlNode.META:
+            B0 = self.YamlNode.META["B_0"]["intensity"]
+            Bdec = self.YamlNode.META["B_0"]["dec"]
+            Binc = self.YamlNode.META["B_0"]["inc"]
+        if "DateTime" in self.YamlNode.META:
+            [Date,Time] = self.YamlNode.META["DateTime"].split("T")
+            year,month,day = Date.split("-")
+        if "Temp" in self.YamlNode.META:
+            temp = float(self.YamlNode.META["Temp"])
+        if "Coordinates" in self.YamlNode.META:
+            UTM = self.YamlNode.META["Coordinates"]["UTM"] 
+            LatBand = self.YamlNode.META["Coordinates"]["LatBand"] 
+            Ellipsoid = self.YamlNode.META["Coordinates"]["ellipsoid"] 
+
+        # and set
+        if "Location" in self.YamlNode.META:
+            self.ui.locEdit.setText( self.YamlNode.META["Location"] )
+        if "Field Notes" in self.YamlNode.META:
+            self.ui.txtComments.setText( self.YamlNode.META["Field Notes"] )
+        if "B_0" in self.YamlNode.META:
+            self.ui.incSpinBox.setValue( Binc )  
+            self.ui.decSpinBox.setValue( Bdec )  
+            self.ui.intensitySpinBox.setValue( B0 ) 
+        if "DateTime" in self.YamlNode.META:
+            self.ui.dateEdit.setDate( datetime.date(int(year), int(month), int(day)) )            
+            self.ui.timeEdit.setTime( datetime.time.fromisoformat( Time ) )            
+        if "Temp" in self.YamlNode.META:
+            self.ui.tempSpinBox.setValue(temp)
+        if "Coordinates" in self.YamlNode.META:
+            self.ui.UTMzone.setCurrentText(UTM)
+            self.ui.latBand.setCurrentText(LatBand) 
+            self.ui.ellipsoid.setCurrentText(Ellipsoid)
+
 
     def logSite(self):
         self.YamlNode.META["Location"] = self.ui.locEdit.text()
