@@ -707,8 +707,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 INFO["Gated"][pulse]["windows"] = VectorXr( self.RAWDataProc.GATEDWINDOW ) 
                 for ichan in self.RAWDataProc.DATADICT[pulse]["chan"]:
                     INFO["Gated"][pulse]["Chan. " + str(ichan)] = {} 
-                    #INFO["Gated"][pulse]["Chan. " + str(ichan)]["STD"] =  VectorXr( np.std(self.RAWDataProc.GATED[ichan]["NR"], axis=0) )
-                    INFO["Gated"][pulse]["Chan. " + str(ichan)]["STD"] = VectorXr( np.average(self.GATED[chan]["BN"], axis=0) )
+                    #INFO["Gated"][pulse]["Chan. " + str(ichan)]["STD"] =  VectorXr(   np.std(self.RAWDataProc.GATED[ichan]["NR"], axis=0) )
+                    INFO["Gated"][pulse]["Chan. " + str(ichan)]["STD"] = VectorXr( np.average(self.RAWDataProc.GATED[ichan]["BN"], axis=0) )
                     for ipm in range(self.RAWDataProc.DATADICT["nPulseMoments"]):     
                         INFO["Gated"][pulse]["Chan. " + str(ichan)]["Q-"+str(ipm) + " CA"] = VectorXr(self.RAWDataProc.GATED[ichan]["CA"][ipm])   
                         INFO["Gated"][pulse]["Chan. " + str(ichan)]["Q-"+str(ipm) + " RE"] = VectorXr(self.RAWDataProc.GATED[ichan]["RE"][ipm])   

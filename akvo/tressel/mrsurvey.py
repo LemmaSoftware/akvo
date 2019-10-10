@@ -4,6 +4,7 @@ import scipy.signal as signal
 import pylab
 import sys
 import scipy
+from scipy import stats
 import copy
 import struct
 from scipy.io.matlab import mio
@@ -1223,7 +1224,8 @@ class GMRDataProcessor(SNMRDataProcessor):
 
                     #GT, GD, GTT, sig_stack, isum      = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 )
                     #GT2, GP, GTT, sig_stack_err, isum = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm,:], time_sp, gpd, self.sigma[pulse][chan], 1.5 ) 
-                    
+                   
+                    #              err  
                     GT, GCA, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["CA"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
                     GT, GNR, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["NR"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
                     GT, GRE, GTT, sig_stack, isum  = rotate.gateIntegrate( self.DATADICT["RE"][pulse][chan][ipm], time_sp, gpd, self.sigma[pulse][chan], 2 )
@@ -1237,10 +1239,21 @@ class GMRDataProcessor(SNMRDataProcessor):
                     #    self.GATED[chan]["SIGMA"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)) )
                         self.GATED[chan]["CA"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
                         self.GATED[chan]["NR"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
+                        self.GATED[chan]["BN"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
                         self.GATED[chan]["RE"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
                         self.GATED[chan]["IM"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
                         self.GATED[chan]["IP"] = np.zeros( ( self.DATADICT["nPulseMoments"], len(GT)-clip) )
                         self.GATED[chan]["isum"] = isum
+                
+                    # Bootstrap noise 
+                    #self.GATED[chan]["isum"]
+                    print("bootstrappin") 
+                    Means = rotate.bootstrapWindows( self.DATADICT["NR"][pulse][chan][ipm], 20000, isum[isum!=1], adapt=True)
+                    # MAD, only for windows > 1 
+                    c = stats.norm.ppf(3./4.)
+                    sig_stack[isum!=1] = np.ma.median(np.ma.abs(Means), axis=1) / c 
+                    self.GATED[chan]["BN"][ipm] = sig_stack[clip:] 
+                    print("end bootstrappin")
 
                     #self.GATED[chan]["DATA"][ipm] = GD.real
                     self.GATEDABSCISSA = GT[clip:]
@@ -1262,6 +1275,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     percent = int(1e2* (float)((ipm)+ichan*self.DATADICT["nPulseMoments"]) / 
                                        (float)(self.DATADICT["nPulseMoments"] * len(self.DATADICT[pulse]["chan"])))
                     self.progressTrigger.emit(percent)
+
 
                 self.GATED[chan]["CA"] = self.GATED[chan]["CA"][iQ,:]
                 self.GATED[chan]["NR"] = self.GATED[chan]["NR"][iQ,:]
@@ -1367,7 +1381,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.phase, vmin=-vmax2, vmax=vmax2)
                 elif phase == 2:
                     im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
-                    XS = self.bootstrap_sigma(pulse, chan)
+                    #XS = self.bootstrap_sigma(pulse, chan)
                     #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["NR"], cmap=cmap, vmin=-vmax2, vmax=vmax2)
                     # bootstrap resample
 #                     nt = len(self.GATED[chan]["GT"])
@@ -1400,9 +1414,10 @@ class GMRDataProcessor(SNMRDataProcessor):
                         #else:    
                         #    ax2.plot( self.GATED[chan]["GT"], XS[ii], '-', linewidth=1, markersize=4, alpha=.5, color='lightgrey'  )
                     ax2.plot( self.GATED[chan]["GT"], np.std(self.GATED[chan]["NR"], axis=0), color='darkgrey', linewidth=2, label="gate std" )
-                    ax2.plot( np.tile(self.GATED[chan]["GT"], (5000,1) ), XS, '.', color='lightgrey', linewidth=1, alpha=.5 )
-                    ax2.plot( self.GATED[chan]["GT"], np.average(XS, axis=0), color='black', linewidth=2, label="bootstrap avg." )
-                    ax2.plot( self.GATED[chan]["GT"], np.median(XS, axis=0), color='black', linewidth=2, label="bootstrap med." )
+                    ax2.plot( self.GATED[chan]["GT"], np.average(self.GATED[chan]["BN"], axis=0), color='black', linewidth=2, label="boot average" )
+                    #ax2.plot( np.tile(self.GATED[chan]["GT"], (5000,1) ), XS, '.', color='lightgrey', linewidth=1, alpha=.5 )
+                    #ax2.plot( self.GATED[chan]["GT"], np.average(XS, axis=0), color='black', linewidth=2, label="bootstrap avg." )
+                    #ax2.plot( self.GATED[chan]["GT"], np.median(XS, axis=0), color='black', linewidth=2, label="bootstrap med." )
                     ax2.legend()
 
                 im1.set_edgecolor('face')

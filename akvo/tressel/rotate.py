@@ -153,7 +153,7 @@ def bootstrapWindows(N, nboot, isum, adapt=False):
                 cs = np.random.randint(0,nc-nwin)
                 Means[ii,iboot] = np.mean( N[cs:cs+nwin] )
 
-    return Means, np.array(isum)
+    return Means #, np.array(isum)
 
 def gateIntegrate(T2D, T2T, gpd, sigma, stackEfficiency=2.):
     """ Gate integrate the signal to gpd, gates per decade
