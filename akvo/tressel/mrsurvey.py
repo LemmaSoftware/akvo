@@ -1778,7 +1778,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                                                      M, mu, PCA, flambda, H[pulse][ichan])
                             iloop = 0
                             #while False: 
-                            while (np.linalg.norm( H[pulse][ichan] - hm1) > .05):
+                            while (np.linalg.norm( H[pulse][ichan] - hm1) > .05): # threshold for recall 
                                 hm1 = np.copy(H[pulse][ichan]) 
                                 [e, H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
                                                         RX,\

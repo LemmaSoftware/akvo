@@ -15,6 +15,10 @@
         [
             "akvo/gui/addPolygonalLoop.ui",
             "akvo/gui"
+        ],
+        [
+            "akvo/gui/redirect.ui",
+            "akvo/gui"
         ]
     ],
     "pyrcc": "pyrcc5",

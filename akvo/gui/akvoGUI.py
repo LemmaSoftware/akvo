@@ -18,6 +18,9 @@ from akvo.gui.main_ui import Ui_MainWindow
 from akvo.gui.addCircularLoop_ui import Ui_circularLoopAdd
 from akvo.gui.addFigure8Loop_ui import Ui_figure8LoopAdd
 from akvo.gui.addPolygonalLoop_ui import Ui_polygonalLoopAdd
+from akvo.gui.redirect_ui import Ui_callScript
+from akvo.gui.callScript import callScript
+
 from akvo.tressel import mrsurvey 
 
 from pyLemma import LemmaCore  
@@ -157,6 +160,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         self.ui.plotGI.setEnabled(False) 
         self.ui.plotGI.pressed.connect( self.plotGI )
+
+        # Kernel         
+        self.ui.calcK0.pressed.connect( self.calcK0 )       
+
 
         # META 
         self.ui.locEdit.editingFinished.connect( self.logSite )
@@ -299,6 +306,28 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.ProcTabs.removeTab(0)    
             self.ui.ProcTabs.removeTab(0)    
     
+    def calcK0(self):
+        
+        try:
+            with open('.akvo.last.path') as f: 
+                fpath = f.readline()  
+                pass
+        except IOError as e:
+            fpath = '.'
+
+        akvoData = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0] # arg2 = File Type 'All Files (*)'
+        txCoil = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Tx File', fpath, r"Akvo datafiles (*.yaml, *.yml)")[0] # arg2 = File Type 'All Files (*)'
+        saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.yml)")[0] #[0]
+
+        callBox = callScript(  ) #QtWidgets.QDialog() 
+        
+        callBox.ui = Ui_callScript()
+        callBox.ui.setupUi( callBox )
+        callBox.setupCB( akvoData, txCoil, saveStr  )
+        
+        callBox.exec_()
+        callBox.show()
+    
     def loopAdd(self):
 
         #print(self.ui.loopLabel.text())
@@ -329,7 +358,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     turns = dialog.ui.loopTurns.value()
                     ns = dialog.ui.segments.value()
                     cwise = dialog.ui.cwiseBox.currentIndex()
-                    print("cwise", cwise)
+                    #print("cwise", cwise)
                     #dip = dialog.ui.dip.value()
                     #azimuth = dialog.ui.az.value()
                     

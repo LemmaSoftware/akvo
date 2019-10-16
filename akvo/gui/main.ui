@@ -3825,11 +3825,24 @@ background: dark grey;
               <x>30</x>
               <y>320</y>
               <width>351</width>
-              <height>501</height>
+              <height>431</height>
              </rect>
             </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This table is used to enter coil geometries the format is as follows: each row specifies a single point on a coil. The first column is the coil index (using the GMR channel is useful), the next three colums specify the point in Northing, Easting, and Elevation. These can either be local coordinates or global ones. The final column specifies the loop radius if it is a circle or figure 8, for non circular or figure 8 loops leave this column blank. For figure-8 loops the coils do not need to be touching (see Irons and Kass, 2017). If a given index has 1 row it will be a circular loop, two rows will be a figure 8, and more than that will be a polygonal representation of the points, linearlly interpolated between them. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="calcK0">
+            <property name="geometry">
+             <rect>
+              <x>400</x>
+              <y>330</y>
+              <width>105</width>
+              <height>39</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Calc Kernel</string>
             </property>
            </widget>
           </widget>
@@ -3854,8 +3867,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">

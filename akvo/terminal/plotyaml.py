@@ -52,7 +52,6 @@ def loadAkvoData(fnamein):
     return AKVO 
 
 def plotQt( akvo ):
- 
     plt.style.use('ggplot')
     #plt.style.use('seaborn-white')
     for pulse in akvo.Gated:
@@ -100,10 +99,9 @@ def plotQt( akvo ):
 
     #plt.matshow(RE)
     #plt.matshow(IM)
-
-
-
+    plt.savefig("data.pdf")
     plt.show()
+
 if __name__ == "__main__":
     akvo = loadAkvoData( sys.argv[1] ) #, "Chan. 1")
     plotQt(akvo)
