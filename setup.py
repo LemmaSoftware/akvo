@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
-      version='1.3.4',
+      version='1.3.5',
       python_requires='>3.7.0', # due to pyLemma
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
@@ -45,6 +45,7 @@ setup(name='Akvo',
           'matplotlib',
           'scipy',
           'padasip',
+          'seaborn',
           'numpy',
           'pyqt5',
           'pyyaml',

@@ -9,13 +9,13 @@ import pyLemma.FDEM1D as em1d
 
 import numpy as np
 
-import matplotlib.pyplot as plt 
-import seaborn as sns
-sns.set(style="ticks")
-import cmocean 
-from SEGPlot import *
-from matplotlib.ticker import FormatStrFormatter
-import matplotlib.ticker as plticker
+#import matplotlib.pyplot as plt 
+#import seaborn as sns
+#sns.set(style="ticks")
+#import cmocean 
+#from SEGPlot import *
+#from matplotlib.ticker import FormatStrFormatter
+#import matplotlib.ticker as plticker
 
 
 # Converts Lemma/Merlin/Akvo serialized Eigen arrays into numpy ones for use by Python 
@@ -56,8 +56,8 @@ def loadAkvoData(fnamein):
             print(exc)
     return AKVO 
 
-if __name__ == "__main__":
 
+def main():
     if len(sys.argv) < 3:
         print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml  " )
         exit()
@@ -123,5 +123,9 @@ if __name__ == "__main__":
     print(Kern, file=yml)
 
     K0 = Kern.GetKernel()
-    plt.matshow(np.abs(K0))
-    plt.show()
+    
+    #plt.matshow(np.abs(K0))
+    #plt.show()
+
+if __name__ == "__main__":
+    main()
