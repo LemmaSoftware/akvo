@@ -58,27 +58,34 @@ def loadAkvoData(fnamein):
 
 
 def main():
+
     if len(sys.argv) < 3:
-        print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml  " )
+        print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml SaveString " )
         exit()
-    
-    gamma = 2.67518e8
-    fL = 2289.
-    B0 = (fL*2.*np.pi) /gamma * 1e9
 
     AKVO = loadAkvoData(sys.argv[1])
+
+    B_inc = AKVO.META["B_0"]["inc"]  
+    B_dec = AKVO.META["B_0"]["dec"]  
+    B0    = AKVO.META["B_0"]["intensity"]  
+
+    gamma = 2.67518e8
+    fT = AKVO.transFreq
+    #B0 = (fL*2.*np.pi) /gamma * 1e9
+ 
     Coil1 = em1d.PolygonalWireAntenna.DeSerialize( sys.argv[2] )
     Coil1.SetNumberOfFrequencies(1)
-    Coil1.SetFrequency(0, fL) 
+    Coil1.SetFrequency(0, fT) 
     Coil1.SetCurrent(1.)
 
-
+    # pass this in...
     lmod = em1d.LayeredEarthEM() 
     lmod.SetNumberOfLayers(4)
     lmod.SetLayerThickness([15.49, 28.18])
     lmod.SetLayerConductivity([0.0, 1./16.91, 1./24.06, 1./33.23])
-    lmod.SetMagneticFieldIncDecMag( 68.9, 0, B0, lc.NANOTESLA )
 
+    lmod.SetMagneticFieldIncDecMag( B_inc, B_dec, B0, lc.NANOTESLA )
+   
 
     Kern = mrln.KernelV0()
     Kern.PushCoil( "Coil 1", Coil1 )
@@ -100,29 +107,13 @@ def main():
     # autAkvoDataNode = YAML::LoadFile(argv[4]);
     # Kern->AlignWithAkvoDataset( AkvoDataNode );
 
-    #Kern.SetPulseDuration(0.040)
-    #Kern.SetPulseCurrent(  [1.6108818092452406, 1.7549935078885168, 1.7666319459646016, 1.9270787752430283,
-    #    1.9455431806179229, 2.111931346726564, 2.1466747256211747, 2.3218217392379588,
-    #    2.358359967649008, 2.5495654202189058, 2.5957289164577992, 2.8168532605800802,
-    #    2.85505242699187, 3.1599429539069774, 3.2263673040205068, 3.6334182368296544,
-    #    3.827985200119751, 4.265671313014058, 4.582237014873297, 5.116839616183394,
-    #    5.515173073160611, 6.143620383280934, 6.647972282096122, 7.392577402979211,
-    #    8.020737177449933, 8.904435233295793, 9.701975105606063, 10.74508217792577,
-    #    11.743887525923592, 12.995985956061467, 14.23723766879807, 15.733870137824457,
-    #    17.290155933625808, 19.07016662950366, 21.013341340455703, 23.134181634845618,
-    #    25.570925414182238, 28.100862178905476, 31.13848909847073, 34.16791099558486,
-    #    37.95775984680512, 41.589619321873165, 46.327607251605286, 50.667786337299205,
-    #    56.60102493062895, 61.81174065797068, 69.23049946198458, 75.47409803238031,
-    #    84.71658869065816, 92.1855007134236, 103.77129947551164, 112.84577430578537,
-    #    127.55127257092909, 138.70199812969176, 157.7443764728878, 171.39653462998626]
-    #)
-
     Kern.CalculateK0( ["Coil 1"], ["Coil 1"], False )
 
-    yml = open('akvoK3-' + str(Kern.GetTolerance()) + '.yaml', 'w')
+    #yml = open( 'test' + str(Kern.GetTolerance()) + '.yaml', 'w')
+    yml = open( sys.argv[3], 'w' )
     print(Kern, file=yml)
 
-    K0 = Kern.GetKernel()
+    #K0 = Kern.GetKernel()
     
     #plt.matshow(np.abs(K0))
     #plt.show()
