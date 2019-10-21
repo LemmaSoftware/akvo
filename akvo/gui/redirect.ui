@@ -46,7 +46,7 @@
       <bool>false</bool>
      </property>
      <property name="placeholderText">
-      <string>This windows outputs STDOUT from a seperate process.</string>
+      <string>This windows outputs STDOUT from a separate process.</string>
      </property>
     </widget>
    </item>

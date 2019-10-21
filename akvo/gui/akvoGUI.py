@@ -228,16 +228,26 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.layerTableWidget.setDragEnabled(True)
         self.ui.layerTableWidget.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         
-        pCell = QtWidgets.QTableWidgetItem()
-        pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
-        pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
-        self.ui.layerTableWidget.setItem(0, 1, pCell)
+        pCell0 = QtWidgets.QTableWidgetItem()
+        pCell0.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+        pCell0.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+        pCell0.setText(str("0"))
+        self.ui.layerTableWidget.setItem(0, 0, pCell0)
+        
+        pCell1 = QtWidgets.QTableWidgetItem()
+        #pCell1.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+        pCell1.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+        pCell1.setForeground( QtGui.QColor("black").lighter(110) )
+        self.ui.layerTableWidget.setItem(0, 1, pCell1)
+
+
         for ir in range(1, self.ui.layerTableWidget.rowCount() ):
             for ic in range(0, self.ui.layerTableWidget.columnCount() ):
                 pCell = QtWidgets.QTableWidgetItem()
                 #pCell.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                 pCell.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
                 pCell.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+                pCell.setForeground( QtGui.QColor("black"))
                 self.ui.layerTableWidget.setItem(ir, ic, pCell)
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 
 
@@ -315,15 +325,60 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except IOError as e:
             fpath = '.'
 
-        akvoData = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0] # arg2 = File Type 'All Files (*)'
-        txCoil = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Tx File', fpath, r"Akvo datafiles (*.yaml, *.yml)")[0] # arg2 = File Type 'All Files (*)'
-        saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.yml)")[0] #[0]
+        akvoData = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        txCoil = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Tx File', fpath, r"Akvo datafiles (*.yaml, *.yml)")[0] 
+        saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.yml)")[0] 
+
+        intDict = dict()
+        intDict["origin_n"] = self.ui.originN.value()
+        intDict["origin_e"] = self.ui.originE.value()
+        intDict["origin_d"] = self.ui.originD.value()
+        intDict["size_n"] = self.ui.sizeN.value()
+        intDict["size_e"] = self.ui.sizeE.value()
+        intDict["size_d"] = self.ui.sizeD.value()
+        intDict["nLay"] = self.ui.NLayers.value()
+        intDict["thick1"] = self.ui.thick1.value()
+        intDict["thickN"] = self.ui.thickN.value()
+        intDict["Lspacing"] = self.ui.layerSpacing.currentText()
+        intDict["minLevel"] = self.ui.minLevel.value()
+        intDict["maxLevel"] = self.ui.maxLevel.value()
+        intDict["branchTol"] = self.ui.branchTol.value()
+
+        # conductivity model... 
+        #tops = self.ui.layerTableWidget.col(0)
+        #print("Tops", tops)
+        tops = []
+        itop = 0
+        while self.ui.layerTableWidget.item(itop, 0).text(): 
+            tops.append( float(self.ui.layerTableWidget.item(itop,0).text()) ) 
+            itop += 1
+
+        bots = []
+        ibot = 0
+        while self.ui.layerTableWidget.item(ibot, 1).text(): 
+            bots.append( float(self.ui.layerTableWidget.item(ibot, 1).text()) ) 
+            ibot += 1
+        
+        sigs = []
+        isig = 0
+        while self.ui.layerTableWidget.item(isig, 2).text(): 
+            sigs.append( 1./float(self.ui.layerTableWidget.item(isig, 2).text()) ) 
+            isig += 1
+
+        intDict["tops"] = tops
+        intDict["bots"] = bots
+        intDict["sigs"] = sigs
+
+        node = yaml.YAML()
+        kpo = open( "kparams.yml", 'w' )
+        node.dump(intDict, kpo)
+
 
         callBox = callScript(  ) #QtWidgets.QDialog() 
         
         callBox.ui = Ui_callScript()
         callBox.ui.setupUi( callBox )
-        callBox.setupCB( akvoData, txCoil, saveStr  )
+        callBox.setupCB( akvoData, txCoil, "kparams.yml", saveStr  )
         
         callBox.exec_()
         callBox.show()
@@ -495,7 +550,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # do that. Would require instead dist of T2 I guess.
         jj = self.ui.layerTableWidget.currentColumn()
         ii = self.ui.layerTableWidget.currentRow()
-        val = "class 'NoneType'>" 
+        val = "class 'NoneType'>"
         try:
             val = eval (str( self.ui.layerTableWidget.item(ii, jj).text() ))
         except:
@@ -546,16 +601,18 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             # enable next layer
             pCell4 = self.ui.layerTableWidget.item(ii+1, jj)
             pCell4.setBackground( QtGui.QColor("lightblue") ) #.lighter(110))
+            pCell4.setForeground( QtGui.QColor("black"))
             pCell4.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
             
             pCell5 = self.ui.layerTableWidget.item(ii+1, jj+1)
             pCell5.setBackground( QtGui.QColor("white"))
+            pCell5.setForeground( QtGui.QColor("black"))
             pCell5.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
             
-        print("ii", ii, "jj", jj)
         if ii == 0 and jj == 0:
             pCell = self.ui.layerTableWidget.item(0, 1)
-            pCell.setBackground( QtGui.QColor("lightblue")) #.lighter(110) )
+            pCell.setBackground(QtGui.QColor("lightblue")) #.lighter(110) )
+            pCell.setForeground( QtGui.QColor("black"))
             pCell.setFlags( QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )
 
         self.ui.layerTableWidget.cellChanged.connect(self.sigmaCellChanged) 

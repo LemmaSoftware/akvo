@@ -9,9 +9,12 @@ import pyLemma.FDEM1D as em1d
 
 import numpy as np
 
-#import matplotlib.pyplot as plt 
-#import seaborn as sns
-#sns.set(style="ticks")
+import matplotlib.pyplot as plt 
+import seaborn as sns
+sns.set(style="ticks")
+
+from ruamel import yaml
+
 #import cmocean 
 #from SEGPlot import *
 #from matplotlib.ticker import FormatStrFormatter
@@ -60,7 +63,7 @@ def loadAkvoData(fnamein):
 def main():
 
     if len(sys.argv) < 3:
-        print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml SaveString " )
+        print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml kparams.yaml  SaveString.yaml " )
         exit()
 
     AKVO = loadAkvoData(sys.argv[1])
@@ -69,8 +72,8 @@ def main():
     B_dec = AKVO.META["B_0"]["dec"]  
     B0    = AKVO.META["B_0"]["intensity"]  
 
-    gamma = 2.67518e8
     fT = AKVO.transFreq
+    #gamma = 2.67518e8
     #B0 = (fL*2.*np.pi) /gamma * 1e9
  
     Coil1 = em1d.PolygonalWireAntenna.DeSerialize( sys.argv[2] )
@@ -78,26 +81,57 @@ def main():
     Coil1.SetFrequency(0, fT) 
     Coil1.SetCurrent(1.)
 
+    # read in kernel params
+    kparams = loadAkvoData( sys.argv[3] )
+
+    ## TODO 
     # pass this in...
     lmod = em1d.LayeredEarthEM() 
-    lmod.SetNumberOfLayers(4)
-    lmod.SetLayerThickness([15.49, 28.18])
-    lmod.SetLayerConductivity([0.0, 1./16.91, 1./24.06, 1./33.23])
+
+    nlay = len(kparams["sigs"])
+    sigs = np.array(kparams["sigs"])
+    tops = np.array(kparams["tops"])
+    bots = np.array(kparams["bots"])
+    
+    if ( (len(tops)-1) != len(bots)):
+        print("Layer mismatch")
+        exit()
+
+    thicks = bots - tops[0:-1]
+    
+    lmod.SetNumberOfLayers(nlay + 1)
+    lmod.SetLayerThickness(thicks)
+    lmod.SetLayerConductivity( np.concatenate( ( [0.0], sigs ) ))
+
+    #lmod.SetNumberOfLayers(4)
+    #lmod.SetLayerThickness([15.49, 28.18])
+    #lmod.SetLayerConductivity([0.0, 1./16.91, 1./24.06, 1./33.23])
+
 
     lmod.SetMagneticFieldIncDecMag( B_inc, B_dec, B0, lc.NANOTESLA )
-   
 
     Kern = mrln.KernelV0()
     Kern.PushCoil( "Coil 1", Coil1 )
     Kern.SetLayeredEarthEM( lmod );
-    Kern.SetIntegrationSize( (200,200,200) )
-    Kern.SetIntegrationOrigin( (0,0,0) )
-    Kern.SetTolerance( 1e-9 )
-    Kern.SetMinLevel( 3 )
+    Kern.SetIntegrationSize( (kparams["size_n"], kparams["size_e"], kparams["size_d"]) )
+    Kern.SetIntegrationOrigin( (kparams["origin_n"], kparams["origin_e"], kparams["origin_d"]) )
+    Kern.SetTolerance( 1e-9*kparams["branchTol"] )
+    Kern.SetMinLevel( kparams["minLevel"] )
+    Kern.SetMaxLevel( kparams["maxLevel"] )
     Kern.SetHankelTransformType( lc.FHTKEY201 )
     Kern.AlignWithAkvoDataset( sys.argv[1] )
 
-    thick = np.geomspace(.5, 10,num=40)
+    if str(kparams["Lspacing"]).strip() == "Geometric":
+        thick = np.geomspace(kparams["thick1"], kparams["thickN"], num=kparams["nLay"])
+    elif str(kparams["Lspacing"]) == "Log":
+        thick = np.logspace(kparams["thick1"], kparams["thickN"], num=kparams["nLay"])
+    elif str(kparams["Lspacing"]) == "Linear":
+        thick = np.linspace(kparams["thick1"], kparams["thickN"], num=kparams["nLay"])
+    else:
+        print("DOOOM!, in calcAkvoKernel layer spacing was not <Geometric>, <Log>, or <Linear>")
+        print( str(kparams["Lspacing"]) )
+        exit()
+
     iface = np.cumsum(thick)
     Kern.SetDepthLayerInterfaces(iface)
     #Kern.SetDepthLayerInterfaces(np.geomspace(1, 110, num=40))
@@ -110,13 +144,12 @@ def main():
     Kern.CalculateK0( ["Coil 1"], ["Coil 1"], False )
 
     #yml = open( 'test' + str(Kern.GetTolerance()) + '.yaml', 'w')
-    yml = open( sys.argv[3], 'w' )
+    yml = open( sys.argv[4], 'w' )
     print(Kern, file=yml)
 
-    #K0 = Kern.GetKernel()
-    
-    #plt.matshow(np.abs(K0))
-    #plt.show()
+    K0 = Kern.GetKernel()
+    plt.matshow(np.abs(K0))
+    plt.show()
 
 if __name__ == "__main__":
     main()

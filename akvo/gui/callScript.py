@@ -10,7 +10,7 @@ class callScript(QDialog):
     #def __init__(self):
     #    super().__init__()
     
-    def setupCB(self, akvoData, TxCoil, SaveStr):
+    def setupCB(self, akvoData, TxCoil, kernelParams, SaveStr):
 
         #QtGui.QWidget.__init__(self)
         #uic.loadUi('redirect.ui', self)
@@ -24,7 +24,7 @@ class callScript(QDialog):
 
         #print ('Starting process')
         #self.process.start('python', ['calcAkvoKernel.py', akvoData, TxCoil, SaveStr])
-        self.process.start('akvoK0', [ akvoData, TxCoil, SaveStr])
+        self.process.start('akvoK0', [ akvoData, TxCoil, kernelParams, SaveStr])
 
     def append(self, text):
         cursor = self.ui.textEdit.textCursor()
