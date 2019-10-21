@@ -709,7 +709,7 @@ background: dark grey;
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-201</y>
+         <y>0</y>
          <width>537</width>
          <height>982</height>
         </rect>
@@ -760,7 +760,7 @@ background: dark grey;
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideLeft</enum>
