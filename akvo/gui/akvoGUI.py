@@ -336,6 +336,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         NT2 = self.ui.NT2.value()
         dataChan = self.ui.invChan.currentText()
        
+
+        t2Obj = self.ui.T2Objective.currentText()
+        depthObj = self.ui.depthObjective.currentText()
+        alpha_0 = self.ui.initialAlpha.value()
+
         invDict = dict()
         invDict["data"] = dict()
         invDict["data"] = dict() 
@@ -345,8 +350,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         invDict["T2Bins"] = dict()
         invDict["T2Bins"]["low"] = T2lo
         invDict["T2Bins"]["high"] = T2hi
-        invDict["T2Bins"]["number"] = NT2
-        
+        invDict["T2Bins"]["number"] = NT2       
+ 
         node = yaml.YAML()
         kpo = open( "invert.yml", 'w' )
         node.dump(invDict, kpo)

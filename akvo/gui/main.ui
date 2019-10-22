@@ -4008,8 +4008,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4021,8 +4021,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>411</width>
+               <height>67</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4110,15 +4110,72 @@ background: dark grey;
             </item>
             <item>
              <widget class="QGroupBox" name="groupBox_6">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>500</height>
+               </size>
+              </property>
               <property name="title">
                <string>QT Inversion</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_19">
+               <item row="5" column="0" colspan="2">
+                <widget class="QPushButton" name="invertButton">
+                 <property name="styleSheet">
+                  <string notr="true">#invertButton {
+font-size:29pt;
+font-weight: bold;
+color: white;
+background: red;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>Invert</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_81">
+                 <property name="text">
+                  <string>initial alpha </string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QSpinBox" name="initialAlpha">
+                 <property name="maximum">
+                  <number>10000000</number>
+                 </property>
+                 <property name="value">
+                  <number>1000000</number>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_79">
                  <property name="text">
                   <string>Data channel</string>
                  </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="T2Objective">
+                 <item>
+                  <property name="text">
+                   <string>Smallest</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Smoothest</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Both</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
                <item row="1" column="1">
@@ -4145,18 +4202,26 @@ background: dark grey;
                  </item>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QPushButton" name="invertButton">
-                 <property name="styleSheet">
-                  <string notr="true">#invertButton {
-font-size:29pt;
-font-weight: bold;
-color: white;
-background: red;
-}</string>
-                 </property>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_80">
                  <property name="text">
-                  <string>Invert</string>
+                  <string>T2* model objective</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QComboBox" name="depthObjective">
+                 <item>
+                  <property name="text">
+                   <string>Smallest</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_82">
+                 <property name="text">
+                  <string>Depth model objective</string>
                  </property>
                 </widget>
                </item>
