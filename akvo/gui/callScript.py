@@ -26,6 +26,22 @@ class callScript(QDialog):
         #self.process.start('python', ['calcAkvoKernel.py', akvoData, TxCoil, SaveStr])
         self.process.start('akvoK0', [ akvoData, TxCoil, kernelParams, SaveStr])
 
+    def setupQTInv(self, params):
+
+        #QtGui.QWidget.__init__(self)
+        #uic.loadUi('redirect.ui', self)
+
+        #print ('Connecting process')
+        self.process = QtCore.QProcess(self)
+        self.process.readyReadStandardOutput.connect(self.stdoutReady)
+        self.process.readyReadStandardError.connect(self.stderrReady)
+        self.process.started.connect(lambda: p('Started!'))
+        self.process.finished.connect(lambda: p('Finished!'))
+
+        #print ('Starting process')
+        #self.process.start('python', ['calcAkvoKernel.py', akvoData, TxCoil, SaveStr])
+        self.process.start('akvoQT', [params])
+
     def append(self, text):
         cursor = self.ui.textEdit.textCursor()
         cursor.movePosition(cursor.End)

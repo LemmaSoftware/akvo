@@ -147,6 +147,7 @@ def main():
     yml = open( sys.argv[4], 'w' )
     print(Kern, file=yml)
 
+    # 
     K0 = Kern.GetKernel()
     plt.matshow(np.abs(K0))
     plt.show()

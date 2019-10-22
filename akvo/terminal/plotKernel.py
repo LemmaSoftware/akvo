@@ -19,6 +19,7 @@ def catLayers(K0):
         #print(K0["layer-"+str(lay)].data) #    print (lay)
         K[lay] = K0["layer-"+str(lay)].data #    print (lay)
     return K
+
 if __name__ == "__main__":
 
     with open(sys.argv[1]) as f:

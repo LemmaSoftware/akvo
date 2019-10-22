@@ -3759,10 +3759,10 @@ background: dark grey;
                   <number>1</number>
                  </property>
                  <property name="maximum">
-                  <number>14</number>
+                  <number>18</number>
                  </property>
                  <property name="value">
-                  <number>3</number>
+                  <number>8</number>
                  </property>
                 </widget>
                </item>
@@ -4008,8 +4008,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4021,8 +4021,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>411</width>
-               <height>67</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4033,29 +4033,137 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="InvertTab">
            <attribute name="title">
-            <string>INV</string>
+            <string>QT Inversion</string>
            </attribute>
-           <widget class="QPushButton" name="invertButton">
-            <property name="geometry">
-             <rect>
-              <x>130</x>
-              <y>140</y>
-              <width>311</width>
-              <height>141</height>
-             </rect>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">#invertButton {
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <item>
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>200</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>QT T2* distribution</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_18">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_76">
+                 <property name="text">
+                  <string>T2* Low (ms)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QDoubleSpinBox" name="T2low">
+                 <property name="minimum">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>30.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>10.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_77">
+                 <property name="text">
+                  <string>T2* High (ms)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QDoubleSpinBox" name="T2hi">
+                 <property name="minimum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>2000.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1000.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_78">
+                 <property name="text">
+                  <string>N T2*</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QSpinBox" name="NT2">
+                 <property name="minimum">
+                  <number>10</number>
+                 </property>
+                 <property name="value">
+                  <number>35</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_6">
+              <property name="title">
+               <string>QT Inversion</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_19">
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_79">
+                 <property name="text">
+                  <string>Data channel</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="invChan">
+                 <item>
+                  <property name="text">
+                   <string>Chan. 1</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chan. 2</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chan. 3</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chan. 4</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="QPushButton" name="invertButton">
+                 <property name="styleSheet">
+                  <string notr="true">#invertButton {
 font-size:29pt;
 font-weight: bold;
 color: white;
 background: red;
 }</string>
-            </property>
-            <property name="text">
-             <string>Invert</string>
-            </property>
-           </widget>
+                 </property>
+                 <property name="text">
+                  <string>Invert</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
           </widget>
           <widget class="QWidget" name="AppraiseTab">
            <attribute name="title">

@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
-      version='1.3.5',
+      version='1.3.6',
       python_requires='>3.7.0', # due to pyLemma
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
@@ -61,6 +61,7 @@ setup(name='Akvo',
               'console_scripts': [
                   'akvo = akvo.gui.akvoGUI:main',                  
                   'akvoK0 = akvo.tressel.calcAkvoKernel:main',                  
+                  'akvoQT = akvo.tressel.invertTA:main',                  
               ],              
           },
       #cmdclass = cmdclass,

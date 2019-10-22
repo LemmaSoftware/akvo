@@ -164,6 +164,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Kernel         
         self.ui.calcK0.pressed.connect( self.calcK0 )       
 
+        # Inversion
+        self.ui.invertButton.pressed.connect( self.QTInv )
 
         # META 
         self.ui.locEdit.editingFinished.connect( self.logSite )
@@ -316,6 +318,49 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.ProcTabs.removeTab(0)    
             self.ui.ProcTabs.removeTab(0)    
     
+    def QTInv(self):
+        print("Big RED INVERT BUTTON")
+        
+        try:
+            with open('.akvo.last.path') as f: 
+                fpath = f.readline()  
+                pass
+        except IOError as e:
+            fpath = '.'
+        
+        akvoDatafile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        K0file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Kernel File', fpath, r"Akvo kernels (*.yml)")[0]
+
+        T2lo = self.ui.T2low.value()
+        T2hi = self.ui.T2hi.value()
+        NT2 = self.ui.NT2.value()
+        dataChan = self.ui.invChan.currentText()
+       
+        invDict = dict()
+        invDict["data"] = dict()
+        invDict["data"] = dict() 
+        invDict["data"][akvoDatafile] = dict()
+        invDict["data"][akvoDatafile]["channels"] = [dataChan,]
+        invDict["K0"] = [K0file,]
+        invDict["T2Bins"] = dict()
+        invDict["T2Bins"]["low"] = T2lo
+        invDict["T2Bins"]["high"] = T2hi
+        invDict["T2Bins"]["number"] = NT2
+        
+        node = yaml.YAML()
+        kpo = open( "invert.yml", 'w' )
+        node.dump(invDict, kpo)
+ 
+        callBox = callScript(  ) #QtWidgets.QDialog() 
+        
+        callBox.ui = Ui_callScript()
+        callBox.ui.setupUi( callBox )
+        callBox.setupQTInv( "invert.yml" )
+        
+        callBox.exec_()
+        callBox.show()
+            
+
     def calcK0(self):
         
         try:
