@@ -142,6 +142,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.calcQGO.pressed.connect( self.calcQ )
         self.ui.FDSmartStackGO.pressed.connect( self.FDSmartStack )
         self.ui.harmonicGO.pressed.connect( self.harmonicModel )       
+        
+        self.ui.K0Data.pressed.connect( self.K0DataSelect )       
+        
+        self.ui.invDataButton.pressed.connect( self.invDataSelect )       
+        self.ui.invKernelButton.pressed.connect( self.invKernelSelect )       
 
         self.ui.f0K1Spin.valueChanged.connect( self.LCDHarmonics )
         self.ui.f0KNSpin.valueChanged.connect( self.LCDHarmonics )
@@ -318,7 +323,60 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.ProcTabs.removeTab(0)    
             self.ui.ProcTabs.removeTab(0)    
     
+    def invDataSelect(self):
+        try:
+            with open('.akvo.last.path') as f: 
+                fpath = f.readline()  
+                pass
+        except IOError as e:
+            fpath = '.'
+        
+        self.akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        self.ui.dataText.clear()   
+        self.ui.dataText.append( self.akvoDataFile )   
+    
+    def K0DataSelect(self):
+        try:
+            with open('.akvo.last.path') as f: 
+                fpath = f.readline()  
+                pass
+        except IOError as e:
+            fpath = '.'
+        
+        self.K0akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        self.ui.K0DataText.clear()   
+        self.ui.K0DataText.append( self.K0akvoDataFile )  
+
+        # populate combo box with loops 
+
+        with open(self.K0akvoDataFile) as f:
+            parse = yaml.load( f, Loader=yaml.Loader )
+        
+        self.ui.txListWidget.clear()
+        self.ui.rxListWidget.clear()
+        for loop in parse.META["Loops"]:
+            print(loop)
+            self.ui.txListWidget.addItem( parse.META["Loops"][loop] )
+            self.ui.rxListWidget.addItem( parse.META["Loops"][loop] )
+            
+        self.ui.txListWidget.setCurrentRow(0)
+        self.ui.rxListWidget.setCurrentRow(0)
+         
+ 
+    def invKernelSelect(self):
+        try:
+            with open('.akvo.last.path') as f: 
+                fpath = f.readline()  
+                pass
+        except IOError as e:
+            fpath = '.'
+        
+        self.K0file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Kernel File', fpath, r"Akvo kernels (*.yml)")[0]
+        self.ui.kernelText.clear()   
+        self.ui.kernelText.append(self.K0file)   
+    
     def QTInv(self):
+    
         print("Big RED INVERT BUTTON")
         
         try:
@@ -328,14 +386,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except IOError as e:
             fpath = '.'
         
-        akvoDatafile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
-        K0file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Kernel File', fpath, r"Akvo kernels (*.yml)")[0]
+        #K0file = self.ui.kernelText.text()
+        #akvoDataFile = self.ui.dataText.text()   
 
         T2lo = self.ui.T2low.value()
         T2hi = self.ui.T2hi.value()
         NT2 = self.ui.NT2.value()
         dataChan = self.ui.invChan.currentText()
-       
 
         t2Obj = self.ui.T2Objective.currentText()
         depthObj = self.ui.depthObjective.currentText()
@@ -344,9 +401,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         invDict = dict()
         invDict["data"] = dict()
         invDict["data"] = dict() 
-        invDict["data"][akvoDatafile] = dict()
-        invDict["data"][akvoDatafile]["channels"] = [dataChan,]
-        invDict["K0"] = [K0file,]
+        invDict["data"][self.akvoDataFile] = dict()
+        invDict["data"][self.akvoDataFile]["channels"] = [dataChan,]
+        invDict["K0"] = [self.K0file,]
         invDict["T2Bins"] = dict()
         invDict["T2Bins"]["low"] = T2lo
         invDict["T2Bins"]["high"] = T2hi
@@ -375,8 +432,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except IOError as e:
             fpath = '.'
 
-        akvoData = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
-        txCoil = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Tx File', fpath, r"Akvo datafiles (*.yaml, *.yml)")[0] 
+        #self.K0akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        #akvoData = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        txCoil = self.ui.txListWidget.currentItem().text() 
         saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.yml)")[0] 
 
         intDict = dict()
@@ -428,7 +486,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         callBox.ui = Ui_callScript()
         callBox.ui.setupUi( callBox )
-        callBox.setupCB( akvoData, txCoil, "kparams.yml", saveStr  )
+        callBox.setupCB( self.K0akvoDataFile, txCoil, "kparams.yml", saveStr  )
         
         callBox.exec_()
         callBox.show()
