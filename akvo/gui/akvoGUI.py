@@ -228,7 +228,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # layer Table 
         self.ui.layerTableWidget.setRowCount(80)       
         self.ui.layerTableWidget.setColumnCount(3)      
-        self.ui.layerTableWidget.setHorizontalHeaderLabels( [r"top [m]", r"bottom [m]", "σ [ Ωm]" ] )
+        self.ui.layerTableWidget.setHorizontalHeaderLabels( [r"top [m]", r"bottom [m]", "ρ [Ωm]" ] )
 
         # do we want this
         self.ui.layerTableWidget.setDragDropOverwriteMode(False)
@@ -238,14 +238,21 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         pCell0 = QtWidgets.QTableWidgetItem()
         pCell0.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
         pCell0.setBackground( QtGui.QColor("lightgrey").lighter(110) )
+        pCell0.setForeground( QtGui.QColor("black") )
         pCell0.setText(str("0"))
         self.ui.layerTableWidget.setItem(0, 0, pCell0)
         
         pCell1 = QtWidgets.QTableWidgetItem()
         #pCell1.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
-        pCell1.setBackground( QtGui.QColor("lightgrey").lighter(110) )
-        pCell1.setForeground( QtGui.QColor("black").lighter(110) )
+        pCell1.setBackground( QtGui.QColor("lightblue") ) #.lighter(110) )
+        pCell1.setForeground( QtGui.QColor("black") )
         self.ui.layerTableWidget.setItem(0, 1, pCell1)
+        
+        pCell2 = QtWidgets.QTableWidgetItem()
+        #pCell1.setFlags(QtCore.Qt.NoItemFlags) # not selectable 
+        pCell2.setBackground( QtGui.QColor("white") ) #.lighter(110) )
+        pCell2.setForeground( QtGui.QColor("black") )
+        self.ui.layerTableWidget.setItem(0, 2, pCell2)
 
 
         for ir in range(1, self.ui.layerTableWidget.rowCount() ):
@@ -867,7 +874,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #INFO["samp"] = self.RAWDataProc.samp
         INFO["nPulseMoments"] = self.RAWDataProc.nPulseMoments
         #INFO["deadTime"] = self.RAWDataProc.deadTime
-        INFO["processed"] = "Akvo v. 1.0, on " + time.strftime("%d/%m/%Y")
+        INFO["processed"] = "Akvo v"  + self.Akvo_VERSION + ", on "  + time.strftime("%d/%m/%Y")
         # Pulse current info
         ip = 0
         INFO["Pulses"] = {}

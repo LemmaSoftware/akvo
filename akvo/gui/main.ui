@@ -711,7 +711,7 @@ background: dark grey;
          <x>0</x>
          <y>0</y>
          <width>537</width>
-         <height>999</height>
+         <height>982</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -760,7 +760,7 @@ background: dark grey;
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>6</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideLeft</enum>
@@ -3676,13 +3676,13 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="KernTab">
            <attribute name="title">
-            <string>Kernel</string>
+            <string>1D Kernel</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
-               <string>Conductivty model</string>
+               <string>Resistivity model</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
                <item>
@@ -3712,6 +3712,9 @@ background: dark grey;
                  <property name="text">
                   <string>Rx</string>
                  </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
                 </widget>
                </item>
                <item row="1" column="0">
@@ -3719,12 +3722,15 @@ background: dark grey;
                  <property name="text">
                   <string>Tx</string>
                  </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="0">
                 <widget class="QPushButton" name="K0Data">
                  <property name="text">
-                  <string>Data file</string>
+                  <string>Data</string>
                  </property>
                 </widget>
                </item>
@@ -3733,7 +3739,7 @@ background: dark grey;
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>60</height>
+                   <height>50</height>
                   </size>
                  </property>
                  <property name="font">
@@ -3749,7 +3755,7 @@ background: dark grey;
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>70</height>
+                   <height>60</height>
                   </size>
                  </property>
                  <property name="alternatingRowColors">
@@ -3762,7 +3768,7 @@ background: dark grey;
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>70</height>
+                   <height>60</height>
                   </size>
                  </property>
                  <property name="alternatingRowColors">
@@ -3822,7 +3828,14 @@ background: dark grey;
                 </widget>
                </item>
                <item row="4" column="1" colspan="2">
-                <widget class="QDoubleSpinBox" name="originE"/>
+                <widget class="QDoubleSpinBox" name="originE">
+                 <property name="minimum">
+                  <double>-10000000000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>100000000000.000000000000000</double>
+                 </property>
+                </widget>
                </item>
                <item row="1" column="3">
                 <widget class="QLabel" name="label_72">
@@ -3926,7 +3939,14 @@ background: dark grey;
                 </widget>
                </item>
                <item row="3" column="1" colspan="2">
-                <widget class="QDoubleSpinBox" name="originN"/>
+                <widget class="QDoubleSpinBox" name="originN">
+                 <property name="minimum">
+                  <double>-10000000.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>100000000.000000000000000</double>
+                 </property>
+                </widget>
                </item>
                <item row="0" column="1">
                 <widget class="QSpinBox" name="minLevel">
@@ -4086,8 +4106,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4099,8 +4119,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>411</width>
-               <height>67</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4111,7 +4131,7 @@ background: dark grey;
           </widget>
           <widget class="QWidget" name="InvertTab">
            <attribute name="title">
-            <string>QT Inversion</string>
+            <string>QT Inv.</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_12">
             <item>
