@@ -17,6 +17,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker 
 from matplotlib.ticker import MaxNLocator
 
+import seaborn as sns 
+from akvo.tressel.SlidesPlot import deSpine
+
 import multiprocessing 
 import itertools 
 
@@ -301,6 +304,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         pass   
  
     def TDSmartStack(self, outlierTest, MADcutoff, canvas):
+        fs = 10 # fontsize 
         #print("Line 300 in mrsurvey")
         Stack = {}
         # align for stacking and modulate
@@ -362,11 +366,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ax1.yaxis.set_major_formatter(y_formatter)
 
                 ax1.plot( 1e3*self.DATADICT[pulse]["TIMES"], np.average(  SimpleStack[pulse][chan], 0 )) #, color='darkblue' )
-                ax1.set_title("Ch." + str(chan) + ": avg FID", fontsize=8)
-                ax1.set_xlabel(r"time (ms)", fontsize=8)
+                ax1.set_title("Ch." + str(chan) + ": avg FID", fontsize=fs)
+                ax1.set_xlabel(r"time (ms)", fontsize=fs)
 
                 if ichan == 0:
-                    ax1.set_ylabel(r"signal (nV)", fontsize=8)
+                    ax1.set_ylabel(r"signal (nV)", fontsize=fs)
                 else:
                     plt.setp(ax1.get_yticklabels(), visible=False)
                     plt.setp(ax1.get_yaxis().get_offset_text(), visible=False) 
@@ -503,7 +507,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                 #im2 = ax2.matshow( db, aspect='auto', cmap=cmocean.cm.ice, vmin=vvmin, vmax=vvmax)
                 if ichan == 0:
                     #ax2.set_ylabel(r"$q$ (A $\cdot$ s)", fontsize=8)
-                    ax2.set_ylabel(r"pulse index", fontsize=8)
+                    ax2.set_ylabel(r"pulse index", fontsize=10)
                     #ax1.set_ylabel(r"FID (nV)", fontsize=8)
                 else:
                     #ax2.yaxis.set_ticklabels([])
@@ -528,15 +532,17 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ichan += 1   
 
 
-        canvas.fig.subplots_adjust(hspace=.1, wspace=.05, left=.075, right=.95 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+        canvas.fig.subplots_adjust(hspace=.35, wspace=.15, left=.15, right=.8 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+        deSpine(ax1)
         
         #cb1 = canvas.fig.colorbar(im, ax=axes[0::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
         #cb1.ax.tick_params(axis='both', which='major', labelsize=8)
         #cb1.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
 
         cb2 = canvas.fig.colorbar(im2[-1], ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
-        cb2.ax.tick_params(axis='both', which='major', labelsize=8)
-        cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+        cb2.ax.tick_params(axis='both', which='major', labelsize=fs)
+        cb2.set_label(r"$\left| \mathcal{V}_N \right|$ (nV)", fontsize=fs)
+                    
 
         #canvas.fig.tight_layout() 
         canvas.draw()
@@ -564,15 +570,16 @@ class GMRDataProcessor(SNMRDataProcessor):
             canvas = mpl plotting axis      
         """
         TDPlot = True
-        
+        fs = 10       
+ 
         if plot:
             canvas.reAx2(shy=False)
-            canvas.ax1.set_ylabel(r"signal (nV)", fontsize=8)
-            canvas.ax2.set_ylabel(r"signal (nV)", fontsize=8)
+            canvas.ax1.set_ylabel(r"signal (nV)", fontsize=fs)
+            canvas.ax2.set_ylabel(r"signal (nV)", fontsize=fs)
             if TDPlot:
-                canvas.ax2.set_xlabel(r"time (s)", fontsize=8)
+                canvas.ax2.set_xlabel(r"time (s)", fontsize=fs)
             else:
-                canvas.ax2.set_xlabel(r"frequency (Hz)", fontsize=8)
+                canvas.ax2.set_xlabel(r"frequency (Hz)", fontsize=fs)
                 canvas.ax1.set_yscale('log')
                 canvas.ax2.set_yscale('log')
 
@@ -703,8 +710,12 @@ class GMRDataProcessor(SNMRDataProcessor):
 
                     if plot:
                         if procRefs: 
-                            canvas.ax1.legend(prop={'size':6}, loc='upper right')
-                        canvas.ax2.legend(prop={'size':6}, loc='upper right')
+                            canvas.ax1.legend(prop={'size':fs}, loc='upper right')
+                            plt.setp(canvas.ax1.get_xticklabels(), visible=False)
+                        canvas.ax2.legend(prop={'size':fs}, loc='upper right')
+                        deSpine(canvas.ax1)
+                        deSpine(canvas.ax2)
+                        canvas.fig.tight_layout()
                         canvas.draw() 
                 
                 percent = (int)(1e2*((ipm+istack*self.nPulseMoments)/(self.nPulseMoments*len(self.DATADICT["stacks"])))) 
@@ -766,11 +777,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                 #ax1.plot( 1e3*self.DATADICT[pulse][chan]["FFT"]["nu"][0:len(SimpleStack[pulse][chan])], np.average(SimpleStack[pulse][chan], 0 )) #, color='darkblue' )
                 #ax1.pcolor( np.real(SimpleStack[pulse][chan]) ) #, color='darkblue' )
                 ax1.matshow( np.real(SimpleStack[pulse][chan]), aspect='auto') #, color='darkblue' )
-                ax1.set_title("Ch." + str(chan) + ": avg FID", fontsize=8)
-                ax1.set_xlabel(r"time (ms)", fontsize=8)
+                ax1.set_title("Ch." + str(chan) + ": avg FID", fontsize=10)
+                ax1.set_xlabel(r"time (ms)", fontsize=10)
 
                 if ichan == 0:
-                    ax1.set_ylabel(r"signal [nV]", fontsize=8)
+                    ax1.set_ylabel(r"signal [nV]", fontsize=10)
                 else:
                     plt.setp(ax1.get_yticklabels(), visible=False)
                     plt.setp(ax1.get_yaxis().get_offset_text(), visible=False) 
@@ -932,6 +943,7 @@ class GMRDataProcessor(SNMRDataProcessor):
 #         cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
 
         #canvas.fig.tight_layout() 
+        deSpine(ax1)
         canvas.draw()
         self.doneTrigger.emit() 
 
@@ -1034,8 +1046,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                     ht = signal.hilbert(xn)*np.exp(-1j*wL*self.DATADICT[pulse]["TIMES"])
                     #############################################################
                     # Quadrature signal 
-                    RE[pulse][chan][ipm,:] = np.real(ht[clip::])   
-                    IM[pulse][chan][ipm,:] = np.imag(ht[clip::])
+                    RE[pulse][chan][ipm,:] = -np.real(ht[clip::])  # negative for consistency with VC  
+                    IM[pulse][chan][ipm,:] =  np.imag(ht[clip::])
                     REmax[pulse] = max(REmax[pulse], np.max(np.real(ht[clip::])))
                     IMmax[pulse] = max(IMmax[pulse], np.max(np.imag(ht[clip::])))
                     #############################################################
@@ -1084,7 +1096,8 @@ class GMRDataProcessor(SNMRDataProcessor):
 
         ###############
         # Plot on GUI #      
-        ############### 
+        ###############
+        fs = 10 
         dcmap = cmocean.cm.curl_r  #"seismic_r" #cmocean.cm.balance_r #"RdBu" #YlGn" # "coolwarm_r"  # diverging 
         canvas.reAxH2(  len(self.DATADICT[ self.DATADICT["PULSES"][0] ]["chan"] ), False, False)
         for pulse in self.DATADICT["PULSES"]:
@@ -1103,29 +1116,27 @@ class GMRDataProcessor(SNMRDataProcessor):
 
             for chan in self.DATADICT[pulse]["chan"]: 
                 ax1 = axes[2*ichan  ]
-                ax2 = axes[2*ichan+1] # TODO fix hard coded number
+                ax2 = axes[2*ichan+1] 
                 if phase == 0: # Re Im 
-                    #print("plot dog", np.shape(QQ), np.shape(self.DATADICT["RE"][pulse][chan]))
-                    #print("QQ", QQ) 
                     im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["RE"][pulse][chan][iQ], cmap=dcmap, \
-                         vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
+                         vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] , rasterized=True)
                     im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["IM"][pulse][chan][iQ], cmap=dcmap, \
-                         vmin=-self.DATADICT["IMmax"][pulse], vmax=self.DATADICT["IMmax"][pulse]  )
+                         vmin=-self.DATADICT["IMmax"][pulse], vmax=self.DATADICT["IMmax"][pulse] , rasterized=True )
                     #im1 = ax1.matshow( self.DATADICT["RE"][pulse][chan][iQ], cmap=dcmap, aspect='auto', \
                     #     vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
                     #im2 = ax2.matshow( self.DATADICT["IM"][pulse][chan][iQ], cmap=dcmap, aspect='auto', \
                     #     vmin=-self.DATADICT["REmax"][pulse] , vmax=self.DATADICT["REmax"][pulse] )
                 if phase == 1: # Amp phase
                     im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["CA"][pulse][chan][iQ], cmap=dcmap, \
-                         vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse]  )
+                         vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse], rasterized=True  )
                     #im2 = ax2.pcolormesh( time_sp, QQ, self.DATADICT["IP"][pulse][chan], cmap=cmocean.cm.balance, rasterized=True,\
                     im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["IP"][pulse][chan][iQ], cmap=cmocean.cm.delta, \
-                         vmin=-np.pi, vmax=np.pi)
+                         vmin=-np.pi, vmax=np.pi, rasterized=True)
                 if phase == 2: # CA NR
                     im1 = ax1.pcolormesh( time_sp, QQ[iQ], self.DATADICT["CA"][pulse][chan][iQ], cmap=dcmap, \
-                         vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse] )
+                         vmin=-self.DATADICT["CAmax"][pulse] , vmax=self.DATADICT["CAmax"][pulse], rasterized=True )
                     im2 = ax2.pcolormesh( time_sp, QQ[iQ], self.DATADICT["NR"][pulse][chan][iQ], cmap=dcmap, \
-                         vmin=-self.DATADICT["NRmax"][pulse] , vmax=self.DATADICT["NRmax"][pulse] )
+                         vmin=-self.DATADICT["NRmax"][pulse] , vmax=self.DATADICT["NRmax"][pulse], rasterized=True )
 #                     cb2 = canvas.fig.colorbar(im2, ax=ax2, format='%1.0e')
 #                     cb2.set_label("Noise residual (nV)", fontsize=8)
 #                     cb2.ax.tick_params(axis='both', which='major', labelsize=8)
@@ -1150,8 +1161,8 @@ class GMRDataProcessor(SNMRDataProcessor):
                 self.progressTrigger.emit(percent)
                 
                 if ichan == 0:
-                    ax1.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=8)
-                    ax2.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=8)
+                    ax1.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=fs)
+                    ax2.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=fs)
                 else:
                     #ax2.yaxis.set_ticklabels([])
                     #ax1.yaxis.set_ticklabels([])
@@ -1171,29 +1182,40 @@ class GMRDataProcessor(SNMRDataProcessor):
             ax2.set_xlim( np.min(time_sp), np.max(time_sp) )
 
             #ax2.set_xlabel(r"Time since end of pulse  (ms)", fontsize=8)
-            ax2.set_xlabel(r"Time (ms)", fontsize=8)
+            ax2.set_xlabel(r"time (ms)", fontsize=fs)
         
-        canvas.fig.subplots_adjust(hspace=.15, wspace=.05, left=.075, right=.95, bottom=.1, top=.95 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+        #canvas.fig.subplots_adjust(hspace=.15, wspace=.05, left=.15, right=.85, bottom=.15, top=.9 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+        canvas.fig.subplots_adjust(hspace=.15, wspace=.05, left=.15, right=.90, bottom=.15, top=.95 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+        
         tick_locator = MaxNLocator(nbins=3)
 
-        cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
-        cb1.ax.tick_params(axis='both', which='major', labelsize=8)
-        cb1.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+        cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0f', orientation='vertical')
+        #cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0f', orientation='horizontal', shrink=.35, aspect=30, pad=.4)
+        cb1.ax.tick_params(axis='both', which='major', labelsize=fs)
+
         cb1.locator = tick_locator
         cb1.update_ticks()
 
         tick_locator2 = MaxNLocator(nbins=3)
-        cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30, pad=.2)
-        cb2.ax.tick_params(axis='both', which='major', labelsize=8)
-        if phase == 1: # Amp phase
-            cb2.set_label(r"$\angle \mathcal{V}_N$", fontsize=8)
+        cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0f', orientation='vertical')
+        #cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0f', orientation='horizontal', shrink=.35, aspect=30, pad=.4)
+        cb2.ax.tick_params(axis='both', which='major', labelsize=fs)
+
+        if phase == 0: # Re Im 
+            cb1.set_label(r"$\mathrm{Re} \left( \mathcal{V}_N \right)$ (nV)", fontsize=fs)
+            cb2.set_label(r"$\mathrm{Im} \left( \mathcal{V}_N \right)$ (nV)", fontsize=fs)
+        elif phase == 1: # Amp phase
+            cb1.set_label(r"$\left| \mathcal{V}_N \right|$ (nV)", fontsize=fs)
+            cb2.set_label(r"$\angle \mathcal{V}_N$", fontsize=fs)
         else:
-            cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+            cb1.set_label(r"$\left| \mathcal{V}_N \right|$ (nV)", fontsize=fs)
+            cb2.set_label(r"noise (nV)", fontsize=fs)
 
 
         cb2.locator = tick_locator2
         cb2.update_ticks()
 
+        #canvas.fig.tight_layout()
         canvas.draw()
         self.doneTrigger.emit() 
 
@@ -1341,7 +1363,9 @@ class GMRDataProcessor(SNMRDataProcessor):
     def plotGateIntegrate( self, gpd, clip, phase, canvas ):
         """ Plot the gate integration 
         """
-        
+       
+        fs = 10 
+ 
         canvas.reAxH2(  len(self.DATADICT[ self.DATADICT["PULSES"][0] ]["chan"] ), False, False)
         axes = canvas.fig.axes
         #cmap = cmocean.cm.balance_r 
@@ -1454,34 +1478,34 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ax2.xaxis.set_major_formatter(formatter) #matplotlib.ticker.FormatStrFormatter('%d.1'))
                 
                 if ichan == 0:
-                    ax1.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=8)
+                    ax1.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=fs)
                     if phase == 2:
-                        ax2.set_ylabel(r"noise est. (nV)", fontsize=8)
+                        ax2.set_ylabel(r"noise est. (nV)", fontsize=fs)
                     else:
-                        ax2.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=8)
+                        ax2.set_ylabel(r"$q$ ( $\mathrm{A}\cdot\mathrm{s}$)", fontsize=fs)
                 else:
                     plt.setp(ax1.get_yticklabels(), visible=False)
                     plt.setp(ax2.get_yticklabels(), visible=False)
         
-                ax2.set_xlabel(r"$t-\tau_p$  (ms)", fontsize=8)
+                ax2.set_xlabel(r"$t-\tau_p$  (ms)", fontsize=fs)
                 ichan += 1 
 
         #canvas.fig.subplots_adjust(hspace=.1, wspace=.05, left=.075, right=.925 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
         #canvas.fig.tight_layout()
         #canvas.draw()
-        canvas.fig.subplots_adjust(hspace=.15, wspace=.05, left=.075, right=.95, bottom=.1, top=.95 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
+        canvas.fig.subplots_adjust(hspace=.15, wspace=.05, left=.15, right=.9, bottom=.1, top=.9 )#left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) 
         tick_locator = MaxNLocator(nbins=5)
 
-        cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30)
-        cb1.ax.tick_params(axis='both', which='major', labelsize=8)
-        cb1.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+        cb1 = canvas.fig.colorbar(im1, ax=axes[0::2], format='%1.0f', orientation='horizontal', shrink=.35, aspect=30)
+        cb1.ax.tick_params(axis='both', which='major', labelsize=fs)
+        cb1.set_label("$\mathcal{V}_N$ (nV)", fontsize=fs)
         #cb1.locator = tick_locator
         #cb1.update_ticks()
 
         if phase != 2:
-            cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0e', orientation='horizontal', shrink=.35, aspect=30, pad=.2)
-            cb2.ax.tick_params(axis='both', which='major', labelsize=8)
-            cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=8)
+            cb2 = canvas.fig.colorbar(im2, ax=axes[1::2], format='%1.0f', orientation='horizontal', shrink=.35, aspect=30, pad=.2)
+            cb2.ax.tick_params(axis='both', which='major', labelsize=fs)
+            cb2.set_label("$\mathcal{V}_N$ (nV)", fontsize=fs)
 
             cb2.locator = tick_locator
             cb2.update_ticks()
@@ -1652,20 +1676,22 @@ class GMRDataProcessor(SNMRDataProcessor):
                     self.DATADICT[pulse]["qeff"][ipm][istack] = qeff
                     self.DATADICT[pulse]["q_nu"][ipm][istack] = v
                     iistack += 1
-
-                canvas.ax1.set_xlabel("time (ms)", fontsize=8)
-                canvas.ax1.set_ylabel("current (A)", fontsize=8)
-                canvas.draw()
-
+                #canvas.draw()
                         
                 percent = int(1e2* (float)((istack)+ipm*self.DATADICT["nPulseMoments"]) / 
                                    (float)(len(self.DATADICT["PULSES"])*self.DATADICT["nPulseMoments"]*nstack))
                 self.progressTrigger.emit(percent)
 
-            canvas.draw()
-
+            canvas.ax1.set_xlabel("time (ms)", fontsize=10)
+            canvas.ax1.set_ylabel("current (A)", fontsize=10)
+            #canvas.draw()
 
         self.plotQeffNu(cv, canvas.ax2)
+
+        deSpine(canvas.ax1)        
+        deSpine(canvas.ax2)        
+
+        canvas.fig.tight_layout()
         canvas.draw()
         self.doneTrigger.emit() 
 
@@ -1700,11 +1726,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                     self.progressTrigger.emit(percent)
                     istack += 1
             iFID += 1
-        ax.set_xlabel(r"pulse moment index", fontsize=8)
-        ax.set_ylabel(r"$q_{eff}$ [A$\cdot$sec]", fontsize=8)
+        ax.set_xlabel(r"pulse moment index", fontsize=10)
+        ax.set_ylabel(r"$q_{eff}$ (A$\cdot$sec)", fontsize=10)
         ax.set_yscale('log')
         ax.set_xlim(0, ax.get_xlim()[1])
-        ax.legend(loc='upper right', scatterpoints = 1, prop={'size':6})
+        ax.legend(loc='upper right', scatterpoints = 1, prop={'size':10})
 
     def enableDSP(self):
         self.enableDSPTrigger.emit() 
@@ -1800,19 +1826,24 @@ class GMRDataProcessor(SNMRDataProcessor):
                             self.DATADICT[pulse][ichan][ipm][istack] = e[::-1]
                            
      
-                        canvas.ax1.plot( H[pulse][ichan].reshape(-1, len(RX)) ) # , label="taps") 
+                        #canvas.ax1.plot( H[pulse][ichan].reshape(-1, len(RX)) ) # , label="taps") 
+                        canvas.ax1.plot( H[pulse][ichan][::-1].reshape(M, len(RX), order='F' ) ) #.reshape(-1, len(RX)) ) # , label="taps") 
 
-                        canvas.ax2.legend(prop={'size':6}, loc='upper right')
+                        canvas.ax2.legend(prop={'size':10}, loc='upper right')
                         #canvas.ax2.legend(prop={'size':6}, loc='upper right')
 
                         mh = np.max(np.abs( H[pulse][ichan] ))
                         canvas.ax1.set_ylim( -mh, mh )
 
-                        canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
-                        canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
+                        canvas.ax2.set_xlabel(r"time (s)", fontsize=10)
+                        canvas.ax2.set_ylabel(r"signal (nV)", fontsize=10)
 
-                        canvas.ax1.set_xlabel(r"filter index", fontsize=8)
-                        canvas.ax1.set_ylabel(r"scale factor", fontsize=8)
+                        canvas.ax1.set_xlabel(r"filter tap index", fontsize=10)
+                        canvas.ax1.set_ylabel(r"tap amplitude", fontsize=10)
+
+                    canvas.fig.tight_layout()
+                    deSpine(canvas.ax1)
+                    deSpine(canvas.ax2)
 
                     canvas.draw()
 
@@ -2127,10 +2158,11 @@ class GMRDataProcessor(SNMRDataProcessor):
         """
         
         if plot:
+            fs = 10
             canvas.reAx2()
-            canvas.ax1.set_ylabel(r"signal [nV]", fontsize=8)
-            canvas.ax2.set_xlabel(r"time [s]", fontsize=8)
-            canvas.ax2.set_ylabel(r"signal [nV]", fontsize=8)
+            canvas.ax1.set_ylabel(r"signal (nV)", fontsize=fs)
+            canvas.ax2.set_xlabel(r"time (s)", fontsize=fs)
+            canvas.ax2.set_ylabel(r"signal (nV)", fontsize=fs)
 
         self.samp /= dec
         self.dt   = 1./self.samp       
@@ -2168,9 +2200,15 @@ class GMRDataProcessor(SNMRDataProcessor):
                         for ichan in self.DATADICT[pulse]["rchan"]:
                             canvas.ax1.plot( RSTIMES, 1e9*self.DATADICT[pulse][ichan][ipm][istack], \
                                 label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
-                        canvas.ax1.legend(prop={'size':6}, loc='upper right')
-                        canvas.ax2.legend(prop={'size':6}, loc='upper right')
+                        canvas.ax1.legend(prop={'size':fs}, loc='upper right')
+                        canvas.ax2.legend(prop={'size':fs}, loc='upper right')
+                   
+                        deSpine( canvas.ax1 ) 
+                        deSpine( canvas.ax2 ) 
+                        plt.setp(canvas.ax1.get_xticklabels(), visible=False)
+                        canvas.fig.tight_layout()
                         canvas.draw() 
+
                 percent = (int)(1e2*((float)(iFID*self.DATADICT["nPulseMoments"]+(ipm))/( len(self.DATADICT["PULSES"])*self.nPulseMoments)))
                 self.progressTrigger.emit(percent)
             iFID += 1  
@@ -2569,19 +2607,24 @@ class GMRDataProcessor(SNMRDataProcessor):
                     for ichan in rchan:
                         canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
 
-                    canvas.ax3.legend(prop={'size':6}, loc='upper right')
-                    canvas.ax2.legend(prop={'size':6}, loc='upper right')
+                    # reference axis
+                    canvas.ax2.tick_params(axis='both', which='major', labelsize=10)
+                    canvas.ax2.tick_params(axis='both', which='minor', labelsize=10)
+                    #canvas.ax2.xaxis.set_ticklabels([])
+                    plt.setp(canvas.ax2.get_xticklabels(), visible=False)
+                    canvas.ax2.legend(prop={'size':10}, loc='upper right')
+                    canvas.ax2.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=10)
+                    canvas.ax2.set_ylabel("RAW signal [V]", fontsize=10)
 
-                    canvas.ax1.set_ylabel("Current [A]", fontsize=8) 
+
+                    canvas.ax1.set_ylabel("Current (A)", fontsize=10) 
                     canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-                    canvas.ax1.set_xlabel("time [s]", fontsize=8)
-                    
-                    canvas.ax2.set_title("stack "+str(istack)+" pulse index " + str(ipm), fontsize=8)
-                    canvas.ax2.set_ylabel("RAW signal [V]", fontsize=8)
-                    canvas.ax3.set_ylabel("RAW signal [V]", fontsize=8)
-                    canvas.ax2.tick_params(axis='both', which='major', labelsize=8)
-                    canvas.ax2.tick_params(axis='both', which='minor', labelsize=6)
+                    canvas.ax1.set_xlabel("time (s)", fontsize=10)
 
+                    canvas.ax3.legend(prop={'size':10}, loc='upper right')
+                    canvas.ax3.set_ylabel("RAW signal [V]", fontsize=10)
+                    
+                    canvas.fig.tight_layout()
                     canvas.draw()
 
             percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))

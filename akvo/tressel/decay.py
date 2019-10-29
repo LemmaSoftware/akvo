@@ -84,7 +84,7 @@ def quadratureDetect2(X, Y, tt, method, loss, x0="None"):
 
     #method = ['trf','dogbox','lm'][method_int]
     #loss = ['linear','soft_l1','cauchy','huber'][loss_int] 
-    print ("method", method, 'loss', loss) 
+    #print ("method", method, 'loss', loss) 
     if x0=="None":
         if method == 'lm':
             x0 = np.array( [50., 0., 0., .200] ) # A0, zeta, df, T2 
@@ -94,11 +94,11 @@ def quadratureDetect2(X, Y, tt, method, loss, x0="None"):
         else:
             x0 = np.array( [50., 0., 0., .200] ) # A0, zeta, df, T2 
             res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
-                    bounds=( [5, -np.pi, -5, .001] , [1000., np.pi, 5, .800] ),
+                    bounds=( [5, -np.pi, -5, .001] , [5000., np.pi, 5, .800] ),
                     method=method 
                     )
         x = res_lsq.x 
-        print ("A0={} zeta={} df={} T2={}".format(x[0],x[1],x[2],x[3]))
+        #print ("A0={} zeta={} df={} T2={}".format(x[0],x[1],x[2],x[3]))
     else:
         res_lsq = least_squares(fun, x0, args=(tt, np.concatenate((X, Y))), loss=loss, f_scale=1.0,\
             #bounds=( [1., -np.pi, -5, .005] , [1000., np.pi, 5, .800] ),

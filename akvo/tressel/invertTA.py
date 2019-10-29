@@ -89,14 +89,16 @@ def loadK0(fname):
 
 def main():
 
-    if (len (sys.argv) < 3):
-        print ("python invertTA.py  K0.dat  Data.yaml")
-    print (sys.argv[1])
+    if (len (sys.argv) < 2):
+        print ("akvoQT   invertParameters.yaml")
+        exit()
+    
     with open(sys.argv[1], 'r') as stream:
         try:
             cont = (yaml.load(stream, Loader=yaml.Loader))
         except yaml.YAMLError as exc:
             print(exc)
+
     ###############################################
     # Load in data
     ###############################################
@@ -114,16 +116,6 @@ def main():
         VS[0] = np.concatenate( (VS[0], VS[iv]) )
     V = V[0]
     VS = VS[0]
-    
-    #plt.matshow(V, cmap='RdBu', vmin=-np.max(np.abs(V)), vmax=np.max(np.abs(V)))
-    #plt.title("data")
-    #plt.colorbar()
-    #plt.show()
-    #exit()    
-
-    #plt.matshow(VS, cmap='inferno', vmin=-np.max(np.abs(VS)), vmax=np.max(np.abs(VS)))
-    #plt.title("error")
-    #plt.colorbar()
 
     ###############################################
     # Load in kernels
@@ -142,19 +134,13 @@ def main():
     ############################################### 
     T2Bins = np.logspace( np.log10(cont["T2Bins"]["low"]), np.log10(cont["T2Bins"]["high"]), cont["T2Bins"]["number"], endpoint=True, base=10)  
     KQT = buildKQT(K0,tg,T2Bins)
-    #plt.matshow(KQT)
 
-    # Chan. 1    reg = 1.5   
-    # Chan. 2    reg = 1.35
-    # Chan. 4    reg = 1.95  
  
     ###############################################
     # Invert
     ############################################### 
     print("Calling inversion", flush=True)
-    inv, ibreak, errn, phim, phid, mkappa = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e6, smooth="Smallest" ) #, smooth=True) # 
-                     #logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, smooth=False, MAXITER=70, fignum=1000, sigma=1, callback=None):
-    #return x, ibreak, np.sqrt(phid/len(b)), PHIM, PHID/len(b), np.argmax(kappa)
+    inv, ibreak, errn, phim, phid, mkappa = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e6, smooth="Smallest" ) 
 
 
     ###############################################
@@ -178,10 +164,9 @@ def main():
 
     T2Bins = np.append( T2Bins, T2Bins[-1] + (T2Bins[-1]-T2Bins[-2]) )
     
-    print( np.shape(inv), len(ifaces)-1,cont["T2Bins"]["number"] )
     INV = np.reshape(inv, (len(ifaces)-1,cont["T2Bins"]["number"]) )
     Y,X = meshgrid( ifaces, T2Bins )
-    fig = plt.figure( figsize=(pc2in(17.0),pc2in(18.)) )
+    fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
     ax1 = fig.add_axes( [.2,.15,.6,.7] )
     im = ax1.pcolor(X, Y, INV.T, cmap=cmocean.cm.tempo) #cmap='viridis')
     im.set_edgecolor('face')
@@ -192,8 +177,8 @@ def main():
     cb.ax.yaxis.set_offset_position('left')                         
     cb.update_ticks()
  
-    #ax1.set_xlabel(u"$T_2^*$ (ms)")
-    #ax1.set_ylabel(u"depth (m)$")
+    ax1.set_xlabel(u"$T_2^*$ (ms)")
+    ax1.set_ylabel(u"depth (m)")
     
     ax1.get_xaxis().set_major_formatter(FormatStrFormatter('%1.0f'))
     ax1.get_yaxis().set_major_formatter(FormatStrFormatter('%1.0f'))

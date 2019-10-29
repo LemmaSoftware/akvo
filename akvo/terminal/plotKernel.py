@@ -9,8 +9,8 @@ from matplotlib.ticker import LogLocator
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 import yaml
-from  lemma_yaml import *
-
+from  akvo.tressel.lemma_yaml import *
+from akvo.tressel.SlidesPlot import *
 import cmocean 
 
 def catLayers(K0):
@@ -29,11 +29,13 @@ if __name__ == "__main__":
     K = 1e9*catLayers(K0.K0)
     q = np.array(K0.PulseI.data)* (float)(K0.Taup)
 
+    fig = plt.figure( figsize=(pc2in(20),pc2in(20)) )
+    fig.add_axes((.2,.2,.65,.7))
     #plt.pcolor(K0.Interfaces.data, K0.PulseI.data, np.abs(K))
     #plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.gray_r)
     #plt.contourf(q, K0.Interfaces.data[0:-1], np.abs(K), cmap=cmocean.cm.tempo)
     plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.tempo)
-    plt.colorbar()
+    plt.colorbar(label=r"$\left| \overline{\mathcal{V}_N}(0) \right|$ (nV)")
 
     ax1 = plt.gca()
     ax1.set_ylim( ax1.get_ylim()[1], ax1.get_ylim()[0]  )

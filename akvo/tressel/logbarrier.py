@@ -8,6 +8,8 @@ from scipy.optimize import nnls
 
 import matplotlib.pyplot as plt
 
+from akvo.tressel.SlidesPlot import * 
+
 def PhiB(mux, minVal, x):
     phib = mux * np.abs( np.sum(np.log( x-minVal)) )
     return phib
@@ -247,15 +249,26 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
                 if np.sqrt(phid/len(b)) <= 1:
                     ibreak=0
 
-                plt.figure()
+                fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
+                ax1 = fig.add_axes( [.2,.15,.6,.7] )
                 #plt.plot( (np.array(PHIM)),  np.log(np.array(PHID)/len(b)), '.-')
                 #plt.plot(  ((np.array(PHIM))[np.argmax(kappa)]) , np.log( (np.array(PHID)/len(b))[np.argmax(kappa)] ), '.', markersize=12)
                 #plt.axhline()
-                plt.plot( np.log(np.array(PHIM)),  np.log(np.sqrt(np.array(PHID)/len(b))), '.-')
-                plt.plot( np.log(np.array(PHIM))[np.argmax(kappa)], np.log(np.sqrt(np.array(PHID)/len(b))[np.argmax(kappa)]), '.', markersize=12)
+                lns1 = plt.plot( np.log(np.array(PHIM)),  np.log(np.sqrt(np.array(PHID)/len(b))), '.-', label="L curve")
+                lns2 = plt.plot( np.log(np.array(PHIM))[np.argmax(kappa)], np.log(np.sqrt(np.array(PHID)/len(b))[np.argmax(kappa)]), '.', markersize=12, label="$\lambda^*$")
                 ax2 = plt.twinx()
-                ax2.plot( np.log(np.array(PHIM)), kappa, color='green', label="lcurve" )
-                plt.legend()
+                lns3 = ax2.plot( np.log(np.array(PHIM)), kappa, color='orange', label="curvature" )
+
+                # Single legend 
+                lns = lns1+lns3
+                labs = [l.get_label() for l in lns]
+                ax2.legend(lns, labs, loc=0)
+
+                ax1.set_xlabel("$\phi_m$")
+                ax1.set_ylabel("$\phi_d$")
+                
+                ax2.set_ylabel("curvature")
+
                 plt.savefig('lcurve.pdf')
                 break
 

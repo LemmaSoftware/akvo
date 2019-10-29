@@ -874,7 +874,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #INFO["samp"] = self.RAWDataProc.samp
         INFO["nPulseMoments"] = self.RAWDataProc.nPulseMoments
         #INFO["deadTime"] = self.RAWDataProc.deadTime
-        INFO["processed"] = "Akvo v"  + self.Akvo_VERSION + ", on "  + time.strftime("%d/%m/%Y")
+        INFO["processed"] = "Akvo v"  + VERSION + ", on "  + time.strftime("%d/%m/%Y")
         # Pulse current info
         ip = 0
         INFO["Pulses"] = {}
@@ -1425,7 +1425,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.lock("harmonic noise modelling")
         
         Harm = OrderedDict()
-        Harm["STEP"] = "Harmonic modelling"
+        Harm["STEP " + str(len(self.YamlNode.Processing))] = "Harmonic modelling"
         Harm["NF"] = str( self.ui.NHarmonicsFreqsSpin.value() ) 
         Harm["Segments"] = str( self.ui.NSegments.value() ) 
         Harm["Proc. ref."] = self.ui.harmRef.isChecked() 
@@ -1502,14 +1502,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         # Log processing 
         Adapt = OrderedDict()
-        Adapt["STEP"] = "TD noise cancellation"
-        print(Adapt) # this locks STEP in as first...
-        Adapt["n_Taps"] = str(self.ui.MTapsSpinBox.value())
-        Adapt["lambda"] = str(self.ui.adaptLambdaSpinBox.value())
-        Adapt["truncate"] = str(self.ui.adaptTruncateSpinBox.value())
-        Adapt["mu"] = str(self.ui.adaptMuSpinBox.value()) 
-        Adapt["PCA"] = str(self.ui.PCAComboBox.currentText())
-        #print(Adapt)
+        Adapt["STEP " + str(len(self.YamlNode.Processing)) ] = "TD noise cancellation"
+        #print(Adapt) # this locks STEP in as first...
+        Adapt["n_Taps"] = self.ui.MTapsSpinBox.value()
+        Adapt["lambda"] = self.ui.adaptLambdaSpinBox.value()
+        Adapt["truncate"] = self.ui.adaptTruncateSpinBox.value()
+        Adapt["mu"] = self.ui.adaptMuSpinBox.value()
+        Adapt["PCA"] = self.ui.PCAComboBox.currentText()
+        #Adapt # this locsk in the dict ordering...
+        #print(Adapt) # this locks in the dict...
         self.YamlNode.Processing.append(Adapt)
         self.Log( )
 
@@ -1526,7 +1527,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.lock("Summing data channels")
         
         Sum = OrderedDict()
-        Sum["STEP"] = "Channel sum"
+        Sum["STEP " + str(len(self.YamlNode.Processing))] = "Channel sum"
         self.YamlNode.Processing.append(Sum)
         self.Log( )
 
@@ -1606,7 +1607,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         # Log processing 
         Band = OrderedDict()
-        Band["STEP"] = "Bandpass filter"
+        Band["STEP " + str(len(self.YamlNode.Processing))] = "Bandpass filter"
         Band["central_nu"] = str(self.ui.CentralVSpinBox.value())
         Band["passband"] = str(self.ui.passBandSpinBox.value())
         Band["stopband"] = str(self.ui.stopBandSpinBox.value()) 
@@ -1627,7 +1628,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         # Log processing 
         Resample = OrderedDict() 
-        Resample["STEP"] = "Resample"
+        Resample["STEP "+ str(len(self.YamlNode.Processing))] = "Resample"
         Resample["downsample factor"] = str(self.ui.downSampleSpinBox.value())
         Resample["truncate length"] = str(self.ui.truncateSpinBox.value()) 
         self.YamlNode.Processing.append(Resample)
@@ -1725,7 +1726,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         # Log processing 
         Window = OrderedDict()
-        Window["STEP"] = "Window filter"
+        Window["STEP " + str(len(self.YamlNode.Processing))] = "Window filter"
         Window["type"] = str(self.ui.windowTypeComboBox.currentText()) 
         Window["width"] = str(self.ui.windowBandwidthSpinBox.value()) 
         Window["centre"] = str(self.ui.CentralVSpinBox.value() )

@@ -2,10 +2,12 @@
 # GJI final pub specs                                                           #
 import matplotlib                                                               #
 from matplotlib import rc                                                           #
-matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{timet,amsmath,amssymb}"]  #
-rc('font',**{'family':'sans-serif','serif':['timet']})                                   #
-rc('font',**{'size':11})                                                             #
-rc('text', usetex=True)                                                             #
+
+#matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{timet,amsmath,amssymb}"]  #
+#rc('font',**{'family':'sans-serif','serif':['timet']})                                   #
+#rc('font',**{'size':11})                                                             #
+#rc('text', usetex=True)                                                             #
+
 # converts pc that GJI is defined in to inches                                      # 
 # In GEOPHYSICS \textwidth = 42pc                                               #
 #        \columnwidth = 20pc                                                    #

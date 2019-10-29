@@ -40,7 +40,8 @@ class MyDynamicMplCanvas(MyMplCanvas):
         self.compute_initial_figure()
 
     def reAxH(self, num, shx=True, shy=True):
-        
+        fs = 10
+ 
         try:
             for ax in fig.axes:
                 self.fig.delaxes(ax)
@@ -54,28 +55,29 @@ class MyDynamicMplCanvas(MyMplCanvas):
         for n in range(num):
             if n == 0:
                 self.ax1 = self.fig.add_subplot( 1, num, 1)
-                self.ax1.tick_params(axis='both', which='major', labelsize=8)
+                self.ax1.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
                 self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='x')  
-                self.ax1.yaxis.get_offset_text().set_size(8) 
-                self.ax1.xaxis.get_offset_text().set_size(8) 
+                self.ax1.yaxis.get_offset_text().set_size(fs) 
+                self.ax1.xaxis.get_offset_text().set_size(fs) 
             if n == 1:
                 self.ax2 = self.fig.add_subplot( 1, num, 2)
-                self.ax2.tick_params(axis='both', which='major', labelsize=8)
+                self.ax2.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax2.yaxis.get_offset_text().set_size(8) 
+                self.ax2.yaxis.get_offset_text().set_size(fs) 
             if n == 2:
                 self.ax3 = self.fig.add_subplot( 1, num, 3) 
-                self.ax3.tick_params(axis='both', which='major', labelsize=8)
+                self.ax3.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax3.yaxis.get_offset_text().set_size(8) 
+                self.ax3.yaxis.get_offset_text().set_size(fs) 
             if n == 3:
                 self.ax4 = self.fig.add_subplot( 1, num, 4) 
-                self.ax4.tick_params(axis='both', which='major', labelsize=8)
+                self.ax4.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax4.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax4.yaxis.get_offset_text().set_size(8) 
+                self.ax4.yaxis.get_offset_text().set_size(fs) 
     
     def reAxH2(self, num, shx=True, shy=True):
+        fs = 10
         try:
             for ax in fig.axes:
                 self.fig.delaxes(ax)
@@ -89,40 +91,40 @@ class MyDynamicMplCanvas(MyMplCanvas):
         for n in range(num):
             if n == 0:
                 self.ax1 = self.fig.add_subplot( 2, num, 1)
-                self.ax1.tick_params(axis='both', which='major', labelsize=8)
+                self.ax1.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax1.yaxis.get_offset_text().set_size(8) 
+                self.ax1.yaxis.get_offset_text().set_size(fs) 
                 self.ax21 = self.fig.add_subplot( 2, num, num+1)
-                self.ax21.tick_params(axis='both', which='major', labelsize=8)
+                self.ax21.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax21.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax21.yaxis.get_offset_text().set_size(8) 
+                self.ax21.yaxis.get_offset_text().set_size(fs) 
             if n == 1:
                 self.ax2 = self.fig.add_subplot( 2, num, 2, sharex=self.ax1, sharey=self.ax1)
-                self.ax2.tick_params(axis='both', which='major', labelsize=8)
+                self.ax2.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax2.yaxis.get_offset_text().set_size(8) 
+                self.ax2.yaxis.get_offset_text().set_size(fs) 
                 self.ax22 = self.fig.add_subplot( 2, num, num+2, sharex=self.ax21, sharey=self.ax21)
-                self.ax22.tick_params(axis='both', which='major', labelsize=8)
+                self.ax22.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax22.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax22.yaxis.get_offset_text().set_size(8) 
+                self.ax22.yaxis.get_offset_text().set_size(fs) 
             if n == 2:
                 self.ax3 = self.fig.add_subplot( 2, num, 3, sharex=self.ax1, sharey=self.ax1)
-                self.ax3.tick_params(axis='both', which='major', labelsize=8)
+                self.ax3.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax3.yaxis.get_offset_text().set_size(8) 
+                self.ax3.yaxis.get_offset_text().set_size(fs) 
                 self.ax23 = self.fig.add_subplot( 2, num, num+3, sharex=self.ax21, sharey=self.ax21)
-                self.ax23.tick_params(axis='both', which='major', labelsize=8)
+                self.ax23.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax23.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax23.yaxis.get_offset_text().set_size(8) 
+                self.ax23.yaxis.get_offset_text().set_size(fs) 
             if n == 3:
                 self.ax4 = self.fig.add_subplot( 2, num, 4, sharex=self.ax1, sharey=self.ax1 )
-                self.ax4.tick_params(axis='both', which='major', labelsize=8)
+                self.ax4.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax4.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax4.yaxis.get_offset_text().set_size(8) 
+                self.ax4.yaxis.get_offset_text().set_size(fs) 
                 self.ax24 = self.fig.add_subplot( 2, num, num+4, sharex=self.ax21, sharey=self.ax21 )
-                self.ax24.tick_params(axis='both', which='major', labelsize=8)
+                self.ax24.tick_params(axis='both', which='major', labelsize=fs)
                 self.ax24.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
-                self.ax24.yaxis.get_offset_text().set_size(8) 
+                self.ax24.yaxis.get_offset_text().set_size(fs) 
             if n == 4:
                 self.ax5 = self.fig.add_subplot( 2, num, 5, sharex=self.ax1, sharey=self.ax1 )
                 self.ax5.tick_params(axis='both', which='major', labelsize=8)
@@ -195,14 +197,14 @@ class MyDynamicMplCanvas(MyMplCanvas):
         else:
             self.ax2 = self.fig.add_subplot(212)
 
-        self.ax1.tick_params(axis='both', which='major', labelsize=8)
-        self.ax2.tick_params(axis='both', which='major', labelsize=8)
+        self.ax1.tick_params(axis='both', which='major', labelsize=10)
+        self.ax2.tick_params(axis='both', which='major', labelsize=10)
 
         self.ax1.ticklabel_format(style='scientific', scilimits=(0,0), axis='y')  
         self.ax2.ticklabel_format(style='scientific', scilimits=(0,0), axis='y')  
 
-        self.ax1.yaxis.get_offset_text().set_size(8) 
-        self.ax2.yaxis.get_offset_text().set_size(8) 
+        self.ax1.yaxis.get_offset_text().set_size(10) 
+        self.ax2.yaxis.get_offset_text().set_size(10) 
     
     def softClear(self):
         for ax in self.fig.get_axes():
@@ -211,6 +213,8 @@ class MyDynamicMplCanvas(MyMplCanvas):
             ax.set_prop_cycle(None)
 
     def reAx3(self, shx=True, shy=True):
+
+        fs = 10
 
         try:
             self.fig.clear()
@@ -257,17 +261,17 @@ class MyDynamicMplCanvas(MyMplCanvas):
         #self.fig.set_edgecolor('red')
         #self.ax1.set_axis_bgcolor('green')
 
-        self.ax1.tick_params(axis='both', which='major', labelsize=8)
-        self.ax2.tick_params(axis='both', which='major', labelsize=8)
-        self.ax3.tick_params(axis='both', which='major', labelsize=8)
+        self.ax1.tick_params(axis='both', which='major', labelsize=fs)
+        self.ax2.tick_params(axis='both', which='major', labelsize=fs)
+        self.ax3.tick_params(axis='both', which='major', labelsize=fs)
 
         self.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
         self.ax2.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
         self.ax3.ticklabel_format(style='sci', scilimits=(0,0), axis='y')  
 
-        self.ax1.yaxis.get_offset_text().set_size(8) 
-        self.ax2.yaxis.get_offset_text().set_size(8)    
-        self.ax3.yaxis.get_offset_text().set_size(8)    
+        self.ax1.yaxis.get_offset_text().set_size(fs) 
+        self.ax2.yaxis.get_offset_text().set_size(fs)    
+        self.ax3.yaxis.get_offset_text().set_size(fs)    
  
     def reAx4(self):
 
