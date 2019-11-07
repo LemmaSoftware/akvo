@@ -132,18 +132,32 @@ def main():
         K0[0] = np.concatenate( (K0[0].T, K0[ik].T) ).T
     K0 = K0[0]
     #plt.matshow(K0)
+
+    ###################    
+    # VERY Simple DOI #
+    maxq = np.argmax(K0, axis=1)
+    maxK = .1 *  K0[ np.arange(0,len(ifaces)-1), maxq ] # 10% water is arbitrary  
     
-    # VERY Simple DOI
-    SNR = np.sum(.01*K0, axis=1) / VS[0][0]
-    SNR[SNR>1] = 1
-    SNRidx = 0 
-    while SNR[SNRidx] >= 1:
-        SNRidx += 1
-    #print(SNR)
+    SNR = maxK / (VS[0][0])
+    #SNR[SNR>1] = 1
+    SNRidx = len(ifaces)-2 
+    while SNR[SNRidx] < 1:
+        SNRidx -= 1
+
+    #print("IDX", SNRidx)
     #plt.plot(ifaces[0:-1], SNR)
+    #plt.plot(ifaces[0:-1][SNRidx], SNR[SNRidx], '.',markersize=12)
     #plt.gca().axhline(y=VS[0][0], xmin=0, xmax=ifaces[-1], color='r')
     #plt.gca().axhline(y=1, xmin=0, xmax=ifaces[-1], color='r')
+    #K0T = np.dot(K0, K0.T) 
+    #K0T = np.dot(K0, np.dot( VS[0][0]* np.eye(len(ifaces)-1,1), K0.T) )
+    #K0T = np.dot(K0, np.dot( 1/(VS[0][0]**2) * np.eye(np.shape(K0)[1]), K0.T) )
+    #plt.matshow(0.05 * np.sqrt(K0T))
+    #plt.colorbar()
+    #plt.plot(ifaces[0:-1], np.diag( 0.01* np.sqrt(K0T))) 
+    #print(np.shape(K0T), len(ifaces)-1)
     #plt.show()
+    #exit()
 
     ###############################################
     # Build full kernel
