@@ -146,8 +146,13 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
 
         xp = np.copy(x) # prior step x 
 
+        # quick and dirty solution
+        #b2a = np.dot(A.conj().transpose(), np.dot(WdTWd, b-b_pre) ) - alpha*np.dot(WmTWm,(x-xr))
+        #xg = nnls(ATWdTWdA + Phi_m, b2a)
+        #x = xg[0]
+
         while ( (phib / (phid+alpha*phim)) > EPSILON  or First==True ):
-        #while ( First==True ):
+        #while ( False ): # skip the hard stuff
 
             First = False
             # Log barrier, keep each element above minVal

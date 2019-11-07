@@ -1046,7 +1046,7 @@ class GMRDataProcessor(SNMRDataProcessor):
                     ht = signal.hilbert(xn)*np.exp(-1j*wL*self.DATADICT[pulse]["TIMES"])
                     #############################################################
                     # Quadrature signal 
-                    RE[pulse][chan][ipm,:] = -np.real(ht[clip::])  # negative for consistency with VC  
+                    RE[pulse][chan][ipm,:] =  np.real(ht[clip::])  # *-1 for negative for consistency with VC ??
                     IM[pulse][chan][ipm,:] =  np.imag(ht[clip::])
                     REmax[pulse] = max(REmax[pulse], np.max(np.real(ht[clip::])))
                     IMmax[pulse] = max(IMmax[pulse], np.max(np.imag(ht[clip::])))

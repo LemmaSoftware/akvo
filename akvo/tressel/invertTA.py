@@ -14,8 +14,12 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.ticker import LogLocator
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.colors import Normalize
+
 import cmocean
 from akvo.tressel.lemma_yaml import * 
+
+import pandas as pd
 
 def buildKQT(K0,tg,T2Bins):
     """ 
@@ -129,12 +133,23 @@ def main():
     K0 = K0[0]
     #plt.matshow(K0)
     
+    # VERY Simple DOI
+    SNR = np.sum(.01*K0, axis=1) / VS[0][0]
+    SNR[SNR>1] = 1
+    SNRidx = 0 
+    while SNR[SNRidx] >= 1:
+        SNRidx += 1
+    #print(SNR)
+    #plt.plot(ifaces[0:-1], SNR)
+    #plt.gca().axhline(y=VS[0][0], xmin=0, xmax=ifaces[-1], color='r')
+    #plt.gca().axhline(y=1, xmin=0, xmax=ifaces[-1], color='r')
+    #plt.show()
+
     ###############################################
     # Build full kernel
     ############################################### 
     T2Bins = np.logspace( np.log10(cont["T2Bins"]["low"]), np.log10(cont["T2Bins"]["high"]), cont["T2Bins"]["number"], endpoint=True, base=10)  
     KQT = buildKQT(K0,tg,T2Bins)
-
  
     ###############################################
     # Invert
@@ -145,7 +160,8 @@ def main():
 
     ###############################################
     # Appraise
-    ############################################### 
+    ###############################################
+ 
     pre = np.dot(KQT,inv) 
     PRE = np.reshape( pre, np.shape(V)  )
     plt.matshow(PRE, cmap='Blues')
@@ -165,10 +181,25 @@ def main():
     T2Bins = np.append( T2Bins, T2Bins[-1] + (T2Bins[-1]-T2Bins[-2]) )
     
     INV = np.reshape(inv, (len(ifaces)-1,cont["T2Bins"]["number"]) )
+
+    #alphas = np.tile(SNR, (len(T2Bins)-1,1))
+    #colors = Normalize(1e-6, np.max(INV.T), clip=True)(INV.T)
+    #colors = cmocean.cm.tempo(colors)
+    ##colors[..., -1] = alphas
+    #print(np.shape(colors)) 
+    #print(np.shape(INV.T)) 
+
+    #greys = np.full((*(INV.T).shape, 3), 70, dtype=np.uint8)
+
     Y,X = meshgrid( ifaces, T2Bins )
     fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
     ax1 = fig.add_axes( [.2,.15,.6,.7] )
     im = ax1.pcolor(X, Y, INV.T, cmap=cmocean.cm.tempo) #cmap='viridis')
+    #im = ax1.pcolor(X[0:SNRidx,:], Y[0:SNRidx,:], INV.T[0:SNRidx,:], cmap=cmocean.cm.tempo) #cmap='viridis')
+    #im = ax1.pcolor(X[SNRidx::,:], Y[SNRidx::,:], INV.T[SNRidx::,:], cmap=cmocean.cm.tempo, alpha=.5) #cmap='viridis')
+    #im = ax1.pcolormesh(X, Y, INV.T, alpha=alphas) #, cmap=cmocean.cm.tempo) #cmap='viridis')
+    #im = ax1.pcolormesh(X, Y, INV.T, alpha=alphas) #, cmap=cmocean.cm.tempo) #cmap='viridis')
+    #ax1.axhline( y=ifaces[SNRidx], xmin=T2Bins[0], xmax=T2Bins[-1], color='black'  )
     im.set_edgecolor('face')
     ax1.set_xlim( T2Bins[0], T2Bins[-1] )
     ax1.set_ylim( ifaces[-1], ifaces[0] )
@@ -192,10 +223,52 @@ def main():
     ax2.set_ylim( ifaces[-1], ifaces[0] )
     ax2.xaxis.set_major_locator( MaxNLocator(nbins = 3) )   
     ax2.get_xaxis().set_major_formatter(FormatStrFormatter('%0.2f'))
+    ax2.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
     #ax2.xaxis.set_label_position('bottom') 
 
     plt.savefig("akvoInversion.pdf")
+
+    #############
+    # water plot#
+
+    fig2 = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
+    ax = fig2.add_axes( [.2,.15,.6,.7] )
     
+    # Bound water cutoff 
+    Bidx = T2Bins[0:-1]<33.0
+    twater = np.sum(INV, axis=1)
+    bwater = np.sum(INV[:,Bidx], axis=1)
+    
+    ax.plot( twater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR total water", color='blue' )
+    ax.plot( bwater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR bound water", color='green' )
+    
+    ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , twater, bwater, where=twater >= bwater, facecolor='blue', alpha=.5)
+    ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , bwater, 0, where=bwater >= 0, facecolor='green', alpha=.5)
+    
+    ax.set_xlabel(r"$\theta_N$ (m$^3$/m$^3$)")
+    ax.set_ylabel(r"depth (m)")
+    
+    ax.set_ylim( ifaces[-1], ifaces[0] )
+    ax.set_xlim( 0, ax.get_xlim()[1] )
+    
+    ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
+    
+    plt.savefig("akvoInversionWC.pdf")
+    plt.legend()  
+ 
+
+    # Report results into a text file 
+    fr = pd.DataFrame( INV, columns=T2Bins[0:-1] )
+    fr.insert(0, "layer top", ifaces[0:-1] )
+    fr.insert(1, "layer bottom", ifaces[1::] )
+    fr.insert(2, "NMR total water", np.sum(INV, axis=1) )
+    fr.insert(3, "NMR bound water", bwater )
+    fr.insert(4, "Layer SNR", SNR )
+
+    fr.to_csv("akvoInversion.csv")    
+    #fr.to_excel("akvoInversion.xlsx")    
+
+ 
     plt.show()
 
 if __name__ == "__main__":
