@@ -137,11 +137,11 @@ def main():
     # VERY Simple DOI #
     maxq = np.argmax(K0, axis=1)
     maxK = .1 *  K0[ np.arange(0,len(ifaces)-1), maxq ] # 10% water is arbitrary  
-    
     SNR = maxK / (VS[0][0])
+
     #SNR[SNR>1] = 1
-    SNRidx = len(ifaces)-2 
-    while SNR[SNRidx] < 1:
+    SNRidx = len(ifaces)-3 
+    while SNR[SNRidx] > SNR[SNRidx+1] and SNRidx > 2:
         SNRidx -= 1
 
     #print("IDX", SNRidx)
