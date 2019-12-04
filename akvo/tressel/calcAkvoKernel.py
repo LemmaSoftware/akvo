@@ -62,7 +62,7 @@ def loadAkvoData(fnamein):
 
 def main():
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml kparams.yaml  SaveString.yaml " )
         exit()
 
@@ -75,14 +75,34 @@ def main():
     fT = AKVO.transFreq
     #gamma = 2.67518e8
     #B0 = (fL*2.*np.pi) /gamma * 1e9
- 
-    Coil1 = em1d.PolygonalWireAntenna.DeSerialize( sys.argv[2] )
-    Coil1.SetNumberOfFrequencies(1)
-    Coil1.SetFrequency(0, fT) 
-    Coil1.SetCurrent(1.)
-
+    
     # read in kernel params
-    kparams = loadAkvoData( sys.argv[3] )
+    kparams = loadAkvoData( sys.argv[2] )
+ 
+    Kern = mrln.KernelV0()
+
+    TX = []
+    for tx in kparams['txCoils']:
+        Coil1 = em1d.PolygonalWireAntenna.DeSerialize( tx )
+        Coil1.SetNumberOfFrequencies(1)
+        Coil1.SetFrequency(0, fT) 
+        Coil1.SetCurrent(1.)
+        Kern.PushCoil( tx.split('.yml')[0], Coil1 )
+        TX.append( tx.split('.yml')[0] )
+    
+    RX = []
+    for rx in kparams['rxCoils']:
+        if rx not in kparams['txCoils']:
+            print("new recv")
+            Coil1 = em1d.PolygonalWireAntenna.DeSerialize( rx )
+            Coil1.SetNumberOfFrequencies(1)
+            Coil1.SetFrequency(0, fT) 
+            Coil1.SetCurrent(1.)
+            Kern.PushCoil( rx.split('.yml')[0], Coil1 )
+        else:
+            print("reuse")
+        RX.append( rx.split('.yml')[0] )
+    
 
     ## TODO 
     # pass this in...
@@ -110,8 +130,7 @@ def main():
 
     lmod.SetMagneticFieldIncDecMag( B_inc, B_dec, B0, lc.NANOTESLA )
 
-    Kern = mrln.KernelV0()
-    Kern.PushCoil( "Coil 1", Coil1 )
+
     Kern.SetLayeredEarthEM( lmod );
     Kern.SetIntegrationSize( (kparams["size_n"], kparams["size_e"], kparams["size_d"]) )
     Kern.SetIntegrationOrigin( (kparams["origin_n"], kparams["origin_e"], kparams["origin_d"]) )
@@ -141,10 +160,11 @@ def main():
     # autAkvoDataNode = YAML::LoadFile(argv[4]);
     # Kern->AlignWithAkvoDataset( AkvoDataNode );
 
-    Kern.CalculateK0( ["Coil 1"], ["Coil 1"], False )
+    #Kern.CalculateK0( ["Coil 1"], ["Coil 1"], False )
+    Kern.CalculateK0( TX, RX, False )
 
     #yml = open( 'test' + str(Kern.GetTolerance()) + '.yaml', 'w')
-    yml = open( sys.argv[4], 'w' )
+    yml = open( sys.argv[3], 'w' )
     print(Kern, file=yml)
 
     # 

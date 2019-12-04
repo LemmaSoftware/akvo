@@ -441,7 +441,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         #self.K0akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
         #akvoData = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
-        txCoil = self.ui.txListWidget.currentItem().text() 
+
+        txCoilList = self.ui.txListWidget.selectedItems() #currentItem().text() 
+        txCoils = []
+        for txCoil in txCoilList:
+            print("txCoil", txCoil.text())
+            txCoils.append(txCoil.text())
+        
+        rxCoilList = self.ui.txListWidget.selectedItems() #currentItem().text() 
+        rxCoils = []
+        for rxCoil in rxCoilList:
+            print("rxCoil", rxCoil.text())
+            rxCoils.append(rxCoil.text())
+
+
         saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.yml)")[0] 
 
         intDict = dict()
@@ -458,6 +471,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         intDict["minLevel"] = self.ui.minLevel.value()
         intDict["maxLevel"] = self.ui.maxLevel.value()
         intDict["branchTol"] = self.ui.branchTol.value()
+
+        intDict["txCoils"] = txCoils
+        intDict["rxCoils"] = rxCoils
 
         # conductivity model... 
         #tops = self.ui.layerTableWidget.col(0)
@@ -488,12 +504,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         kpo = open( "kparams.yml", 'w' )
         node.dump(intDict, kpo)
 
-
         callBox = callScript(  ) #QtWidgets.QDialog() 
         
         callBox.ui = Ui_callScript()
         callBox.ui.setupUi( callBox )
-        callBox.setupCB( self.K0akvoDataFile, txCoil, "kparams.yml", saveStr  )
+        callBox.setupCB( self.K0akvoDataFile, "kparams.yml", saveStr  )
         
         callBox.exec_()
         callBox.show()
