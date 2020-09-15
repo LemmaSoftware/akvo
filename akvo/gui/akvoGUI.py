@@ -626,25 +626,44 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                                 iclosest = iseg
 
                     points = np.concatenate([points[iclosest::],points[0:iclosest]])
+
+                    # Fill first loop
                     point1 = False
                     for iseg, ipt in enumerate(points):
                         if cwise == 0:
                             self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn1+rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) )
+                            pointlast = ( cn1+rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) 
                             if not point1:
                                 point1 = ( cn1+rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) 
                         else:
                             self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn1-rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) )
                             if not point1:
                                 point1 = ( cn1-rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) 
+                            pointlast = ( cn1-rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) 
 
                     lenP = len(points)
 
-                    # fill 
+                    # reorder points again to find nearest point in second loop
+                    closest = 99999
+                    iclosest = -1 
                     for iseg, ipt in enumerate(points):
                         if cwise == 0:
-                            self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg, ( cn2-rad*np.cos(ipt), ce2-rad*np.sin(ipt), ht) )
+                            p2 = np.array([cn2-rad*np.sin(ipt), ce2+rad*np.cos(ipt)])
                         else:
-                            self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg, ( cn2+rad*np.cos(ipt), ce2+rad*np.sin(ipt), ht) )
+                            p2 = np.array([cn2+rad*np.sin(ipt), ce2+rad*np.cos(ipt)])
+                        for p1 in ptsL:
+                            dist = np.linalg.norm(np.array(pointlast[0:2])-p2)
+                            if dist < closest:
+                                closest = dist
+                                iclosest = iseg
+                    points = np.concatenate([points[iclosest::],points[0:iclosest]])
+
+                    # fill second loop
+                    for iseg, ipt in enumerate(points):
+                        if cwise == 0:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg, ( cn2-rad*np.sin(ipt), ce2+rad*np.cos(ipt), ht) )
+                        else:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg, ( cn2+rad*np.sin(ipt), ce2+rad*np.cos(ipt), ht) )
 
                     # close loop        
                     self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg+1, point1) 
