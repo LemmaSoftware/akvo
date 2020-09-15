@@ -8,7 +8,7 @@ import numpy as np
 import time
 import os
 from copy import deepcopy
-from matplotlib.backends.backend_qt4 import NavigationToolbar2QT #as NavigationToolbar
+from matplotlib.backends.backend_qt5 import NavigationToolbar2QT #as NavigationToolbar
 import datetime, time
 import pkg_resources  # part of setuptools
 from collections import OrderedDict
@@ -28,6 +28,7 @@ from pyLemma import FDEM1D
 from pyLemma import Merlin
 
 VERSION = pkg_resources.require("Akvo")[0].version
+GAMMAH = 42.577478518 * 1e-3  # Hz nT
 
 # Writes out numpy arrays into Eigen vectors as serialized by Lemma
 class MatrixXr(yaml.YAMLObject):
@@ -166,6 +167,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.plotGI.setEnabled(False) 
         self.ui.plotGI.pressed.connect( self.plotGI )
 
+        # balance the Larmor frequency info and Tx off resonance info
+        self.ui.intensitySpinBox.valueChanged.connect( self.adjustLarmor )
+        self.ui.txv.valueChanged.connect( self.adjustB0 )
+        self.ui.larmorv.valueChanged.connect( self.adjustB02 )
+
         # Kernel         
         self.ui.calcK0.pressed.connect( self.calcK0 )       
 
@@ -286,6 +292,22 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.ui.lcdHNF2.setEnabled(False)
             self.ui.lcdf0NK2.setEnabled(False)
 
+    def adjustLarmor(self):
+        """ Triggers when the B0 intensity spin box is cycled
+        """
+        self.ui.larmorv.setValue( self.ui.intensitySpinBox.value() * GAMMAH )
+        self.ui.txv.setValue( self.RAWDataProc.transFreq - self.ui.larmorv.value() )
+
+    def adjustB0(self):
+        """ Triggers when tx frequency offset is cycled
+        """
+        self.ui.intensitySpinBox.setValue( (self.RAWDataProc.transFreq - self.ui.txv.value()) / GAMMAH )
+    
+    def adjustB02(self):
+        """ Triggers when Larmor frequency spin box is cycled o
+        """
+        self.ui.intensitySpinBox.setValue( (self.ui.larmorv.value()) / GAMMAH )
+
     def closeTabs(self):
         #self.ui.ProcTabs.removeTab(idx)    
         self.ui.ProcTabs.clear( )    
@@ -338,7 +360,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except IOError as e:
             fpath = '.'
         
-        self.akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
+        self.akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.akvoProcData *.yaml)")[0]
         self.ui.dataText.clear()   
         self.ui.dataText.append( self.akvoDataFile )   
     
@@ -350,26 +372,29 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except IOError as e:
             fpath = '.'
         
-        self.K0akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.yaml)")[0]
-        self.ui.K0DataText.clear()   
-        self.ui.K0DataText.append( self.K0akvoDataFile )  
+        self.K0akvoDataFile = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Datafile File', fpath, r"Akvo datafiles (*.akvoProcData *.yaml)")[0]
 
         # populate combo box with loops 
-
-        with open(self.K0akvoDataFile) as f:
-            parse = yaml.load( f, Loader=yaml.Loader )
+        if os.path.isfile( self.K0akvoDataFile ): 
         
-        self.ui.txListWidget.clear()
-        self.ui.rxListWidget.clear()
-        for loop in parse.META["Loops"]:
-            print(loop)
-            self.ui.txListWidget.addItem( parse.META["Loops"][loop] )
-            self.ui.rxListWidget.addItem( parse.META["Loops"][loop] )
-            
-        self.ui.txListWidget.setCurrentRow(0)
-        self.ui.rxListWidget.setCurrentRow(0)
+            self.ui.K0DataText.clear()   
+            self.ui.K0DataText.append( self.K0akvoDataFile )  
+
+            with open(self.K0akvoDataFile) as f:
+                parse = yaml.load( f, Loader=yaml.Loader )
+        
+            self.ui.txListWidget.clear()
+            self.ui.rxListWidget.clear()
+            for loop in parse.META["Loops"]:
+                print(loop)
+                self.ui.txListWidget.addItem( parse.META["Loops"][loop] )
+                self.ui.rxListWidget.addItem( parse.META["Loops"][loop] )
+           
+            # TODO, why are these necessary 
+            self.ui.txListWidget.setCurrentRow(0)
+            self.ui.rxListWidget.setCurrentRow(0)
+        # else do nothing
          
- 
     def invKernelSelect(self):
         try:
             with open('.akvo.last.path') as f: 
@@ -378,7 +403,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         except IOError as e:
             fpath = '.'
         
-        self.K0file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Kernel File', fpath, r"Akvo kernels (*.yml)")[0]
+        self.K0file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Kernel File', fpath, r"Akvo kernels (*.akvoK0)")[0]
         self.ui.kernelText.clear()   
         self.ui.kernelText.append(self.K0file)   
     
@@ -455,7 +480,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             rxCoils.append(rxCoil.text())
 
 
-        saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.yml)")[0] 
+        saveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save kernel as", fpath, r"Merlin KernelV0 (*.akvoK0)")[0] 
 
         intDict = dict()
         intDict["origin_n"] = self.ui.originN.value()
@@ -554,9 +579,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     points = np.linspace(0, 2*np.pi, dialog.ui.segments.value()+1)
                     for iseg, ipt in enumerate(points):
                         if cwise == 0:
-                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, (  cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht) )
+                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht) )
                         else:
-                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( -cn+rad*np.sin(ipt), ce+rad*np.cos(ipt), ht) )
+                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn-rad*np.sin(ipt), ce+rad*np.cos(ipt), ht) )
                     self.loops[self.ui.loopLabel.text()].SetNumberOfFrequencies(1)
                     self.loops[self.ui.loopLabel.text()].SetCurrent(1.)
             
@@ -576,8 +601,58 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     rad = dialog.ui.loopRadius.value()
                     turns = dialog.ui.loopTurns.value()
                     ns = dialog.ui.segments.value()
-                    #cwise = dialog.ui.cwiseBox.currentIndex()
-                    print(cn1, ce1, cn2, ce2, ht, rad, turns, ns)   
+                    cwise = dialog.ui.cwiseBox.currentIndex()
+
+                    self.loops[self.ui.loopLabel.text()] = FDEM1D.PolygonalWireAntenna()
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfPoints( 2*dialog.ui.segments.value() + 1 )
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfTurns( dialog.ui.loopTurns.value() )
+
+                    # first loop
+                    points = np.linspace(0, 2*np.pi, dialog.ui.segments.value())
+                    ptsL = []
+                    for iseg, ipt in enumerate(points):
+                        ptsL.append( np.array( [cn1+rad*np.sin(ipt), ce1+rad*np.cos(ipt)]  ))
+                    lenP = len(points)
+                    
+                    # search for closest point, ugly and not efficient, but it's not critical here 
+                    closest = 1e8
+                    iclosest = -1
+                    for iseg, ipt in enumerate(points):
+                        p2 = np.array([cn2-rad*np.sin(ipt), ce2-rad*np.cos(ipt)])
+                        for p1 in ptsL:
+                            dist = np.linalg.norm(p1-p2)
+                            if dist < closest:
+                                closest = dist
+                                iclosest = iseg
+
+                    points = np.concatenate([points[iclosest::],points[0:iclosest]])
+                    point1 = False
+                    for iseg, ipt in enumerate(points):
+                        if cwise == 0:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn1+rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) )
+                            if not point1:
+                                point1 = ( cn1+rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) 
+                        else:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(iseg, ( cn1-rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) )
+                            if not point1:
+                                point1 = ( cn1-rad*np.sin(ipt), ce1+rad*np.cos(ipt), ht) 
+
+                    lenP = len(points)
+
+                    # fill 
+                    for iseg, ipt in enumerate(points):
+                        if cwise == 0:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg, ( cn2-rad*np.cos(ipt), ce2-rad*np.sin(ipt), ht) )
+                        else:
+                            self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg, ( cn2+rad*np.cos(ipt), ce2+rad*np.sin(ipt), ht) )
+
+                    # close loop        
+                    self.loops[self.ui.loopLabel.text()].SetPoint(lenP+iseg+1, point1) 
+
+
+                    self.loops[self.ui.loopLabel.text()].SetNumberOfFrequencies(1)
+                    self.loops[self.ui.loopLabel.text()].SetCurrent(1.)
+ 
             
             if self.ui.loopGeom.currentText() == "polygon":
                 
@@ -638,7 +713,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             # general across all types   
             if dialog.result():
 
-                yml = open( self.ui.loopLabel.text() + ".yml", 'w' )
+                yml = open( self.ui.loopLabel.text() + ".pwa", 'w' )
                 print( self.loops[self.ui.loopLabel.text()], file=yml)
 
                 # update the table 
@@ -845,7 +920,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.lcdNumberNQ.display(self.RAWDataProc.nPulseMoments)
         self.ui.DeadTimeSpinBox.setValue(1e3*self.RAWDataProc.deadTime)
         self.ui.CentralVSpinBox.setValue( self.RAWDataProc.transFreq )
-            
+
+        # set the B0 field according to Tx as an initial guess
+        self.ui.intensitySpinBox.setValue( self.RAWDataProc.transFreq/GAMMAH )           
+ 
         if self.RAWDataProc.pulseType != "FID":
             self.ui.lcdNumberTauPulse2.setEnabled(1)
             self.ui.lcdNumberTauPulse2.display(1e3*self.RAWDataProc.pulseLength[1])
@@ -874,7 +952,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         fdir = os.path.dirname(fpath)
         # Pickle the preprocessed data dictionary 
-        SaveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save as", fdir, r"Processed data (*.yaml)")[0]
+        SaveStr = QtWidgets.QFileDialog.getSaveFileName(self, "Save as", fdir, r"Processed data (*.akvoProcData)")[0]
         
         spath,filen=os.path.split(str(SaveStr))
         f = open('.akvo.last.yaml.path', 'w')
@@ -991,7 +1069,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             TXRX.append(txrx)
         INFO["TXRX"] = TXRX       
 
-        # 
+        if "Stacking" in self.YamlNode.Stacking.keys():
+            INFO["sigma"] = self.RawDataProc.sigma
+
+        if "Gate integrate" in self.YamlNode.Stacking.keys():
+            INFO["GATED"] = self.RAWDataProc.GATED
+
         print("META SAVE")
         print("INFO log", INFO["log"])
 
@@ -1099,6 +1182,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #    self.YamlNode.Processing["Loaded"] = []
         #self.YamlNode.Processing["Loaded"].append(datetime.datetime.now().isoformat()) 
         #self.Log()
+
+        if "Stacking" in self.YamlNode.Stacking.keys():
+            self.RAWDataProc.sigma = self.RAWDataProc.DATADICT["sigma"]
+
+        # check to see if gate integration has been done, and it's ready to send to Merlin
+        if "Gate integrate" in self.YamlNode.Stacking.keys():
+            self.RAWDataProc.GATED = self.RAWDataProc.DATADICT["GATED"]
+            self.ui.actionExport_Preprocessed_Dataset.setEnabled(True)
+            #self.ui.plotGI.setEnabled(True)
  
         # If we got this far, enable all the widgets
         self.ui.lcdNumberTauPulse1.setEnabled(True)
@@ -1136,7 +1228,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if u"Pulse 1" in self.RAWDataProc.DATADICT.keys():
             self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0])
             self.ui.lcdTotalDeadTime.display( round(1e3*(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1]), 3) )
-            print("CALC DEAD",    (1e3*(self.RAWDataProc.prePulseDelay))) # -  (self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1])), 3) )
+            #print("CALC DEAD",    (1e3*(self.RAWDataProc.prePulseDelay))) # -  (self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1])), 3) )
         if u"Pulse 2" in self.RAWDataProc.DATADICT.keys():
             self.ui.lcdNumberFID1Length.display(self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][-1]- self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][0])
             self.ui.lcdTotalDeadTime.display( 1e3 * (self.RAWDataProc.DATADICT["Pulse 2"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 2"]["PULSE_TIMES"][-1]) )
@@ -1612,7 +1704,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.YamlNode.META["Loops"] = OrderedDict()
         for loop in self.loops:
             print(self.loops[loop])
-            self.YamlNode.META["Loops"][loop] = loop + ".yml" 
+            self.YamlNode.META["Loops"][loop] = loop + ".pwa" 
 
         self.Log()
 

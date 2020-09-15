@@ -36,11 +36,11 @@ if __name__ == "__main__":
     q = np.array(K0.PulseI.data)* (float)(K0.Taup)
 
     #plt.pcolor(K0.Interfaces.data, K0.PulseI.data, np.abs(K))
-    plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.gray_r)
+    #plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.gray_r)
     #plt.contourf(q, K0.Interfaces.data[0:-1], np.abs(K), cmap=cmocean.cm.tempo)
     #plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.tempo)
     
-    plt.pcolor(q, K0.Interfaces.data, np.abs(K - K2), cmap=cmocean.cm.gray_r)
+    plt.pcolor(q, K0.Interfaces.data, (np.abs(K) - np.abs(K2)), cmap=cmocean.cm.gray_r)
     plt.colorbar()
 
     ax1 = plt.gca()

@@ -495,7 +495,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                 # convert to dB and add colorbars
                 #db = 20.*np.log10(np.abs(SFFT[:,istart:iend]))
                 db = (np.abs(SFFT[:,istart:iend]))
+                
                 #db = (np.real(SFFT[:,istart:iend]))
+                #db = (np.imag(SFFT[:,istart:iend]))
                 #dbr = (np.real(SFFT[:,istart:iend]))
                 #db = (np.imag(SFFT[:,istart:iend]))
                 
@@ -1269,13 +1271,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                 
                     # Bootstrap noise 
                     #self.GATED[chan]["isum"]
-                    print("bootstrappin") 
                     Means = rotate.bootstrapWindows( self.DATADICT["NR"][pulse][chan][ipm], 20000, isum[isum!=1], adapt=True)
                     # MAD, only for windows > 1 
                     c = stats.norm.ppf(3./4.)
                     sig_stack[isum!=1] = np.ma.median(np.ma.abs(Means), axis=1) / c 
                     self.GATED[chan]["BN"][ipm] = sig_stack[clip:] 
-                    print("end bootstrappin")
 
                     #self.GATED[chan]["DATA"][ipm] = GD.real
                     self.GATEDABSCISSA = GT[clip:]
@@ -1650,7 +1650,7 @@ class GMRDataProcessor(SNMRDataProcessor):
 
                 #scolours = plt.cm.Spectral(np.linspace(0,1,len(self.DATADICT["stacks"])))
                 #scolours = plt.cm.Blues(np.linspace(0,1,1.5*len(self.DATADICT["stacks"])))
-                scolours = cmocean.cm.ice(np.linspace(0,1,1.5*len(self.DATADICT["stacks"])))
+                scolours = cmocean.cm.ice(np.linspace(0,1,int(1.5*len(self.DATADICT["stacks"]))))
                 iistack = 0
                 for istack in self.DATADICT["stacks"]:
                     #self.DATADICT[pulse]["PULSE_TIMES"]
@@ -1706,7 +1706,7 @@ class GMRDataProcessor(SNMRDataProcessor):
             ilabel = True
             for ipm in range(self.DATADICT["nPulseMoments"]):
                 #scolours = np.array([0.,0.,1.])
-                scolours = cmocean.cm.ice(np.linspace(0,1,1.5*len(self.DATADICT["stacks"])))
+                scolours = cmocean.cm.ice(np.linspace(0,1,int(1.5*len(self.DATADICT["stacks"]))))
                 #scolours = plt.cm.Spectral(np.linspace(0,1,len(self.DATADICT["stacks"])))
                 #scolours = plt.cm.Spectral(np.linspace(0,1,len(self.DATADICT["stacks"])))
                 istack = 0
