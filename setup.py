@@ -17,7 +17,7 @@ class custom_build_py(build_py):
         build_py.run(self)
 
 
-with open("README.md", "r") as fh:
+with open("../README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
@@ -53,7 +53,7 @@ setup(name='Akvo',
           'pandas',
           'pyqt-distutils',
           'cmocean',
-          'pyLemma >= 0.1.0'
+          'pyLemma >= 0.4.0'
       ],
       packages=['akvo', 'akvo.tressel', 'akvo.gui'],
       license=['GPL 4.0'],
