@@ -193,7 +193,7 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
             #mu2 = SIGMA/N * np.abs(np.dot(s2, x))
             
             b_pre = np.dot(A, x)
-            phid = np.linalg.norm( np.dot(Wd, (b-b_pre)))**2
+            phid = np.linalg.norm(np.dot(Wd, (b-b_pre)))**2
             phim = np.linalg.norm( np.dot(Phim_base, (x-xr)) )**2
             phib = PhiB(mu1, minVal, x)
             inner += 1

@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='Akvo',
-      version='1.5.1',
+      version='1.5.2',
       python_requires='>3.7.0', # due to pyLemma
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
@@ -71,10 +71,12 @@ setup(name='Akvo',
           'build_py': custom_build_py,
       },
       # Mechanism to include auxiliary files
-      include_package_data=True,
+      # commenting out may be necessary? 
+      #include_package_data=True,
       package_data={
         'akvo.gui': ['*.png'], 
-        'akvo.gui': ['*.ui']
+        'akvo.gui': ['*.ui'],
+        '': ['*.png'], 
       },
       classifiers=[
         "Programming Language :: Python :: 3",
