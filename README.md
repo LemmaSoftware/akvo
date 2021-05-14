@@ -14,7 +14,7 @@ git clone https://github.com/LemmaSoftware/akvo.git
 Installation 
 ============
 
-Installation is straightforward. The only prerequisite that is sometimes not properly handled is PyQt5 which sometimes needs to be manually installed. 
+Installation is straightforward. The only prerequisite that is sometimes not properly handled is PyQt5 which sometimes needs to be manually installed, i.e. `pip install pyqt5` 
 ```
 python3 setup.py build 
 python3 setup.py install
