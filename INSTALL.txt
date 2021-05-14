@@ -4,7 +4,7 @@ Akvo is a surface NMR (sNMR) processing utility. Currently preprocessing is supp
 
 ##Configuration
 pip install PyQt5 
-## Or 
+## Or, if you have Python 2 as your default still (shame) 
 pip3 install PyQt5 
 
 ## Installation is done in the typical python fashion
