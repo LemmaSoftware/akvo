@@ -4,7 +4,7 @@ Akvo provides processing of surface NMR data. It aims to be simple to use yet fl
 
 The bleeding-edge code may be accessed using the git client 
 ```
-git clone https://git.lemmasoftware.org/akvo.git  
+git clone http://lemma.codes/LemmaSoftware/Akvo.git 
 ```
 or, using our GitHub mirror 
 ```
