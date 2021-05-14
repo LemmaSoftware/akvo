@@ -1,6 +1,6 @@
 Akvo 
 ====
-Akvo provides processing of surface NMR data. It aims to be simple to use yet flexible for accommodating changes to processing flow. Akvo is written primarily in Python 3 with a small amount of R as well. The application is written around a Qt GUI with plotting provided by Matplotlib. NMR modelling and EM functionality is provided by Lemma/pyLemma. 
+ Akvo provides processing of surface NMR data. It aims to be simple to use yet flexible for accommodating changes to processing flow. Akvo is written primarily in Python 3 with a small amount of R as well. The application is written around a Qt GUI with plotting provided by Matplotlib. NMR modelling and EM functionality is provided by Lemma/pyLemma. 
 
 The bleeding-edge code may be accessed using the git client located at  
 ```
