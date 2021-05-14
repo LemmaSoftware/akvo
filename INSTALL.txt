@@ -9,7 +9,7 @@ pip3 install PyQt5
 
 ## Installation is done in the typical python fashion
 python setup.py build 
-python setup.py install    # requires sudo on most installations 
+python setup.py install    # may requires sudo 
 
 # If you are going to be editing the source code, you may prefer to run 
 # the develop option which will not require rerunning the install option 
