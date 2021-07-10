@@ -17,7 +17,8 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib.colors import Normalize
 
 import cmocean
-from akvo.tressel.lemma_yaml import * 
+from akvo.tressel.lemma_yaml import *
+from akvo.tressel import nonlinearinv as nl 
 
 import pandas as pd
 
@@ -28,7 +29,7 @@ def buildKQT(K0,tg,T2Bins):
     nlay, nq = np.shape(K0)
     nt2 = len(T2Bins)
     nt = len(tg)
-    KQT = np.zeros( ( nq*nt,nt2*nlay) )
+    KQT = np.zeros( ( nq*nt,nt2*nlay), dtype=np.complex128 )
     for iq in range(nq):
         for it in range(nt):
             for ilay in range(nlay):
@@ -87,7 +88,8 @@ def loadK0(fname):
         K0 = yaml.load(f, Loader=yaml.Loader)
     K = catLayers(K0.K0)
     ifaces = np.array(K0.Interfaces.data)
-    return ifaces, np.abs(K)
+    return ifaces, K
+    #return ifaces, np.abs(K)
 
 
 
@@ -131,12 +133,15 @@ def main():
     for ik in range(1, len(K0)):
         K0[0] = np.concatenate( (K0[0].T, K0[ik].T) ).T
     K0 = K0[0]
-    #plt.matshow(K0)
+
+    #plt.matshow(np.real(K0))
+    #plt.show()
+    #exit()
 
     ###################    
     # VERY Simple DOI #
-    maxq = np.argmax(K0, axis=1)
-    maxK = .1 *  K0[ np.arange(0,len(ifaces)-1), maxq ] # 10% water is arbitrary  
+    maxq = np.argmax(np.abs(K0), axis=1)
+    maxK = .1 *  np.abs(K0)[ np.arange(0,len(ifaces)-1), maxq ] # 10% water is arbitrary  
     SNR = maxK / (VS[0][0])
 
     #SNR[SNR>1] = 1
@@ -163,18 +168,60 @@ def main():
     # Build full kernel
     ############################################### 
     T2Bins = np.logspace( np.log10(cont["T2Bins"]["low"]), np.log10(cont["T2Bins"]["high"]), cont["T2Bins"]["number"], endpoint=True, base=10)  
-    KQT = buildKQT(K0,tg,T2Bins)
- 
+    KQT = np.real(buildKQT(np.abs(K0),tg,T2Bins))
+
+    # model resolution matrix 
+    np.linalg.svd(KQT)
+
+    exit()
+
     ###############################################
-    # Invert
+    # Linear Inversion 
     ############################################### 
     print("Calling inversion", flush=True)
-    inv, ibreak, errn, phim, phid, mkappa = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e6, smooth="Smallest" ) 
+    inv, ibreak, errn, phim, phid, mkappa, Wd, Wm, alphastar = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e6, smooth="Smallest" ) 
 
+    ###############################################
+    # Non-linear refinement! 
+    ###############################################   
+ 
+    KQTc = buildKQT(K0, tg, T2Bins)
+    prec = np.abs(np.dot(KQTc, inv))
+    phidc = np.linalg.norm(np.dot(Wd,prec-np.ravel(V)))**2
+    #PREc = np.reshape( prec, np.shape(V)  )
+    print("PHID linear=", errn, "PHID complex=", phidc/len(np.ravel(V)))
+    
+    res = nl.nonlinearinversion(inv, Wd, KQTc, np.ravel(V), Wm, alphastar )   
+    if res.success == True:    
+        INVc = np.reshape(res.x, (len(ifaces)-1,cont["T2Bins"]["number"]) )
+        prec = np.abs(np.dot(KQTc, res.x))
+        phidc = np.linalg.norm(np.dot(Wd,prec-np.ravel(V)))**2
+        #PREc = np.reshape( prec, np.shape(V)  )
+        print("PHID linear=", errn, "PHID nonlinear=", phidc/len(np.ravel(V)))
+   
+    # Perform second fit around results of first  
+    res = nl.nonlinearinversion(res.x, Wd, KQTc, np.ravel(V), Wm, alphastar )   
+    if res.success == True:    
+        INVc = np.reshape(res.x, (len(ifaces)-1,cont["T2Bins"]["number"]) )
+        prec = np.abs(np.dot(KQTc, res.x))
+        phidc = np.linalg.norm(np.dot(Wd,prec-np.ravel(V)))**2
+        #PREc = np.reshape( prec, np.shape(V)  )
+        print("PHID linear=", errn, "PHID nonlinear=", phidc/len(np.ravel(V)))
+
+    #plt.matshow(INVc)
+    #KQTc = buildKQT(K0,tg,T2Bins)
+
+    #plt.matshow(PREc, cmap='Blues')
+    #plt.gca().set_title("complex predicted")
+    #plt.colorbar()
 
     ###############################################
     # Appraise
     ###############################################
+
+
+
+
  
     pre = np.dot(KQT,inv) 
     PRE = np.reshape( pre, np.shape(V)  )
@@ -192,8 +239,8 @@ def main():
     plt.gca().set_title("observed")
     plt.colorbar()
 
+
     T2Bins = np.append( T2Bins, T2Bins[-1] + (T2Bins[-1]-T2Bins[-2]) )
-    
     INV = np.reshape(inv, (len(ifaces)-1,cont["T2Bins"]["number"]) )
 
     #alphas = np.tile(SNR, (len(T2Bins)-1,1))
@@ -204,6 +251,8 @@ def main():
     #print(np.shape(INV.T)) 
 
     #greys = np.full((*(INV.T).shape, 3), 70, dtype=np.uint8)
+
+    ##############  LINEAR RESULT   ##########################
 
     Y,X = meshgrid( ifaces, T2Bins )
     fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
@@ -242,6 +291,48 @@ def main():
 
     plt.savefig("akvoInversion.pdf")
 
+
+    ##############  NONLINEAR RESULT   ##########################
+
+    Y,X = meshgrid( ifaces, T2Bins )
+    fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
+    ax1 = fig.add_axes( [.2,.15,.6,.7] )
+    im = ax1.pcolor(X, Y, INVc.T, cmap=cmocean.cm.tempo) #cmap='viridis')
+    #im = ax1.pcolor(X[0:SNRidx,:], Y[0:SNRidx,:], INV.T[0:SNRidx,:], cmap=cmocean.cm.tempo) #cmap='viridis')
+    #im = ax1.pcolor(X[SNRidx::,:], Y[SNRidx::,:], INV.T[SNRidx::,:], cmap=cmocean.cm.tempo, alpha=.5) #cmap='viridis')
+    #im = ax1.pcolormesh(X, Y, INV.T, alpha=alphas) #, cmap=cmocean.cm.tempo) #cmap='viridis')
+    #im = ax1.pcolormesh(X, Y, INV.T, alpha=alphas) #, cmap=cmocean.cm.tempo) #cmap='viridis')
+    #ax1.axhline( y=ifaces[SNRidx], xmin=T2Bins[0], xmax=T2Bins[-1], color='black'  )
+    im.set_edgecolor('face')
+    ax1.set_xlim( T2Bins[0], T2Bins[-1] )
+    ax1.set_ylim( ifaces[-1], ifaces[0] )
+    cb = plt.colorbar(im, label = u"PWC (m$^3$/m$^3$)") #, format='%1.1f')
+    cb.locator = MaxNLocator( nbins = 4)
+    cb.ax.yaxis.set_offset_position('left')                         
+    cb.update_ticks()
+ 
+    ax1.set_xlabel(u"$T_2^*$ (ms)")
+    ax1.set_ylabel(u"depth (m)")
+    
+    ax1.get_xaxis().set_major_formatter(FormatStrFormatter('%1.0f'))
+    ax1.get_yaxis().set_major_formatter(FormatStrFormatter('%1.0f'))
+    ax1.xaxis.set_major_locator( MaxNLocator(nbins = 4) )   
+
+    #ax1.xaxis.set_label_position('top') 
+
+    ax2 = ax1.twiny()
+    ax2.plot( np.sum(INVc, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='red' )
+    ax2.set_xlabel(u"total water (m$^3$/m$^3$)")
+    ax2.set_ylim( ifaces[-1], ifaces[0] )
+    ax2.xaxis.set_major_locator( MaxNLocator(nbins = 3) )   
+    ax2.get_xaxis().set_major_formatter(FormatStrFormatter('%0.2f'))
+    #ax2.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
+    #ax2.xaxis.set_label_position('bottom') 
+    fig.suptitle("Non linear inversion")
+    plt.savefig("akvoInversionNL.pdf")
+
+
+
     #############
     # water plot#
 
@@ -265,7 +356,7 @@ def main():
     ax.set_ylim( ifaces[-1], ifaces[0] )
     ax.set_xlim( 0, ax.get_xlim()[1] )
     
-    ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
+    #ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
     
     plt.savefig("akvoInversionWC.pdf")
     plt.legend()  

@@ -128,6 +128,8 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
     ALPHA = []
     ALPHA.append(alpha)
     #ALPHA = np.linspace( alpha, 1, MAXITER  )
+    print ("{:^10} {:^15} {:^15} {:^15} {:^15} {:^10} {:^10}".format("iteration",  "lambda", "phi_d", "phi_m","phi","kappa","kappa dist."), flush=True) 
+    print ("{:^10} {:>15} {:<15} {:<15} {:<15} {:<10} {:<10}".format("----------", "---------------", "---------------","---------------","---------------","----------","----------"), flush=True) 
     for i in range(MAXITER):
         #alpha = ALPHA[i]
 
@@ -202,6 +204,8 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
         PHID.append(phid)      
         MOD.append(np.copy(x))  
 
+        tphi = phid + alpha*phim
+
         # determine alpha
         scale = 1.5*(len(b)/phid)
         #alpha *= np.sqrt(scale)
@@ -211,8 +215,11 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
         ALPHA.append(alpha)
         #alpha = ALPHA[i+1]
             
-        print("inversion progress", i, alpha, np.sqrt(phid/len(b)), phim, flush=True)       
+        #print("inversion progress", i, alpha, np.sqrt(phid/len(b)), phim, flush=True)      
+        #print ("{:<8} {:<15} {:<10} {:<10}".format(i, alpha, np.sqrt(phid/len(b)), phim), flush=True) 
         
+        if i < 4:        
+            print ("{:^10} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi ), flush=True) 
 
 #         if np.sqrt(phid/len(b)) < 0.97: 
 #             ibreak = -1
@@ -234,23 +241,25 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
             if i > 4: 
                 kappa = curvaturefd(np.log(np.array(PHIM)), np.log(np.array(PHID)), ALPHA[0:i+1])#ALPHA[0:-1])
                 #kappa = curvatureg(np.log(np.array(PHIM)), np.log(np.array(PHID)))
-                print("max kappa", np.argmax(kappa), "distance from", i-np.argmax(kappa)) 
+                #print("max kappa", np.argmax(kappa), "distance from", i-np.argmax(kappa)) 
+                print ("{:^10} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f} {:^10} {:^10}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi, np.argmax(kappa), i-np.argmax(kappa)), flush=True) 
             if i > 4 and (i-np.argmax(kappa)) > 4: # ((np.sqrt(phid_old/len(b))-np.sqrt(phid/len(b))) < 1e-4) : 
             #if np.sqrt(phid/len(b)) < 3.0 and ((np.sqrt(phid_old/len(b))-np.sqrt(phid/len(b))) < 1e-3): 
                 ibreak = 1
                 MOD = np.array(MOD)
-                print ("###########################") #slow convergence", alpha, "phid_old", np.sqrt(phid_old/len(b)), "phid", np.sqrt(phid/len(b)), ibreak)
+                print ("################################") #slow convergence", alpha, "phid_old", np.sqrt(phid_old/len(b)), "phid", np.sqrt(phid/len(b)), ibreak)
                 print ("Using L-curve criteria") 
                 #kappa = curvaturefd(np.log(np.array(PHIM)), np.log(np.array(PHID)), ALPHA[0:-1])
                 #kappa2 = curvatureg(np.log(np.array(PHIM)), np.log(np.array(PHID)))
                 #kappa = curvature( np.array(PHIM), np.array(PHID))
                 x = MOD[ np.argmax(kappa) ]
+                alphastar = ALPHA[ np.argmax(kappa) ]
                 b_pre = np.dot(A, x)
                 phid = np.linalg.norm( np.dot(Wd, (b-b_pre)))**2
                 phim = np.linalg.norm( np.dot(Phim_base, (x-xr)) )**2
                 mu1 = ((phid + alpha*phim) / phib) 
-                print ("L-curve selected", alpha, "phid_old", np.sqrt(phid_old/len(b)), "phid", np.sqrt(phid/len(b)), ibreak)
-                print ("###########################")
+                print ("L-curve selected: iteration=", np.argmax(kappa)) #, " lambda*=", alpha, "phid_old=", np.sqrt(phid_old/len(b)), "phid=", np.sqrt(phid/len(b)), ibreak)
+                print ("################################")
                 if np.sqrt(phid/len(b)) <= 1:
                     ibreak=0
 
@@ -291,8 +300,10 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
         mu1 = ((phid + alpha*phim) / phib) 
 
     if lambdastar == "lcurve":
-        return x, ibreak, np.sqrt(phid/len(b)), PHIM, PHID/len(b), np.argmax(kappa)
+        #print("Returning L curve result")
+        return x, ibreak, np.sqrt(phid/len(b)), PHIM, PHID/len(b), np.argmax(kappa), Wd, Phim_base, alphastar
     else:
+        print("")
         return x, ibreak, np.sqrt(phid/len(b))
 
 

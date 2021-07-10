@@ -64,6 +64,7 @@ def main():
 
     if len(sys.argv) < 2:
         print ("usage  python calcAkvoKernel.py   AkvoDataset.yaml  Coil1.yaml kparams.yaml  SaveString.yaml " )
+        print ("usage  akvoKO   AkvoDataset.yaml   kparams.yaml  SaveString.yaml " )
         exit()
 
     AKVO = loadAkvoData(sys.argv[1])
@@ -100,7 +101,7 @@ def main():
             Coil1.SetCurrent(1.)
             Kern.PushCoil( rx.split('.yml')[0], Coil1 )
         else:
-            print("reuse")
+            print("reuse tx coil")
         RX.append( rx.split('.yml')[0] )
     
 

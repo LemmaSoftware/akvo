@@ -20,9 +20,9 @@ class custom_build_py(build_py):
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setup(name='Akvo',
-      version='1.5.2',
-      python_requires='>3.7.0', # due to pyLemma
+setup(name='Akvo',     
+      version='1.5.2', 
+      python_requires='>3.7.0', # due to pyLemma 
       description='Surface nuclear magnetic resonance workbench',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -56,7 +56,7 @@ setup(name='Akvo',
           'pyLemma >= 0.4.0'
       ],
       packages=['akvo', 'akvo.tressel', 'akvo.gui'],
-      license=['GPL 4.0'],
+      license='GPL 4.0',
       entry_points = {
               'console_scripts': [
                   'akvo = akvo.gui.akvoGUI:main',                  
