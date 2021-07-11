@@ -4143,8 +4143,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4156,8 +4156,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>411</width>
+               <height>67</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4255,28 +4255,11 @@ background: dark grey;
                <string>QT Inversion</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_19">
-               <item row="2" column="1">
-                <widget class="QComboBox" name="invChan">
-                 <item>
-                  <property name="text">
-                   <string>Chan. 1</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Chan. 2</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Chan. 3</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Chan. 4</string>
-                  </property>
-                 </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_81">
+                 <property name="text">
+                  <string>initial alpha </string>
+                 </property>
                 </widget>
                </item>
                <item row="4" column="1">
@@ -4307,20 +4290,6 @@ background: dark grey;
                  </item>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_80">
-                 <property name="text">
-                  <string>T2* model objective</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_82">
-                 <property name="text">
-                  <string>Depth model objective</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="1">
                 <widget class="QTextBrowser" name="dataText">
                  <property name="maximumSize">
@@ -4337,7 +4306,28 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0" colspan="2">
+               <item row="1" column="0">
+                <widget class="QPushButton" name="invKernelButton">
+                 <property name="text">
+                  <string>Select Kernel</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_80">
+                 <property name="text">
+                  <string>T2* model objective</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_82">
+                 <property name="text">
+                  <string>Depth model objective</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0" colspan="2">
                 <widget class="QPushButton" name="invertButton">
                  <property name="styleSheet">
                   <string notr="true">#invertButton {
@@ -4352,24 +4342,50 @@ background: red;
                  </property>
                 </widget>
                </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="invChan">
+                 <item>
+                  <property name="text">
+                   <string>Chan. 1</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chan. 2</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chan. 3</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chan. 4</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QRadioButton" name="NLButton">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The dephased (aka quadrature detected, aka corrected amplitude) inversion introduces non-linearity to the otherwise linear forward operator in that out of phase signals cannot destructively interefere with a real forward operator. Normally this impact is pretty minimal and can be ignored. However, in conductive media this is not always the case. Akvo can perform a non-linear inversion after the linear one to correct for this. The result of the linear inversion is used as an initial model in the non-linear inversion and the same level of regularisation is used. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Non Linear refinement</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                 <property name="autoExclusive">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_79">
                  <property name="text">
                   <string>Data channel</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QPushButton" name="invDataButton">
-                 <property name="text">
-                  <string>Select Data</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_81">
-                 <property name="text">
-                  <string>initial alpha </string>
                  </property>
                 </widget>
                </item>
@@ -4380,13 +4396,6 @@ background: red;
                  </property>
                  <property name="value">
                   <number>1000000</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QPushButton" name="invKernelButton">
-                 <property name="text">
-                  <string>Select Kernel</string>
                  </property>
                 </widget>
                </item>
@@ -4403,6 +4412,29 @@ background: red;
                    <pointsize>8</pointsize>
                    <italic>true</italic>
                   </font>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QPushButton" name="invDataButton">
+                 <property name="text">
+                  <string>Select Data</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QRadioButton" name="DOIButton">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Geophysical inverse problems do not have a true, unambigous depth of investigation. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Akvo makes a calculation of the DOI based on a resolution analysis approach. A pseudo 1D total water point spread function is calculated by inverting kronecker delta models at the midpoint of the &lt;span style=&quot; font-style:italic;&quot;&gt;T&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:super;&quot;&gt;*&lt;/span&gt; distribution at he same regularisation level as the inversion. The recovered models are summed across the &lt;span style=&quot; font-style:italic;&quot;&gt;T&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-style:italic; vertical-align:super;&quot;&gt;*&lt;/span&gt; space in order to reduce variables in the analysis. hese models are then used as rows in the construction of the point spread function (Model Resolution Matrix). The point spread function is used to identify the point at which the peak depth in the recovered models deviates from the input model by at least 10 %. This is an arbitrary threshold, but is the same one used in[1] &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;[1] Müller-Petke, M., &amp;amp; Yaramanci, U. (2008). Resolution studies for magnetic resonance sounding (MRS) using the singular value decomposition. &lt;span style=&quot; font-style:italic;&quot;&gt;Journal of Applied Geophysics&lt;/span&gt;, &lt;span style=&quot; font-style:italic;&quot;&gt;66&lt;/span&gt;(3-4), 165-175.   &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Calculate DOI</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                 <property name="autoExclusive">
+                  <bool>false</bool>
                  </property>
                 </widget>
                </item>

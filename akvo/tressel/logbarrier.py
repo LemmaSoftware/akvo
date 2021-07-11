@@ -291,9 +291,9 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
 
     if (i == MAXITER-1 ):
         ibreak = 2
-        print("Reached max iterations!!", alpha, np.sqrt(phid/len(b)), ibreak)
-        kappa = curvaturefd(np.log(np.array(PHIM)), np.log(np.array(PHID)), ALPHA[0:-1])
-        x = MOD[ np.argmax(kappa) ]
+        #print("Reached max iterations!!", alpha, np.sqrt(phid/len(b)), ibreak)
+        #kappa = curvaturefd(np.log(np.array(PHIM)), np.log(np.array(PHID)), ALPHA[0:-1])
+        x = MOD[-1]
         b_pre = np.dot(A, x)
         phid = np.linalg.norm( np.dot(Wd, (b-b_pre)))**2
         phim = np.linalg.norm( np.dot(Phim_base, (x-xr)) )**2
@@ -303,7 +303,7 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
         #print("Returning L curve result")
         return x, ibreak, np.sqrt(phid/len(b)), PHIM, PHID/len(b), np.argmax(kappa), Wd, Phim_base, alphastar
     else:
-        print("")
+        print("Returning max iteration result")
         return x, ibreak, np.sqrt(phid/len(b))
 
 

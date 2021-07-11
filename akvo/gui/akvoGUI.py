@@ -440,6 +440,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         invDict["T2Bins"]["low"] = T2lo
         invDict["T2Bins"]["high"] = T2hi
         invDict["T2Bins"]["number"] = NT2       
+        invDict["NonLinearRefinement"] = self.ui.NLButton.isChecked()
+        invDict["CalcDOI"] = self.ui.DOIButton.isChecked()
  
         node = yaml.YAML()
         kpo = open( "invert.yml", 'w' )

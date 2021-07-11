@@ -38,6 +38,8 @@ def nonlinearinversion( x0, Wd, K, d_obs, Wm, alphastar):
     bounds = np.zeros((len(x0),2))
     bounds[:,0] = x0*0.75
     bounds[:,1] = x0*1.25
+    #bounds[:,0] = 0
+    #bounds[:,1] = np.max(x0)*1.25
     return so.minimize(PHI, x0, args, 'L-BFGS-B', bounds=bounds)     # Works well 
     #return so.minimize(PHI, x0, args, 'Powell', bounds=bounds)       # Slow but works 
     #return so.minimize(PHI, x0, args, 'trust-constr', bounds=bounds) # very Slow 
