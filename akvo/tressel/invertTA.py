@@ -234,13 +234,13 @@ def main():
         mmax = np.max(np.abs(VV))
         mmin = np.min(VV)
 
-        obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='nearest')  # pcolor edge not defined 
+        obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='auto')  # pcolor edge not defined 
         ax1.set_title("observed")
  
         pre = np.dot(KQT[ich*ntq:(ich+1)*ntq,:], inv)
  
         PRE = np.reshape( pre, np.shape(VV)  )
-        prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax,shading='nearest' )
+        prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax,shading='auto' )
         ax2.set_title("predicted")
 
         cbar = plt.colorbar(prem, axc1)
@@ -250,7 +250,7 @@ def main():
 
         DIFF = (PRE-VV) / VVS
         md = np.max(np.abs(DIFF))
-        dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md, shading='nearest')
+        dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md, shading='auto')
         ax3.set_title("misfit / $\widehat{\sigma}$")
     
         cbar2 = plt.colorbar(dim, axc2)
@@ -260,6 +260,7 @@ def main():
         #plt.colorbar(dim, ax3)
     
         figx.suptitle(ch + " linear Inversion")
+        plt.savefig(ch + "dataspace.pdf")
 
         ich += 1
 
@@ -357,14 +358,14 @@ def main():
             mmax = np.max(np.abs(VV))
             mmin = np.min(VV)
 
-            obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='nearest')
+            obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='auto')
             ax1.set_title("observed")
 
             ## Here neds to change  
             pre = np.abs(np.dot(KQTc[ich*ntq:(ich+1)*ntq,:], inv))
  
             PRE = np.reshape( pre, np.shape(VV)  )
-            prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='nearest' )
+            prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='auto' )
             ax2.set_title("predicted")
 
             cbar = plt.colorbar(prem, axc1)
@@ -374,7 +375,7 @@ def main():
 
             DIFF = (PRE-VV) / VVS
             md = np.max(np.abs(DIFF))
-            dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md, shading='nearest')
+            dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md, shading='auto')
             ax3.set_title("misfit / $\widehat{\sigma}$")
     
             cbar2 = plt.colorbar(dim, axc2)
@@ -384,6 +385,8 @@ def main():
             #plt.colorbar(dim, ax3)
     
             figx.suptitle(ch + " non-linear Inversion")
+        
+            plt.savefig(ch + "_NLdataspace.pdf")
 
             ich += 1
 
@@ -474,7 +477,7 @@ def main():
         ax1.set_xlim( ifaces[0], ifaces[-1] )
         ax1.set_xlabel(u"depth (m)")
         ax1.set_ylabel(u"depth (m)")
-
+        plt.savefig("resolutionmatrix.pdf")
         pdf.close()
 
     INV = np.reshape(inv, (len(ifaces)-1,cont["T2Bins"]["number"]) )
