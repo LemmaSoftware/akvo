@@ -30,7 +30,7 @@ def curvatureg(x, y):
     y2 = gaussian_filter1d(y1, sigma=1, order=1)#, mode='constant', cval=y1[-1])
     return np.abs(x1*y2 - y1*x2) / np.power(x1**2 + y1**2, 3./2)
 
-def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, smooth=False, MAXITER=70, fignum=1000, sigma=1, callback=None):
+def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, smooth="Smallest", MAXITER=70, fignum=1000, sigma=1, callback=None):
     """Impliments a log barrier Tikhonov solution to a linear system of equations 
         Ax = b  s.t.  x_min < x < x_max. A log-barrier term is used for the constraint
     """
@@ -128,8 +128,8 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
     ALPHA = []
     ALPHA.append(alpha)
     #ALPHA = np.linspace( alpha, 1, MAXITER  )
-    print ("{:^10} {:^15} {:^15} {:^15} {:^15} {:^10} {:^10}".format("iteration",  "lambda", "phi_d", "phi_m","phi","kappa","kappa dist."), flush=True) 
-    print ("{:^10} {:>15} {:<15} {:<15} {:<15} {:<10} {:<10}".format("----------", "---------------", "---------------","---------------","---------------","----------","----------"), flush=True) 
+    print ("{:^5} {:^15} {:^15} {:^15} {:^15} {:^10} {:^10}".format("iter.",  "lambda", "phi_d", "phi_m","phi","kappa","kappa dist."), flush=True) 
+    print ("{:^5} {:>15} {:<15} {:<15} {:<15} {:<10} {:<10}".format("-----", "---------------", "---------------","---------------","---------------","----------","----------"), flush=True) 
     for i in range(MAXITER):
         #alpha = ALPHA[i]
 
@@ -219,7 +219,7 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
         #print ("{:<8} {:<15} {:<10} {:<10}".format(i, alpha, np.sqrt(phid/len(b)), phim), flush=True) 
         
         if i < 4:        
-            print ("{:^10} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi ), flush=True) 
+            print ("{:^5} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi ), flush=True) 
 
 #         if np.sqrt(phid/len(b)) < 0.97: 
 #             ibreak = -1
@@ -242,7 +242,7 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
                 kappa = curvaturefd(np.log(np.array(PHIM)), np.log(np.array(PHID)), ALPHA[0:i+1])#ALPHA[0:-1])
                 #kappa = curvatureg(np.log(np.array(PHIM)), np.log(np.array(PHID)))
                 #print("max kappa", np.argmax(kappa), "distance from", i-np.argmax(kappa)) 
-                print ("{:^10} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f} {:^10} {:^10}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi, np.argmax(kappa), i-np.argmax(kappa)), flush=True) 
+                print ("{:^5} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f} {:^10} {:^10}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi, np.argmax(kappa), i-np.argmax(kappa)), flush=True) 
             if i > 4 and (i-np.argmax(kappa)) > 4: # ((np.sqrt(phid_old/len(b))-np.sqrt(phid/len(b))) < 1e-4) : 
             #if np.sqrt(phid/len(b)) < 3.0 and ((np.sqrt(phid_old/len(b))-np.sqrt(phid/len(b))) < 1e-3): 
                 ibreak = 1

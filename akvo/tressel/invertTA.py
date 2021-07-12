@@ -28,6 +28,16 @@ from akvo.tressel import nonlinearinv as nl
 
 import pandas as pd
 
+
+import matplotlib.colors as colors
+
+# From https://stackoverflow.com/questions/18926031/how-to-extract-a-subset-of-a-colormap-as-a-new-colormap-in-matplotlib
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
 def buildKQT(K0,tg,T2Bins):
     """ 
         Constructs a QT inversion kernel from an initial amplitude one.  
@@ -77,7 +87,7 @@ def loadAkvoData(fnamein, chan):
     J = AKVO.Pulses["Pulse 1"]["current"].data 
     J = np.append(J,J[-1]+(J[-1]-J[-2]))
     Q = AKVO.pulseLength[0]*J
-    return Z, ZS, AKVO.Gated["Pulse 1"]["abscissa"].data  #, Q
+    return Z, ZS, AKVO.Gated["Pulse 1"]["abscissa"].data, Q
 
 def catLayers(K0):
     K = np.zeros( (len(K0.keys()), len(K0["layer-0"].data)) , dtype=complex )
@@ -97,6 +107,11 @@ def loadK0(fname):
     return ifaces, K
     #return ifaces, np.abs(K)
 
+def invertDelta(G, V_n, T2Bins, sig, alphastar):
+    """ helper function that simply calls logBarrier, simplfies parallel execution
+    """
+    model = logBarrier(G, V_n, T2Bins, "Single", MAXITER=1, sigma=sig, alpha=alphastar, smooth="Smallest") 
+    return model
 
 
 def main():
@@ -116,13 +131,15 @@ def main():
     ###############################################
     V = []
     VS = []
+    QQ = []
     tg = 0
     for dat in cont['data']:
         for ch in cont['data'][dat]['channels']:
             print("dat", dat, "ch", ch)
-            v,vs,tg = loadAkvoData(dat, ch)
+            v,vs,tg,Q = loadAkvoData(dat, ch)
             V.append(v)
             VS.append(vs)
+            QQ.append(Q)
     for iv in range(1, len(V)):
         V[0] = np.concatenate( (V[0], V[iv]) )
         VS[0] = np.concatenate( (VS[0], VS[iv]) )
@@ -147,8 +164,9 @@ def main():
     #plt.show()
     #exit()
 
-    ##########################################################    
-    # VERY Simple Sensitivity based calc. of noise per layer #
+    ##############################################################    
+    # VERY Simple Sensitivity based calc. of noise per layer     #
+    # minimally useful, but retained for backwards compatibility #
     maxq = np.argmax(np.abs(K0), axis=1)
     maxK = .1 *  np.abs(K0)[ np.arange(0,len(ifaces)-1), maxq ] # 10% water is arbitrary  
     SNR = maxK / (VS[0][0])
@@ -170,25 +188,80 @@ def main():
     inv, ibreak, errn, phim, phid, mkappa, Wd, Wm, alphastar = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e6, smooth="Smallest" ) 
 
 
-    ####################
-    # Summary plots    #
-    ####################
-    
-    pre = np.dot(KQT,inv) 
-    PRE = np.reshape( pre, np.shape(V)  )
-    plt.matshow(PRE, cmap='Blues')
-    plt.gca().set_title("linear predicted")
-    plt.colorbar()
+    ################################
+    # Summary plots, Data Space    #
+    ################################
 
-    DIFF = (PRE-V) / VS
-    md = np.max(np.abs(DIFF))
-    plt.matshow(DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
-    plt.gca().set_title("linear misfit / $\widehat{\sigma}$")
-    plt.colorbar()
+    # TODO, need to clean this up for the case of multiple channels! Each channel should be a new row. It will be ugly, but important 
+    # TODO, loop over channels 
     
-    plt.matshow(V, cmap='Blues')
-    plt.gca().set_title("observed")
-    plt.colorbar()
+    ich = 0     
+    for ch in cont['data'][dat]['channels']:
+
+        figx = plt.figure( figsize=(pc2in(42.0),pc2in(22.)) )
+        ax1 = figx.add_axes([.100, .15, .200, .70])    
+        ax2 = figx.add_axes([.325, .15, .200, .70])   # shifted to make room for shared colourbar 
+        axc1= figx.add_axes([.550, .15, .025, .70])   # shifted to make room for shared colourbar 
+        ax3 = figx.add_axes([.670, .15, .200, .70])    
+        axc2= figx.add_axes([.895, .15, .025, .70])   # shifted to make room for shared colourbar 
+
+        ax3.set_yscale('log')
+        ax2.set_yscale('log')
+        ax1.set_yscale('log')
+    
+        ax2.yaxis.set_ticklabels([])
+        ax3.yaxis.set_ticklabels([])
+    
+        ax3.set_xscale('log')
+        ax2.set_xscale('log')
+        ax1.set_xscale('log')
+
+        ax1.set_ylabel("Q (A $\cdot$ s)")
+        ax1.set_xlabel("time (s)")
+        ax2.set_xlabel("time (s)")
+        ax3.set_xlabel("time (s)")
+
+        #TT, QQQ = np.meshgrid(tg, np.ravel(QQ))
+        
+        TT, QQQ = np.meshgrid(tg, np.ravel(QQ[ich]))
+        nq = np.shape(QQ[ich])[0] - 1 # to account for padding in pcolor 
+        nt = np.shape(tg)[0]
+        ntq = nt*nq
+        
+        VV = V[ich*nq:ich*nq+nq,:]   # slice this channel
+        VVS = VS[ich*nq:ich*nq+nq,:] # slice this channel
+
+        mmax = np.max(np.abs(VV))
+        mmin = np.min(VV)
+
+        obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax)
+        ax1.set_title("observed")
+ 
+        pre = np.dot(KQT[ich*ntq:(ich+1)*ntq,:], inv)
+ 
+        PRE = np.reshape( pre, np.shape(VV)  )
+        prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax )
+        ax2.set_title("predicted")
+
+        cbar = plt.colorbar(prem, axc1)
+        axc1.set_ylim( [np.min(VV), np.max(VV)] )
+        cbar.outline.set_edgecolor(None)
+        cbar.set_label('$V_N$ (nV)')
+
+        DIFF = (PRE-VV) / VVS
+        md = np.max(np.abs(DIFF))
+        dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
+        ax3.set_title("misfit / $\widehat{\sigma}$")
+    
+        cbar2 = plt.colorbar(dim, axc2)
+        #axc1.set_ylim( [np.min(V), np.max(V)] )
+        cbar2.outline.set_edgecolor(None)
+        cbar2.set_label('$V_N$ (nV)')
+        #plt.colorbar(dim, ax3)
+    
+        figx.suptitle(ch + " linear Inversion")
+
+        ich += 1
 
     ###############################################
     # Non-linear refinement! 
@@ -226,16 +299,96 @@ def main():
             if phidc_old - phidc/len(np.ravel(V)) < 0.005:
                 print("Not making progress reducing misfit in nonlinear refinement")
                 break
-    
-        plt.matshow(PREc, cmap='Blues')
-        plt.gca().set_title("nonlinear predicted")
-        plt.colorbar()
 
-        DIFFc = (PREc-V) / VS
-        md = np.max(np.abs(DIFF))
-        plt.matshow(DIFFc, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
-        plt.gca().set_title("nonlinear misfit / $\widehat{\sigma}$")
-        plt.colorbar()
+        # Turn this into a nice figure w/ shared axes etc.    
+ 
+#         plt.matshow(PREc, cmap='Blues')
+#         plt.gca().set_title("nonlinear predicted")
+#         plt.colorbar()
+# 
+#         DIFFc = (PREc-V) / VS
+#         md = np.max(np.abs(DIFF))
+#         plt.matshow(DIFFc, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
+#         plt.gca().set_title("nonlinear misfit / $\widehat{\sigma}$")
+#         plt.colorbar()
+
+
+        ################################
+        # Summary plots, Data Space    #
+        ################################
+
+    
+        ich = 0     
+        for ch in cont['data'][dat]['channels']:
+
+            figx = plt.figure( figsize=(pc2in(42.0),pc2in(22.)) )
+            ax1 = figx.add_axes([.100, .15, .200, .70])    
+            ax2 = figx.add_axes([.325, .15, .200, .70])   # shifted to make room for shared colourbar 
+            axc1= figx.add_axes([.550, .15, .025, .70])   # shifted to make room for shared colourbar 
+            ax3 = figx.add_axes([.670, .15, .200, .70])    
+            axc2= figx.add_axes([.895, .15, .025, .70])   # shifted to make room for shared colourbar 
+
+            ax3.set_yscale('log')
+            ax2.set_yscale('log')
+            ax1.set_yscale('log')
+    
+            ax2.yaxis.set_ticklabels([])
+            ax3.yaxis.set_ticklabels([])
+    
+            ax3.set_xscale('log')
+            ax2.set_xscale('log')
+            ax1.set_xscale('log')
+
+            ax1.set_ylabel("Q (A $\cdot$ s)")
+            ax1.set_xlabel("time (s)")
+            ax2.set_xlabel("time (s)")
+            ax3.set_xlabel("time (s)")
+
+            #TT, QQQ = np.meshgrid(tg, np.ravel(QQ))
+        
+            TT, QQQ = np.meshgrid(tg, np.ravel(QQ[ich]))
+            nq = np.shape(QQ[ich])[0] - 1 # to account for padding in pcolor 
+            nt = np.shape(tg)[0]
+            ntq = nt*nq
+        
+            VV = V[ich*nq:ich*nq+nq,:]   # slice this channel
+            VVS = VS[ich*nq:ich*nq+nq,:] # slice this channel
+
+            mmax = np.max(np.abs(VV))
+            mmin = np.min(VV)
+
+            obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax)
+            ax1.set_title("observed")
+
+            ## Here neds to change  
+            pre = np.abs(np.dot(KQTc[ich*ntq:(ich+1)*ntq,:], inv))
+ 
+            PRE = np.reshape( pre, np.shape(VV)  )
+            prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax )
+            ax2.set_title("predicted")
+
+            cbar = plt.colorbar(prem, axc1)
+            axc1.set_ylim( [np.min(VV), np.max(VV)] )
+            cbar.outline.set_edgecolor(None)
+            cbar.set_label('$V_N$ (nV)')
+
+            DIFF = (PRE-VV) / VVS
+            md = np.max(np.abs(DIFF))
+            dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
+            ax3.set_title("misfit / $\widehat{\sigma}$")
+    
+            cbar2 = plt.colorbar(dim, axc2)
+            #axc1.set_ylim( [np.min(V), np.max(V)] )
+            cbar2.outline.set_edgecolor(None)
+            cbar2.set_label('$V_N$ (nV)')
+            #plt.colorbar(dim, ax3)
+    
+            figx.suptitle(ch + " non-linear Inversion")
+
+            ich += 1
+
+
+
  
     ###############################################
     # Appraise DOI using simplified MRM 
@@ -248,18 +401,33 @@ def main():
         pdf = PdfPages('resolution_analysis' + '.pdf' )
         MRM = np.zeros((len(ifaces)-1, len(ifaces)-1))
 
-    #with multiprocessing.Pool() as pool: 
-    #    invresults = pool.starmap(invert, zip(itertools.repeat(Time), GT[0:ni], GD[0:ni], SIG[0:ni], itertools.repeat(sys.argv[3]) )) 
- 
-        # This could be parallelized 
+        # Build delta models 
+        DELTA = []
+        
         for ilay in range(len(ifaces)-1):
+        #for ilay in range(4):
             iDeltaT2 = len(T2Bins)//2
             deltaMod = np.zeros( (len(ifaces)-1, len(T2Bins)) )
             deltaMod[ilay][iDeltaT2] = 0.3
-            dV = np.dot(KQT, np.ravel(deltaMod)) 
+            dV = np.dot(KQT, np.ravel(deltaMod))
+            #dinv, dibreak, derrn = logBarrier( KQT, dV, T2Bins, "single", MAXITER=1, sigma=np.ravel(VS), alpha=alphastar, smooth="Smallest" ) 
+            #output = invertDelta(KQT, dV, T2Bins, np.ravel(VS), alphastar)
+            DELTA.append(dV)
+
+        print("Performing resolution analysis in parallel, printed output may not be inorder.", flush=True) 
+        with multiprocessing.Pool() as pool: 
+            invresults = pool.starmap(invertDelta, zip(itertools.repeat(KQT), DELTA, itertools.repeat(T2Bins), itertools.repeat(np.ravel(VS)), itertools.repeat(alphastar) )) 
+        #    invresults = pool.starmap(logBarrier, zip(itertools.repeat(KQT), DELTA, itertools.repeat(T2Bins), itertools.repeat('single'), \
+        #        itertools.repeat('MAXITER=1'), itertools.repeat(np.ravel(VS)), itertools.repeat(alphastar))) #, itertools.repeat(u'smooth=\'Smallest\'')) ) 
+ 
+        # This could be parallelized 
+        for ilay in range(len(ifaces)-1):
+
             # invert 
-            dinv, dibreak, derrn = logBarrier(KQT, dV, T2Bins, "single", MAXITER=1, sigma=np.ravel(VS), alpha=alphastar, smooth="Smallest" ) 
-            print("Sum dinv from", str(ifaces[ilay]), "to", str(ifaces[ilay+1]), "=", np.sum(dinv))
+            #dinv, dibreak, derrn = logBarrier(KQT, dV, T2Bins, "single", MAXITER=1, sigma=np.ravel(VS), alpha=alphastar, smooth="Smallest" ) 
+            #print("Sum dinv from", str(ifaces[ilay]), "to", str(ifaces[ilay+1]), "=", np.sum(dinv))
+            dinv, dibreak, derrn = invresults[ilay] 
+
     
             DINV = np.reshape(dinv, (len(ifaces)-1,cont["T2Bins"]["number"]) )
             MRM[ilay,:] = np.sum(DINV, axis=1)
@@ -309,18 +477,8 @@ def main():
 
         pdf.close()
 
-
-
     INV = np.reshape(inv, (len(ifaces)-1,cont["T2Bins"]["number"]) )
 
-    #alphas = np.tile(SNR, (len(T2Bins)-1,1))
-    #colors = Normalize(1e-6, np.max(INV.T), clip=True)(INV.T)
-    #colors = cmocean.cm.tempo(colors)
-    ##colors[..., -1] = alphas
-    #print(np.shape(colors)) 
-    #print(np.shape(INV.T)) 
-
-    #greys = np.full((*(INV.T).shape, 3), 70, dtype=np.uint8)
 
     ##############  LINEAR RESULT   ##########################
 
@@ -328,11 +486,6 @@ def main():
     fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
     ax1 = fig.add_axes( [.2,.15,.6,.7] )
     im = ax1.pcolor(X, Y, INV.T, cmap=cmocean.cm.tempo) #cmap='viridis')
-    #im = ax1.pcolor(X[0:SNRidx,:], Y[0:SNRidx,:], INV.T[0:SNRidx,:], cmap=cmocean.cm.tempo) #cmap='viridis')
-    #im = ax1.pcolor(X[SNRidx::,:], Y[SNRidx::,:], INV.T[SNRidx::,:], cmap=cmocean.cm.tempo, alpha=.5) #cmap='viridis')
-    #im = ax1.pcolormesh(X, Y, INV.T, alpha=alphas) #, cmap=cmocean.cm.tempo) #cmap='viridis')
-    #im = ax1.pcolormesh(X, Y, INV.T, alpha=alphas) #, cmap=cmocean.cm.tempo) #cmap='viridis')
-    #ax1.axhline( y=ifaces[SNRidx], xmin=T2Bins[0], xmax=T2Bins[-1], color='black'  )
     im.set_edgecolor('face')
     ax1.set_xlim( T2Bins[0], T2Bins2[-1] )
     ax1.set_ylim( ifaces[-1], ifaces[0] )
@@ -348,7 +501,6 @@ def main():
     ax1.get_yaxis().set_major_formatter(FormatStrFormatter('%1.0f'))
     ax1.xaxis.set_major_locator( MaxNLocator(nbins = 4) )   
 
-    #ax1.xaxis.set_label_position('top') 
 
     ax2 = ax1.twiny()
     ax2.plot( np.sum(INV, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='red' )
@@ -359,9 +511,49 @@ def main():
     #ax2.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
     if CalcDOI:
         ax2.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
-    #ax2.xaxis.set_label_position('bottom') 
 
     plt.savefig("akvoInversion.pdf")
+
+    #############
+    # water plot#
+
+    fig2 = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
+    ax = fig2.add_axes( [.2,.15,.6,.7] )
+    
+    # Bound water cutoff 
+    Bidx = T2Bins<33.0
+    twater = np.sum(INV, axis=1)
+    bwater = np.sum(INV[:,Bidx], axis=1)
+    
+    ax.plot( twater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR total water", color='blue' )
+    ax.plot( bwater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR bound water", color='green' )
+    
+    ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , twater, bwater, where=twater >= bwater, facecolor='blue', alpha=.5)
+    ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , bwater, 0, where=bwater >= 0, facecolor='green', alpha=.5)
+    
+    ax.set_xlabel(r"$\theta_N$ (m$^3$/m$^3$)")
+    ax.set_ylabel(r"depth (m)")
+    
+    ax.set_ylim( ifaces[-1], ifaces[0] )
+    ax.set_xlim( 0, ax.get_xlim()[1] )
+    
+    #ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
+    if CalcDOI:
+        ax.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
+    
+    plt.savefig("akvoInversionWC.pdf")
+    plt.legend()  
+    
+    fr = pd.DataFrame( INV, columns=T2Bins ) #[0:-1] )
+    fr.insert(0, "layer top", ifaces[0:-1] )
+    fr.insert(1, "layer bottom", ifaces[1::] )
+    fr.insert(2, "NMR total water", np.sum(INV, axis=1) )
+    fr.insert(3, "NMR bound water", bwater )
+    fr.insert(4, "Layer SNR", SNR )
+    if CalcDOI:
+        fr.insert(5, "Resolution", DOIMetric )
+
+    fr.to_csv("akvoInversion.csv", mode='w+')    
 
 
     ##############  NONLINEAR RESULT   ##########################
@@ -406,49 +598,51 @@ def main():
         fig.suptitle("Non linear inversion")
         plt.savefig("akvoInversionNL.pdf")
 
-    #############
-    # water plot#
 
-    fig2 = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
-    ax = fig2.add_axes( [.2,.15,.6,.7] )
-    
-    # Bound water cutoff 
-    Bidx = T2Bins<33.0
-    twater = np.sum(INV, axis=1)
-    bwater = np.sum(INV[:,Bidx], axis=1)
-    
-    ax.plot( twater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR total water", color='blue' )
-    ax.plot( bwater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR bound water", color='green' )
-    
-    ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , twater, bwater, where=twater >= bwater, facecolor='blue', alpha=.5)
-    ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , bwater, 0, where=bwater >= 0, facecolor='green', alpha=.5)
-    
-    ax.set_xlabel(r"$\theta_N$ (m$^3$/m$^3$)")
-    ax.set_ylabel(r"depth (m)")
-    
-    ax.set_ylim( ifaces[-1], ifaces[0] )
-    ax.set_xlim( 0, ax.get_xlim()[1] )
-    
-    #ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
-    if CalcDOI:
-        ax.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
-    
-    plt.savefig("akvoInversionWC.pdf")
-    plt.legend()  
- 
 
-    # Report results into a text file 
-    fr = pd.DataFrame( INV, columns=T2Bins ) #[0:-1] )
-    fr.insert(0, "layer top", ifaces[0:-1] )
-    fr.insert(1, "layer bottom", ifaces[1::] )
-    fr.insert(2, "NMR total water", np.sum(INV, axis=1) )
-    fr.insert(3, "NMR bound water", bwater )
-    fr.insert(4, "Layer SNR", SNR )
-    if CalcDOI:
-        fr.insert(5, "Resolution", DOIMetric )
+        #############
+        # water plot#
 
-    fr.to_csv("akvoInversion.csv")    
-    #fr.to_excel("akvoInversion.xlsx")    
+        fig2 = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
+        ax = fig2.add_axes( [.2,.15,.6,.7] )
+    
+        # Bound water cutoff 
+        Bidx = T2Bins<33.0
+        twater = np.sum(INVc, axis=1)
+        bwater = np.sum(INVc[:,Bidx], axis=1)
+    
+        ax.plot( twater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR total water", color='blue' )
+        ax.plot( bwater, (ifaces[0:-1]+ifaces[1::])/2, label="NMR bound water", color='green' )
+    
+        ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , twater, bwater, where=twater >= bwater, facecolor='blue', alpha=.5)
+        ax.fill_betweenx((ifaces[0:-1]+ifaces[1::])/2 , bwater, 0, where=bwater >= 0, facecolor='green', alpha=.5)
+    
+        ax.set_xlabel(r"$\theta_N$ (m$^3$/m$^3$)")
+        ax.set_ylabel(r"depth (m)")
+    
+        ax.set_ylim( ifaces[-1], ifaces[0] )
+        ax.set_xlim( 0, ax.get_xlim()[1] )
+    
+        #ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
+        if CalcDOI:
+            ax.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
+    
+        plt.savefig("akvoInversionWC.pdf")
+        plt.legend()  
+
+
+        # Report results into a text file 
+        fr = pd.DataFrame( INVc, columns=T2Bins ) #[0:-1] )
+        fr.insert(0, "layer top", ifaces[0:-1] )
+        fr.insert(1, "layer bottom", ifaces[1::] )
+        fr.insert(2, "NMR total water", np.sum(INVc, axis=1) )
+        fr.insert(3, "NMR bound water", bwater )
+        fr.insert(4, "Layer SNR", SNR )
+        if CalcDOI:
+            fr.insert(5, "Resolution", DOIMetric )
+
+        fr.to_csv("akvoNLInversion.csv", mode='w+')    
+        #fr.to_excel("akvoInversion.xlsx")    
 
  
     plt.show()
