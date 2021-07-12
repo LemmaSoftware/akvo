@@ -234,13 +234,13 @@ def main():
         mmax = np.max(np.abs(VV))
         mmin = np.min(VV)
 
-        obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax)
+        obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='nearest')  # pcolor edge not defined 
         ax1.set_title("observed")
  
         pre = np.dot(KQT[ich*ntq:(ich+1)*ntq,:], inv)
  
         PRE = np.reshape( pre, np.shape(VV)  )
-        prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax )
+        prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax,shading='nearest' )
         ax2.set_title("predicted")
 
         cbar = plt.colorbar(prem, axc1)
@@ -250,7 +250,7 @@ def main():
 
         DIFF = (PRE-VV) / VVS
         md = np.max(np.abs(DIFF))
-        dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
+        dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md, shading='nearest')
         ax3.set_title("misfit / $\widehat{\sigma}$")
     
         cbar2 = plt.colorbar(dim, axc2)
@@ -357,14 +357,14 @@ def main():
             mmax = np.max(np.abs(VV))
             mmin = np.min(VV)
 
-            obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax)
+            obs = ax1.pcolor(TT, QQQ, VV, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='nearest')
             ax1.set_title("observed")
 
             ## Here neds to change  
             pre = np.abs(np.dot(KQTc[ich*ntq:(ich+1)*ntq,:], inv))
  
             PRE = np.reshape( pre, np.shape(VV)  )
-            prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax )
+            prem = ax2.pcolor(TT, QQQ, PRE, cmap=cmocean.cm.curl_r, vmin=-mmax, vmax=mmax, shading='nearest' )
             ax2.set_title("predicted")
 
             cbar = plt.colorbar(prem, axc1)
@@ -374,7 +374,7 @@ def main():
 
             DIFF = (PRE-VV) / VVS
             md = np.max(np.abs(DIFF))
-            dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md)
+            dim = ax3.pcolor(TT, QQQ, DIFF, cmap=cmocean.cm.balance, vmin=-md, vmax=md, shading='nearest')
             ax3.set_title("misfit / $\widehat{\sigma}$")
     
             cbar2 = plt.colorbar(dim, axc2)
@@ -487,7 +487,7 @@ def main():
     ax1 = fig.add_axes( [.2,.15,.6,.7] )
     im = ax1.pcolor(X, Y, INV.T, cmap=cmocean.cm.tempo) #cmap='viridis')
     im.set_edgecolor('face')
-    ax1.set_xlim( T2Bins[0], T2Bins2[-1] )
+    ax1.set_xlim( T2Bins[0], T2Bins[-1] )
     ax1.set_ylim( ifaces[-1], ifaces[0] )
     cb = plt.colorbar(im, label = u"PWC (m$^3$/m$^3$)") #, format='%1.1f')
     cb.locator = MaxNLocator( nbins = 4)
@@ -540,7 +540,14 @@ def main():
     #ax.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
     if CalcDOI:
         ax.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
-    
+
+    # Hide the right and top spines
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    # Only show ticks on the left and bottom spines
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')   
+ 
     plt.savefig("akvoInversionWC.pdf")
     plt.legend()  
     
@@ -559,7 +566,7 @@ def main():
     ##############  NONLINEAR RESULT   ##########################
 
     if nonLinearRefinement: 
-        Y,X = meshgrid( ifaces, T2Bins )
+        Y,X = meshgrid( ifaces, T2Bins2 )
         fig = plt.figure( figsize=(pc2in(20.0),pc2in(22.)) )
         ax1 = fig.add_axes( [.2,.15,.6,.7] )
         im = ax1.pcolor(X, Y, INVc.T, cmap=cmocean.cm.tempo) #cmap='viridis')
@@ -595,7 +602,7 @@ def main():
         if CalcDOI:
             ax2.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
         #ax2.xaxis.set_label_position('bottom') 
-        fig.suptitle("Non linear inversion")
+        #fig.suptitle("Non linear inversion")
         plt.savefig("akvoInversionNL.pdf")
 
 
@@ -627,7 +634,14 @@ def main():
         if CalcDOI:
             ax.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
     
-        plt.savefig("akvoInversionWC.pdf")
+        # Hide the right and top spines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')   
+    
+        plt.savefig("akvoNLInversionWC.pdf")
         plt.legend()  
 
 
