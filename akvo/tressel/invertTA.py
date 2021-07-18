@@ -447,8 +447,8 @@ def main():
             ax1.set_ylim( ifaces[-1], ifaces[0] )
 
             ax2 = ax1.twiny()
-            ax2.plot( np.sum(DINV, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='red' )
-            ax2.set_xlabel(u"total water (m$^3$/m$^3$)")
+            ax2.plot( np.sum(DINV, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='mediumblue' )
+            ax2.set_xlabel(u"total water (m$^3$/m$^3$)", color='mediumblue')
             ax2.set_ylim( ifaces[-1], ifaces[0] )
             ax2.xaxis.set_major_locator( MaxNLocator(nbins = 3) )   
             ax2.get_xaxis().set_major_formatter(FormatStrFormatter('%0.2f'))
@@ -506,14 +506,17 @@ def main():
 
 
     ax2 = ax1.twiny()
-    ax2.plot( np.sum(INV, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='red' )
-    ax2.set_xlabel(u"total water (m$^3$/m$^3$)")
+    ax2.plot( np.sum(INV, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='mediumblue' )
+    ax2.set_xlabel(u"NMR total water (m$^3$/m$^3$)", color='mediumblue')
     ax2.set_ylim( ifaces[-1], ifaces[0] )
     ax2.xaxis.set_major_locator( MaxNLocator(nbins = 3) )   
     ax2.get_xaxis().set_major_formatter(FormatStrFormatter('%0.2f'))
     #ax2.axhline( y=ifaces[SNRidx], xmin=0, xmax=1, color='black', linestyle='dashed'  )
     if CalcDOI:
         ax2.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
+        
+    ax2.tick_params(axis='x', colors='mediumblue')
+    plt.setp(ax2.get_xticklabels(), color="mediumblue")
 
     plt.savefig("akvoInversion.pdf")
 
@@ -596,8 +599,8 @@ def main():
         #ax1.xaxis.set_label_position('top') 
 
         ax2 = ax1.twiny()
-        ax2.plot( np.sum(INVc, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='red' )
-        ax2.set_xlabel(u"total water (m$^3$/m$^3$)")
+        ax2.plot( np.sum(INVc, axis=1), (ifaces[1:]+ifaces[0:-1])/2 ,  color='mediumblue' )
+        ax2.set_xlabel(u"NMR total water (m$^3$/m$^3$)", color='mediumblue')
         ax2.set_ylim( ifaces[-1], ifaces[0] )
         ax2.xaxis.set_major_locator( MaxNLocator(nbins = 3) )   
         ax2.get_xaxis().set_major_formatter(FormatStrFormatter('%0.2f'))
@@ -606,6 +609,9 @@ def main():
             ax2.axhline( y=DOI, xmin=0, xmax=1, color='black', linestyle='dashed'  )
         #ax2.xaxis.set_label_position('bottom') 
         #fig.suptitle("Non linear inversion")
+        ax2.tick_params(axis='x', colors='mediumblue')
+        plt.setp(ax2.get_xticklabels(), color="mediumblue")
+
         plt.savefig("akvoInversionNL.pdf")
 
 

@@ -6,8 +6,9 @@ import sys
 import scipy
 from scipy import stats
 import copy
-import struct
+import struct, glob
 from scipy.io.matlab import mio
+import pandas as pd
 from numpy import pi
 from math import floor
 import matplotlib as mpl
@@ -243,6 +244,7 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.nTransVersion   = HEADER[8]           # Transmitter version
         self.nDAQVersion     = HEADER[9]           # DAQ software version 
         self.nInterleaves    = HEADER[10]          # num interleaves
+        self.Instrument      = "GMR" 
 
         self.gain()
         
@@ -315,7 +317,9 @@ class GMRDataProcessor(SNMRDataProcessor):
                 istack = 0
                 for sstack in self.DATADICT["stacks"]:
                     if self.pulseType == "FID" or pulse == "Pulse 2":
-                        if floor(self.nDAQVersion) < 2:
+                        if self.Instrument == "MIDI 2":
+                            mod = 1
+                        elif self.Instrument == "GMR" and floor(self.nDAQVersion) < 2:
                             mod = 1
                         else:
                             mod = (-1.)**(ipm%2) * (-1.)**(sstack%2)
@@ -950,27 +954,36 @@ class GMRDataProcessor(SNMRDataProcessor):
         self.doneTrigger.emit() 
 
 
-    def sumData(self, canvas, fred):
+    def sumData(self, canvas, plusminus, sumAll):
+        print("In sumData", plusminus, sumAll)
+        if plusminus == "sum":
+            splus = "+"
+        else:
+            splus = "-"
+
         chans = copy.deepcopy(self.DATADICT[self.DATADICT["PULSES"][0]]["chan"]) #= np.array( ( self.DATADICT[pulse]["chan"][0], ) )
         nchan = len(chans)
         # Sum permutations of two channel combos
         for ich in range(nchan-1):
             for ch in chans[ich+1:]:
-                chsum = chans[ich] + "+" + ch
+                chsum = chans[ich] + splus + ch
                 for pulse in self.DATADICT["PULSES"]:
                     self.DATADICT[pulse][chsum] = {} 
                     for ipm in range(self.DATADICT["nPulseMoments"]):
                         self.DATADICT[pulse][chsum][ipm] = {} 
                         for istack in self.DATADICT["stacks"]:
-                            self.DATADICT[pulse][chsum][ipm][istack] = self.DATADICT[pulse][chans[ich]][ipm][istack] - self.DATADICT[pulse][ch][ipm][istack] 
-                    if chsum == "1+2":
+                            if plusminus == "sum":
+                                self.DATADICT[pulse][chsum][ipm][istack] = self.DATADICT[pulse][chans[ich]][ipm][istack] + self.DATADICT[pulse][ch][ipm][istack] 
+                            else:
+                                self.DATADICT[pulse][chsum][ipm][istack] = self.DATADICT[pulse][chans[ich]][ipm][istack] - self.DATADICT[pulse][ch][ipm][istack] 
+                    #if chsum == "1+2":
                         #self.DATADICT[pulse]["rchan"].pop()
                         #self.DATADICT[pulse]["rchan"].pop()
-                        self.DATADICT[pulse]["chan"].append(chsum)
+                    self.DATADICT[pulse]["chan"].append(chsum)
 
         # Sum all channels 
-        sumall = False
-        if sumall:
+        #sumall = False
+        if sumAll:
             chsum = ""
             for ch in chans:
                 chsum += ch + "+" 
@@ -1735,7 +1748,9 @@ class GMRDataProcessor(SNMRDataProcessor):
     def enableDSP(self):
         self.enableDSPTrigger.emit() 
 
-    def adaptiveFilter(self, M, flambda, truncate, mu, PCA, canvas):
+    def adaptiveFilter(self, M, flambda, truncate, mu, PCA, plot, canvas):
+
+        #plot = False
 
         canvas.reAx2(shx=False, shy=False)
         # ax1 is top plot of filter taps 
@@ -1762,13 +1777,14 @@ class GMRDataProcessor(SNMRDataProcessor):
         for istack in self.DATADICT["stacks"]:
             for ipm in range(self.DATADICT["nPulseMoments"]):
                 for pulse in self.DATADICT["PULSES"]:
-                    canvas.softClear()
-                    mmax = 0
-                    for ichan in self.DATADICT[pulse]["chan"]:
-                        canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
-                        mmax = max(mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
-                    canvas.ax2.set_ylim(-mmax, mmax) 
-                    canvas.ax2.set_prop_cycle(None)
+                    if plot:
+                        canvas.softClear()
+                        mmax = 0
+                        for ichan in self.DATADICT[pulse]["chan"]:
+                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* self.DATADICT[pulse][ichan][ipm][istack], alpha=.5) 
+                            mmax = max(mmax, np.max(1e9*self.DATADICT[pulse][ichan][ipm][istack])) 
+                        canvas.ax2.set_ylim(-mmax, mmax) 
+                        canvas.ax2.set_prop_cycle(None)
                     for ichan in self.DATADICT[pulse]["chan"]:
                         #H = np.zeros(M)
                         RX = []
@@ -1810,42 +1826,46 @@ class GMRDataProcessor(SNMRDataProcessor):
                                                         RX,\
                                                         M, mu, PCA, flambda, H[pulse][ichan])
                                 iloop += 1
-                            print("Recalled ", iloop, "times with norm=", np.linalg.norm(hm1-H[pulse][ichan]))
+                            #print("Recalled ", iloop, "times with norm=", np.linalg.norm(hm1-H[pulse][ichan]))
                         else:
                             [e,H[pulse][ichan]] = Filt.adapt_filt_Ref( self.DATADICT[pulse][ichan][ipm][istack][::-1],\
                                                         RX,\
                                                         M, mu, PCA, flambda, H[pulse][ichan])
                         # replace
                         if truncate:
-                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"][0:itrunc], 1e9* e[::-1][0:itrunc],\
-                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
+                            if plot:
+                                canvas.ax2.plot( self.DATADICT[pulse]["TIMES"][0:itrunc], 1e9* e[::-1][0:itrunc],\
+                                    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
                             self.DATADICT[pulse][ichan][ipm][istack] = e[::-1][0:itrunc]
                         else:
-                            canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* e[::-1],\
-                                label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
+                            if plot:
+                                canvas.ax2.plot( self.DATADICT[pulse]["TIMES"], 1e9* e[::-1],\
+                                    label = pulse + " ipm=" + str(ipm) + " istack=" + str(istack) + " ichan="  + str(ichan))
                             self.DATADICT[pulse][ichan][ipm][istack] = e[::-1]
-                           
-     
-                        #canvas.ax1.plot( H[pulse][ichan].reshape(-1, len(RX)) ) # , label="taps") 
-                        canvas.ax1.plot( H[pulse][ichan][::-1].reshape(M, len(RX), order='F' ) ) #.reshape(-1, len(RX)) ) # , label="taps") 
 
-                        canvas.ax2.legend(prop={'size':10}, loc='upper right')
-                        #canvas.ax2.legend(prop={'size':6}, loc='upper right')
+                                               
+                        if plot:
+                            #canvas.ax1.plot( H[pulse][ichan].reshape(-1, len(RX)) ) # , label="taps") 
+                            canvas.ax1.plot( H[pulse][ichan][::-1].reshape(M, len(RX), order='F' ) ) #.reshape(-1, len(RX)) ) # , label="taps") 
 
-                        mh = np.max(np.abs( H[pulse][ichan] ))
-                        canvas.ax1.set_ylim( -mh, mh )
+                            canvas.ax2.legend(prop={'size':10}, loc='upper right')
+                            #canvas.ax2.legend(prop={'size':6}, loc='upper right')
 
-                        canvas.ax2.set_xlabel(r"time (s)", fontsize=10)
-                        canvas.ax2.set_ylabel(r"signal (nV)", fontsize=10)
+                            mh = np.max(np.abs( H[pulse][ichan] ))
+                            canvas.ax1.set_ylim( -mh, mh )
 
-                        canvas.ax1.set_xlabel(r"filter tap index", fontsize=10)
-                        canvas.ax1.set_ylabel(r"tap amplitude", fontsize=10)
+                            canvas.ax2.set_xlabel(r"time (s)", fontsize=10)
+                            canvas.ax2.set_ylabel(r"signal (nV)", fontsize=10)
 
-                    canvas.fig.tight_layout()
-                    deSpine(canvas.ax1)
-                    deSpine(canvas.ax2)
+                            canvas.ax1.set_xlabel(r"filter tap index", fontsize=10)
+                            canvas.ax1.set_ylabel(r"tap amplitude", fontsize=10)
 
-                    canvas.draw()
+                    if plot:
+                        canvas.fig.tight_layout()
+                        deSpine(canvas.ax1)
+                        deSpine(canvas.ax2)
+
+                        canvas.draw()
 
                     # truncate the reference channels too, in case you still need them for something. 
                     # Otherwise they are no longer aligned with the data 
@@ -2484,6 +2504,187 @@ class GMRDataProcessor(SNMRDataProcessor):
                 self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] = DATA[:,2][nps:nps+npul] * invCGain
             nds += ndr
             nps += ndr 
+    
+    def readMIDI2Header(self, directory):
+        """ Reads the header of the FID_Q1_D0_R1.dat which should be in very MIDI directory
+        """
+        print("Searching ", directory, "for Q files")
+        self.QFiles = []
+        for file in glob.glob(directory+'/FID_Q*R1.dat'):
+            self.QFiles.append(file)
+
+        fidname = self.QFiles[0] # "/FID_Q1_D0_R1.dat"
+
+        HEADER = {}
+        with open(fidname, 'rb') as FID:
+            #print(FID.name)
+            headerLine = 0 
+            for i in range(21):
+                tags  = FID.readline().split(b']')
+                tags[0] = tags[0].strip(b'[')
+                tags[1] = tags[1].decode().strip(  )
+                HEADER[ ''.join(map(chr, tags[0])) ] = tags[1]
+        #print(HEADER)
+
+        pulseTypeDict = {
+            0 : lambda: "FID",
+            2 : lambda: "T1",
+            3 : lambda: "SPINECHO",
+            4 : lambda: "4PhaseT1"
+        }
+        
+        pulseLengthDict = {
+            1 : lambda x: np.ones(1) * x,
+            2 : lambda x: np.ones(2) * x,
+            3 : lambda x: np.array([x, 2.*x]),
+            4 : lambda x: np.ones(2) * x
+        }
+
+        if HEADER["P2"] == "0":
+            self.pulseType       = "FID"
+        else:
+            self.pulseType       = "T1"
+
+        self.transFreq       = float(HEADER[ 'Excitation frequency /Hz' ])
+        self.maxBusV         = '24 V'
+        self.pulseLength     = [ float(HEADER['P1'])/self.transFreq, float(HEADER['P2'])/self.transFreq] 
+        self.interpulseDelay = 1e-3*float(HEADER["Delay /ms"])       # for T2, Spin Echo
+        self.repetitionDelay = float(HEADER['Pause /s'])             # delay between q pulses 
+        self.nPulseMoments   = len(self.QFiles)                           # Number of pulse moments per stack
+        self.TuneCapacitance = 0                                     # tuning capacitance in uF
+        self.nTransVersion   = "MIDI 2"                              # Transmitter version
+        self.nDAQVersion     = HEADER["Software Revision"]           # DAQ software version 
+        self.nInterleaves    = 0                                     # num interleaves
+        self.Instrument = "MIDI 2" 
+        self.datadir = directory 
+        self.MIDIGain = HEADER["Gains"].split()
+        # default 
+        self.samp                   = float(HEADER["Data Rate /Hz"])        # sampling frequency
+        self.dt                     = 1./self.samp                          # sampling rate 
+
+
+
+    def loadMIDI2(self, directory, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, plot):
+        """Reads a MRS MIDI2 experiment. 
+        """
+        canvas.reAx3(True,False)
+
+        chan = []
+        for ch in chanin:
+            chan.append(str(ch)) 
+        
+        rchan = []
+        for ch in rchanin:
+            rchan.append(str(ch)) 
+
+        #print(self.QFiles)
+        # Set up the same structure as GMR 
+        PULSES = [FIDProc]
+        PULSES = ["Pulse 1"]
+
+        self.DATADICT = {}
+        self.DATADICT["nPulseMoments"] = self.nPulseMoments
+        self.DATADICT["stacks"] = procStacks
+        self.DATADICT["PULSES"] = PULSES
+        for pulse in PULSES: 
+            self.DATADICT[pulse] = {}
+            self.DATADICT[pulse]["chan"] = chan        # TODO these should not be a subet of pulse! for GMR all 
+            self.DATADICT[pulse]["rchan"] = rchan      #      data are consistent 
+            self.DATADICT[pulse]["CURRENT"] = {} 
+            for ichan in np.append(chan,rchan):
+                self.DATADICT[pulse][ichan] = {}
+                for ipm in range(self.nPulseMoments):
+                    self.DATADICT[pulse][ichan][ipm] = {} 
+                    self.DATADICT[pulse]["CURRENT"][ipm] = {} 
+                    for istack in procStacks:
+                        pass 
+                        #print("pulse", pulse, "ichan",type(ichan), ichan, "ipm", type(ipm), ipm, "istack",type(istack), istack)
+                        #
+                        #self.DATADICT[pulse][ichan][ipm][istack] = np.zeros(3)
+                        #self.DATADICT[pulse]["CURRENT"][ipm][istack] = np.zeros(3) 
+
+        iistack = 0
+        idead = int( (self.pulseLength[0]+deadTime) / self.dt)
+
+        for iq in range(self.nPulseMoments):
+
+            fidbase = self.datadir #+ self.QFiles[iq][0:-5]
+            
+            for istack in procStacks:
+                #fidname = fidbase + str(iq).zfill(2) + ".dat"
+                fidname = fidbase + "/FID_Q" + str(iq) + "_D0_R" + str(istack) + ".dat"
+ 
+                with open(fidname, 'rb') as FID:
+                    #print(FID.name)
+                    headerLine = 0 
+                    for i in range(100):
+                        line = FID.readline().strip()
+                        headerLine += 1
+                        if line == b'[Begin Data]':
+                            break 
+
+                    # use numpy for now, consider pandas for faster read? 
+                    DATA = np.genfromtxt(FID, skip_header=0, skip_footer=1 )
+                    #DATA = pd.read_csv(fidname, skiprows=headerLine, skipfooter=1, sep='\t', encoding='ascii')
+           
+                    for ichan in np.append(chan,rchan):
+                 
+                        if int(ichan) <= 3: 
+                            self.DATADICT["Pulse 1"][ichan][iq][istack] = DATA[idead:,int(ichan)] / float(self.MIDIGain[int(ichan)-1])
+
+                        elif int(ichan) > 3:     
+                            self.DATADICT["Pulse 1"][ichan][iq][istack] = DATA[idead:,int(ichan)+1] / float(self.MIDIGain[int(ichan)-1])
+                   
+                        # truncate after dead time  
+
+                        self.DATADICT["Pulse 1"]["TIMES"] = DATA[idead:,0]
+
+                        # truncate until dead time
+                        ipulse = int(self.pulseLength[0] / self.dt)
+                        self.DATADICT["Pulse 1"]["PULSE_TIMES"] = DATA[0:ipulse,0]
+                        self.DATADICT["Pulse 1"]["CURRENT"][iq][istack] = DATA[0:ipulse,4]
+
+                        if plot: 
+                            canvas.softClear()                           
+
+                            for ichan in chan:
+                                canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][iq][istack] , color='black')
+                                canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][iq][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
+
+                            for ichan in rchan:
+                                canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][iq][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
+
+                            # reference axis
+                            canvas.ax2.tick_params(axis='both', which='major', labelsize=10)
+                            canvas.ax2.tick_params(axis='both', which='minor', labelsize=10)
+                            #canvas.ax2.xaxis.set_ticklabels([])
+                            plt.setp(canvas.ax2.get_xticklabels(), visible=False)
+                            canvas.ax2.legend(prop={'size':10}, loc='upper right')
+                            canvas.ax2.set_title("stack "+str(istack)+" pulse index " + str(iq), fontsize=10)
+                            canvas.ax2.set_ylabel("RAW signal [V]", fontsize=10)
+
+                            canvas.ax1.set_ylabel("Current (A)", fontsize=10) 
+                            canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
+                            canvas.ax1.set_xlabel("time (s)", fontsize=10)
+
+                            canvas.ax3.legend(prop={'size':10}, loc='upper right')
+                            canvas.ax3.set_ylabel("RAW signal [V]", fontsize=10)
+                    
+                            canvas.fig.tight_layout()
+                            canvas.draw()
+
+                percent = (int) (1e2*((float)(iistack) / (len(procStacks)*self.nPulseMoments)))
+                self.progressTrigger.emit(percent) 
+                iistack += 1
+
+#                percent = (int) (1e2*((float)((iistack*self.nPulseMoments+ipm+1))  / (len(procStacks)*self.nPulseMoments)))
+#                self.progressTrigger.emit(percent) 
+#                iistack += 1
+
+        self.enableDSP()    
+        self.doneTrigger.emit()
+
+
 
     def loadGMRASCIIT1( self, rawfname, istack ):
         """Based on the geoMRI instrument manufactured by VistaClara. Imports 

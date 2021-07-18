@@ -1576,7 +1576,7 @@ background: dark grey;
                <bool>false</bool>
               </property>
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1608,7 +1608,7 @@ background: dark grey;
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QComboBox" name="comboBox">
+                <widget class="QComboBox" name="sumType">
                  <item>
                   <property name="text">
                    <string>sum</string>
@@ -1643,6 +1643,22 @@ background: dark grey;
                  </property>
                  <property name="text">
                   <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="sumAll">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In case of more than two data channels, would you like to sum all of the channels together?&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Sum All</string>
                  </property>
                 </widget>
                </item>
@@ -1947,13 +1963,6 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
-               <item row="15" column="0">
-                <widget class="Line" name="line_7">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
                <item row="11" column="0">
                 <widget class="QLabel" name="label_27">
                  <property name="text">
@@ -2156,6 +2165,13 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
+               <item row="15" column="0">
+                <widget class="Line" name="line_7">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -2195,56 +2211,19 @@ background: dark grey;
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_12">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_43">
-                 <property name="text">
-                  <string>Filter Taps</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QSpinBox" name="MTapsSpinBox">
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="adaptTruncateSpinBox">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of taps in the time-domain filter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This filter is a time-domain filter that takes some time to get going. Time-domain filters do a better job compared to frequency-domain filters in the presence of non-stationary noise. &lt;/p&gt;&lt;p&gt;The filter is run backwards, so often the late times will not be cancelled as well. You may trim records off the back using this input. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="whatsThis">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This filter is a time-domain filter that takes some time to get going. Time-domain filters do a better job compared to frequency-domain filters in the presence of non-stationary noise.  &lt;/p&gt;&lt;p&gt;The filter is run backwards, so often the late times will not be cancelled as well. You may trim records off the back using this input. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="maximum">
-                  <number>2000</number>
+                  <double>1000.000000000000000</double>
                  </property>
                  <property name="value">
-                  <number>200</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="label_51">
-                 <property name="text">
-                  <string>Mu</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="3">
-                <widget class="QDoubleSpinBox" name="adaptMuSpinBox">
-                 <property name="decimals">
-                  <number>4</number>
-                 </property>
-                 <property name="minimum">
-                  <double>0.000100000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>0.100000000000000</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.000100000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.010000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_44">
-                 <property name="text">
-                  <string>Forgetting factor (λ)</string>
+                  <double>800.000000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -2267,10 +2246,86 @@ background: dark grey;
                  </property>
                 </widget>
                </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_46">
+                 <property name="text">
+                  <string>Truncate [ms]</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_51">
+                 <property name="text">
+                  <string>Mu</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_44">
+                 <property name="text">
+                  <string>Forgetting factor (λ)</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="2">
                 <widget class="QLabel" name="label_52">
                  <property name="text">
                   <string>PCA on ref</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_43">
+                 <property name="text">
+                  <string>Filter Taps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="MTapsSpinBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of taps in the time-domain filter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>2000</number>
+                 </property>
+                 <property name="value">
+                  <number>200</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="3">
+                <widget class="QPushButton" name="adaptGO">
+                 <property name="styleSheet">
+                  <string notr="true">#adaptGO {
+    background: green;
+}
+
+#adaptGO:disabled{
+    background: black;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>GO</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QDoubleSpinBox" name="adaptMuSpinBox">
+                 <property name="decimals">
+                  <number>4</number>
+                 </property>
+                 <property name="minimum">
+                  <double>0.000100000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.000100000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.010000000000000</double>
                  </property>
                 </widget>
                </item>
@@ -2294,42 +2349,26 @@ background: dark grey;
                  </item>
                 </widget>
                </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_46">
-                 <property name="text">
-                  <string>Truncate [ms]</string>
+               <item row="3" column="0" colspan="4">
+                <widget class="Line" name="line_15">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
-                <widget class="QDoubleSpinBox" name="adaptTruncateSpinBox">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This filter is a time-domain filter that takes some time to get going. Time-domain filters do a better job compared to frequency-domain filters in the presence of non-stationary noise. &lt;/p&gt;&lt;p&gt;The filter is run backwards, so often the late times will not be cancelled as well. You may trim records off the back using this input. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="whatsThis">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This filter is a time-domain filter that takes some time to get going. Time-domain filters do a better job compared to frequency-domain filters in the presence of non-stationary noise.  &lt;/p&gt;&lt;p&gt;The filter is run backwards, so often the late times will not be cancelled as well. You may trim records off the back using this input. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="maximum">
-                  <double>1000.000000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>800.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="3">
-                <widget class="QPushButton" name="adaptGO">
-                 <property name="styleSheet">
-                  <string notr="true">#adaptGO {
-    background: green;
-}
-
-#adaptGO:disabled{
-    background: black;
-}</string>
+               <item row="4" column="1">
+                <widget class="QCheckBox" name="plotRLS">
+                 <property name="enabled">
+                  <bool>false</bool>
                  </property>
                  <property name="text">
-                  <string>GO</string>
+                  <string>Plot</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -4143,8 +4182,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <attribute name="label">
@@ -4525,6 +4564,7 @@ p, li { white-space: pre-wrap; }
      <string>File</string>
     </property>
     <addaction name="actionOpen_GMR"/>
+    <addaction name="actionLoad_MIDI"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_Preprocessed_Dataset"/>
     <addaction name="separator"/>
@@ -4612,6 +4652,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Inversion</string>
+   </property>
+  </action>
+  <action name="actionLoad_MIDI">
+   <property name="text">
+    <string>Load MIDI 2 Data </string>
    </property>
   </action>
  </widget>

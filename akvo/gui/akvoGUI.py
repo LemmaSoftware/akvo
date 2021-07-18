@@ -120,6 +120,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Menu items #
         ##############
         self.ui.actionOpen_GMR.triggered.connect(self.openGMRRAWDataset)
+        self.ui.actionLoad_MIDI.triggered.connect(self.loadMIDI2Dataset)
         self.ui.actionSave_Preprocessed_Dataset.triggered.connect(self.SavePreprocess)
         self.ui.actionExport_Preprocessed_Dataset.triggered.connect(self.ExportPreprocess)
         self.ui.actionExport_Preprocessed_Dataset.setEnabled(False)
@@ -129,7 +130,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         ###########
         # Buttons #
         ###########
-        self.ui.loadDataPushButton.pressed.connect(self.loadRAW) 
+        #self.ui.loadDataPushButton.pressed.connect(self.loadRAW) 
         self.ui.sumDataGO.pressed.connect( self.sumDataChans )
         self.ui.bandPassGO.pressed.connect( self.bandPassFilter )
         self.ui.filterDesignPushButton.pressed.connect( self.designFilter )
@@ -884,7 +885,79 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.enableDSPTrigger.connect(self.enableDSP)
         self.RAWDataProc.doneTrigger.connect(self.doneStatus)
         self.RAWDataProc.updateProcTrigger.connect(self.updateProc)
+    
+    def loadMIDI2Dataset (self):
+        """ Opens a MIDI file and extracts header info
+        """
+        try:
+            with open('.midi2.last.path') as f: 
+                fpath = f.readline()  
+                pass
+        except IOError as e:
+            fpath = '.'
+         
+        self.headerstr = QtWidgets.QFileDialog.getExistingDirectory(self, 'Load MIDI 2 Directory', fpath)
+        self.ui.headerFileTextBrowser.clear()
+        self.ui.headerFileTextBrowser.append(self.headerstr)
+        
+        if len(self.headerstr) == 0:
+            return 
 
+        # TODO, should rename this class, use MIDI path  
+        self.connectGMRDataProcessor()
+        self.RAWDataProc.readMIDI2Header(str(self.headerstr))
+
+        # look in the directory for all the files 
+        self.ui.loadDataPushButton.pressed.connect(self.loadMIDI2) 
+
+        # If we got this far, enable all the widgets
+        self.ui.lcdNumberTauPulse1.setEnabled(True)
+        self.ui.lcdNumberNuTx.setEnabled(True)
+        self.ui.lcdNumberTuneuF.setEnabled(True)
+        self.ui.lcdNumberSampFreq.setEnabled(True)
+        self.ui.lcdNumberNQ.setEnabled(True)
+
+        self.ui.headerFileBox.setEnabled(True)
+        self.ui.headerFileBox.setChecked( True )
+        self.ui.headerBox2.setVisible(True) 
+        self.ui.inputRAWParametersBox.setEnabled(True)
+        self.ui.loadDataPushButton.setEnabled(True)
+         
+        # make plots as you import the dataset
+        self.ui.plotImportCheckBox.setEnabled(True)
+        self.ui.plotImportCheckBox.setChecked(True)
+         
+        # Update info from the header into the GUI
+        self.ui.pulseTypeTextBrowser.clear()
+        self.ui.pulseTypeTextBrowser.append(self.RAWDataProc.pulseType)
+        self.ui.lcdNumberNuTx.display(self.RAWDataProc.transFreq)
+        self.ui.lcdNumberTauPulse1.display(1e3*self.RAWDataProc.pulseLength[0])
+        self.ui.lcdNumberTuneuF.display(self.RAWDataProc.TuneCapacitance)
+        self.ui.lcdNumberSampFreq.display(self.RAWDataProc.samp)
+        self.ui.lcdNumberNQ.display(self.RAWDataProc.nPulseMoments)
+        self.ui.DeadTimeSpinBox.setValue(1e3*self.RAWDataProc.deadTime)
+        self.ui.CentralVSpinBox.setValue( self.RAWDataProc.transFreq )
+
+        # set the B0 field according to Tx as an initial guess
+        self.ui.intensitySpinBox.setValue( self.RAWDataProc.transFreq/GAMMAH )           
+ 
+        if self.RAWDataProc.pulseType != "FID":
+            self.ui.lcdNumberTauPulse2.setEnabled(1)
+            self.ui.lcdNumberTauPulse2.display(1e3*self.RAWDataProc.pulseLength[1])
+            self.ui.lcdNumberTauDelay.setEnabled(1)
+            self.ui.lcdNumberTauDelay.display(1e3*self.RAWDataProc.interpulseDelay)
+        
+        self.ui.FIDProcComboBox.clear() 
+        if self.RAWDataProc.pulseType == "4PhaseT1" or self.RAWDataProc.pulseType == "T1":
+            self.ui.FIDProcComboBox.insertItem(0, "Pulse 1") 
+            self.ui.FIDProcComboBox.insertItem(1, "Pulse 2") 
+            self.ui.FIDProcComboBox.insertItem(2, "Both")    
+            self.ui.FIDProcComboBox.setCurrentIndex (1)
+        elif self.RAWDataProc.pulseType == "FID":
+            self.ui.FIDProcComboBox.insertItem(0, "Pulse 1") 
+            self.ui.FIDProcComboBox.setCurrentIndex (0)
+    
+ 
     def openGMRRAWDataset(self):
         """ Opens a GMR header file
         """
@@ -913,6 +986,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.connectGMRDataProcessor()
         self.RAWDataProc.readHeaderFile(str(self.headerstr))
+        
+        # make sure we will use GMR path 
+        self.ui.loadDataPushButton.pressed.connect(self.loadRAW) 
 
         # If we got this far, enable all the widgets
         self.ui.lcdNumberTauPulse1.setEnabled(True)
@@ -1082,6 +1158,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO["nDAQVersion"] = self.RAWDataProc.nDAQVersion
         INFO["log"] = yaml.dump( self.YamlNode )  
 
+        # 1.6.4 and on 
+        INFO["Instrument"] = self.RAWDataProc.Instrument 
+        if self.RAWDataProc.Instrument == "MIDI 2":
+            INFO["MIDIGain"] = self.RAWDataProc.MIDIGain
+            INFO["datadir"] = self.RAWDataProc.datadir
+
         TXRX = []
         for ir in range(0, self.ui.txRxTable.rowCount() ):
             txrx = []
@@ -1096,12 +1178,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if "Gate integrate" in self.YamlNode.Stacking.keys():
             INFO["GATED"] = self.RAWDataProc.GATED
 
-        print("META SAVE")
-        print("INFO log", INFO["log"])
+        #print("META SAVE")
+        #print("INFO log", INFO["log"])
 
         self.RAWDataProc.DATADICT["INFO"] = INFO 
 
         pickle.dump(self.RAWDataProc.DATADICT, save)
+        #pickle.dump(self.RAWDataProc, save) # doesn't work :-( 
+
         save.close()
 
     # Export XML file suitable for USGS ScienceBase Data Release
@@ -1296,8 +1380,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.doneTrigger.connect(self.doneStatus)
         
         self.enableAll()
- 
-    def loadRAW(self):
+
+    def loadMIDI2(self):
 
         #################################################
         # Check to make sure we are ready to process
@@ -1305,8 +1389,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Header
         if self.RAWDataProc == None:
             err_msg = "You need to load a header first."
-            reply = QtGui.QMessageBox.critical(self, 'Error', 
-                err_msg) #, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            reply = QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) #, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             return
         
         # Stacks 
@@ -1316,7 +1400,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             err_msg = "You need to set your stacks correctly.\n" + \
                       "This should be a Python Numpy interpretable list\n" + \
                       "of stack indices. For example 1:24 or 1:4,8:24"
-            QtGui.QMessageBox.critical(self, 'Error', err_msg) 
+            QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
             return
 
         # Data Channels
@@ -1328,15 +1412,15 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             #messageBox.critical(0,"Error","An error has occured !");
             #messageBox.setFixedSize(500,200);
             #quit_msg = "Are you sure you want to exit the program?"
-            #reply = QtGui.QMessageBox.question(self, 'Message', 
-            #    quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            #reply = QtWidgets.QMessageBox.question(self, 'Message', 
+            #    quit_msg, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             err_msg = "You need to set your data channels correctly.\n" + \
                       "This should be a Python Numpy interpretable list\n" + \
                       "of indices. For example 1 or 1:3 or 1:3 5\n\n" + \
                       "valid GMR data channels fall between 1 and 8. Note that\n" +\
                       "1:3 is not inclusive of 3 and is the same as 1,2 "
-            reply = QtGui.QMessageBox.critical(self, 'Error', 
-                err_msg) #, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            reply = QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) #, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             return
         #############################
         # Reference Channels
@@ -1351,13 +1435,115 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                       "of indices. For example 1 or 1:3 or 1:3 5\n\n" + \
                       "valid GMR data channels fall between 1 and 8. Note that\n" +\
                       "1:3 is not inclusive of 3 and is the same as 1,2 "
-                QtGui.QMessageBox.critical(self, 'Error', err_msg) 
+                QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
                 return
 
         #####################################################
         # Load data
+        
+        self.lock("loading MIDI 2 dataset")
+        self.procThread = thread.start_new_thread(self.RAWDataProc.loadMIDI2, \
+                (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
+                 str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
+                1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
 
+        self.YamlNode.Import["MIDI Header"] = self.headerstr
+        self.YamlNode.Import["opened"] = datetime.datetime.now().isoformat() 
+        self.YamlNode.Import["pulse Type"] = str(self.RAWDataProc.pulseType) 
+        self.YamlNode.Import["stacks"] = self.procStacks.tolist() 
+        self.YamlNode.Import["data channels"] = self.dataChan.tolist()  
+        self.YamlNode.Import["reference channels"] = self.refChan.tolist() 
+        self.YamlNode.Import["pulse records"] = str(self.ui.FIDProcComboBox.currentText())  
+        self.YamlNode.Import["instrument dead time"] = (1e-3 * self.ui.DeadTimeSpinBox.value( ))    
+
+        self.Log (  )     
+        
+        # enable META tab 
+        self.ui.METATab.setEnabled(1)
+        self.ui.siteBox.setEnabled(1)
+
+        # should be already done
+#        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("updateProgress(int)"), self.updateProgressBar)
+#        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("enableDSP()"), self.enableDSP)
+#        QtCore.QObject.connect(self.RAWDataProc, QtCore.SIGNAL("doneStatus()"), self.doneStatus)
+
+        #self.ui.ProcessedBox.setEnabled(True)
+        self.ui.lcdNumberFID1Length.setEnabled(1)
+        self.ui.lcdNumberFID2Length.setEnabled(1)
+        self.ui.lcdNumberResampFreq.setEnabled(1)
+        self.ui.lcdTotalDeadTime.setEnabled(1)
+
+        self.ui.lcdTotalDeadTime.display( self.ui.DeadTimeSpinBox.value( ) )
+        #self.ui.lcdTotalDeadTime.display( round(1e3*(self.RAWDataProc.DATADICT["Pulse 1"]["TIMES"][0]-self.RAWDataProc.DATADICT["Pulse 1"]["PULSE_TIMES"][-1]), 3) )
+        
+        #self.ui.lcdNumberFID1Length.display(0)
+        #self.ui.lcdNumberFID2Length.display(0)
+        #self.ui.lcdNumberResampFreq.display( self.RAWDataProc.samp )
+ 
+        self.mpl_toolbar = NavigationToolbar2QT(self.ui.mplwidget, self.ui.mplwidget)
+        self.ui.mplwidget.draw()
+
+    def loadRAW(self):
+
+        #################################################
+        # Check to make sure we are ready to process
+
+        # Header
+        if self.RAWDataProc == None:
+            err_msg = "You need to load a header first."
+            reply = QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) #, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            return
+        
+        # Stacks 
+        try:
+            self.procStacks = np.array(eval(str("np.r_["+self.ui.stacksLineEdit.text())+"]"))
+        except:
+            err_msg = "You need to set your stacks correctly.\n" + \
+                      "This should be a Python Numpy interpretable list\n" + \
+                      "of stack indices. For example 1:24 or 1:4,8:24"
+            QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
+            return
+
+        # Data Channels
+        #Chan = np.arange(0,9,1)
+        try:
+            self.dataChan = np.array(eval(str("np.r_["+self.ui.dataChanLineEdit.text())+"]"))
+        except:
+            #QMessageBox messageBox;
+            #messageBox.critical(0,"Error","An error has occured !");
+            #messageBox.setFixedSize(500,200);
+            #quit_msg = "Are you sure you want to exit the program?"
+            #reply = QtWidgets.QMessageBox.question(self, 'Message', 
+            #    quit_msg, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            err_msg = "You need to set your data channels correctly.\n" + \
+                      "This should be a Python Numpy interpretable list\n" + \
+                      "of indices. For example 1 or 1:3 or 1:3 5\n\n" + \
+                      "valid GMR data channels fall between 1 and 8. Note that\n" +\
+                      "1:3 is not inclusive of 3 and is the same as 1,2 "
+            reply = QtWidgets.QMessageBox.critical(self, 'Error', 
+                err_msg) #, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            return
+        #############################
+        # Reference Channels
+        # TODO make sure no overlap between data and ref channels
+        self.refChan = np.array( () )
+        if str(self.ui.refChanLineEdit.text()): # != "none":
+            try:
+                self.refChan = np.array(eval(str("np.r_["+self.ui.refChanLineEdit.text())+"]"))
+            except:
+                err_msg = "You need to set your reference channels correctly.\n" + \
+                      "This should be a Python Numpy interpretable list\n" + \
+                      "of indices. For example 1 or 1:3 or 1:3 5\n\n" + \
+                      "valid GMR data channels fall between 1 and 8. Note that\n" +\
+                      "1:3 is not inclusive of 3 and is the same as 1,2 "
+                QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
+                return
+
+        #####################################################
+        # Load data
         self.lock("loading RAW GMR dataset")
+        
 
         if self.RAWDataProc.pulseType == "FID":
             self.procThread = thread.start_new_thread(self.RAWDataProc.loadFIDData, \
@@ -1466,6 +1652,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         # Adaptive filtering 
         self.ui.adaptBox.setEnabled(True)
         self.ui.adaptBox.setChecked(True)
+        self.ui.plotRLS.setEnabled(True)
         
         # FD Adaptive filtering 
         self.ui.adaptFDBox.setEnabled(True)
@@ -1648,6 +1835,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 self.ui.adaptTruncateSpinBox.value(), \
                 self.ui.adaptMuSpinBox.value(), \
                 str(self.ui.PCAComboBox.currentText()), \
+                self.ui.plotRLS.isChecked(), \
                 self.ui.mplwidget))
 
     def sumDataChans(self): 
@@ -1661,7 +1849,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.dataChan = [self.dataChan[0]]
         self.ui.sumDataBox.setEnabled(False)    
-        thread.start_new_thread( self.RAWDataProc.sumData, ( self.ui.mplwidget, 7 ) )
+        thread.start_new_thread( self.RAWDataProc.sumData, ( self.ui.mplwidget, self.ui.sumType.currentText(), self.ui.sumAll.isChecked() ) )
  
     def adaptFilterFD(self):
         self.lock("FD noise cancellation filter")
