@@ -1238,6 +1238,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.nDAQVersion = self.RAWDataProc.DATADICT["INFO"]["nDAQVersion"]
         #self.RAWDataProc.prePulseDelay = self.RAWDataProc.DATADICT["INFO"]["prePulseDelay"]
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
+        
+
+        if self.RAWDataProc.DATADICT["INFO"]["Instrument"] == "MIDI 2":
+            self.RAWDataProc.Instrument = "MIDI 2"
+            self.RAWDataProc.MIDIGain = self.RAWDataProc.DATADICT["INFO"]["MIDIGain"] 
+            self.RAWDataProc.datadir = self.RAWDataProc.DATADICT["INFO"]["datadir"] 
 
         self.dataChan = self.RAWDataProc.DATADICT[ self.RAWDataProc.DATADICT["PULSES"][0] ]["chan"]
 
