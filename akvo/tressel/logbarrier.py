@@ -218,7 +218,7 @@ def logBarrier(A, b, T2Bins, lambdastar, x_0=0, xr=0, alpha=10, mu1=10, mu2=10, 
         #print("inversion progress", i, alpha, np.sqrt(phid/len(b)), phim, flush=True)      
         #print ("{:<8} {:<15} {:<10} {:<10}".format(i, alpha, np.sqrt(phid/len(b)), phim), flush=True) 
         
-        if i < 4:        
+        if i <= 4:        
             print ("{:^5} {:>15.4f} {:>15.4f} {:>15.4f} {:>15.4f}".format(i, alpha, np.sqrt(phid/len(b)), phim, tphi ), flush=True) 
 
 #         if np.sqrt(phid/len(b)) < 0.97: 

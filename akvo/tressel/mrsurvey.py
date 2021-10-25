@@ -35,12 +35,12 @@ import akvo.tressel.cmaps as cmaps
 import akvo.tressel.harmonic as harmonic
 
 import cmocean # colormaps for geophysical data 
-plt.register_cmap(name='viridis', cmap=cmaps.viridis)
-plt.register_cmap(name='inferno', cmap=cmaps.inferno)
-plt.register_cmap(name='inferno_r', cmap=cmaps.inferno_r)
-
-plt.register_cmap(name='magma', cmap=cmaps.magma)
-plt.register_cmap(name='magma_r', cmap=cmaps.magma_r)
+# not needed with latest matplotlib 
+#plt.register_cmap(name='viridis', cmap=cmaps.viridis)
+#plt.register_cmap(name='inferno', cmap=cmaps.inferno)
+#plt.register_cmap(name='inferno_r', cmap=cmaps.inferno_r)
+#plt.register_cmap(name='magma', cmap=cmaps.magma)
+#plt.register_cmap(name='magma_r', cmap=cmaps.magma_r)
 
 
 def xxloadGMRBinaryFID( rawfname, info ):
@@ -1070,11 +1070,11 @@ class GMRDataProcessor(SNMRDataProcessor):
                     IP[pulse][chan][ipm,:] = np.angle(ht)[clip::]
                     #############################################################
                     # Rotated amplitude
-                    #if ipm != 0:
-                    #    [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], (E0,phi,df,T2))
+                    if ipm != 0:
+                        [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], method, loss, (E0,phi,df,T2))
                     #[success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
-                    #else:
-                    [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], method, loss)
+                    else:
+                        [success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], method, loss)
                     #[success, E0, df, phi, T2] = decay.quadratureDetect2( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"], (E0,phi,df,T2))
                     #[success, E0, df, phi, T2] = decay.quadratureDetect( ht.real, ht.imag, self.DATADICT[pulse]["TIMES"] )
                     #print("success", success, "E0", E0, "phi", phi, "df", df, "T2", T2)
@@ -2564,9 +2564,12 @@ class GMRDataProcessor(SNMRDataProcessor):
 
 
 
-    def loadMIDI2(self, directory, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, plot):
+    def loadMIDI2(self, directory, procStacks, chanin, rchanin, FIDProc, canvas, deadTime, pulseMoments, plot):
         """Reads a MRS MIDI2 experiment. 
         """
+
+        print("Loading MIDI2 data")
+
         canvas.reAx3(True,False)
 
         chan = []
@@ -2581,6 +2584,16 @@ class GMRDataProcessor(SNMRDataProcessor):
         # Set up the same structure as GMR 
         PULSES = [FIDProc]
         PULSES = ["Pulse 1"]
+
+        if pulseMoments[0] == -1:
+            print("using default pulse moments, all of them")
+            self.pulseMoments = range(0, self.nPulseMoments) # use all of them, assume starting at 0 
+        else:
+            self.pulseMoments = pulseMoments
+        
+        self.nPulseMoments = len(self.pulseMoments)
+
+        print("nPulseMoments", self.nPulseMoments, self.pulseMoments)
 
         self.DATADICT = {}
         self.DATADICT["nPulseMoments"] = self.nPulseMoments
@@ -2606,7 +2619,8 @@ class GMRDataProcessor(SNMRDataProcessor):
         iistack = 0
         idead = int( (self.pulseLength[0]+deadTime) / self.dt)
 
-        for iq in range(self.nPulseMoments):
+        
+        for ipm, iq in enumerate(self.pulseMoments):
 
             fidbase = self.datadir #+ self.QFiles[iq][0:-5]
             
@@ -2624,16 +2638,17 @@ class GMRDataProcessor(SNMRDataProcessor):
                             break 
 
                     # use numpy for now, consider pandas for faster read? 
+                    print("Loading", FID)
                     DATA = np.genfromtxt(FID, skip_header=0, skip_footer=1 )
                     #DATA = pd.read_csv(fidname, skiprows=headerLine, skipfooter=1, sep='\t', encoding='ascii')
            
                     for ichan in np.append(chan,rchan):
                  
                         if int(ichan) <= 3: 
-                            self.DATADICT["Pulse 1"][ichan][iq][istack] = DATA[idead:,int(ichan)] / float(self.MIDIGain[int(ichan)-1])
+                            self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[idead:,int(ichan)] / float(self.MIDIGain[int(ichan)-1])
 
                         elif int(ichan) > 3:     
-                            self.DATADICT["Pulse 1"][ichan][iq][istack] = DATA[idead:,int(ichan)+1] / float(self.MIDIGain[int(ichan)-1])
+                            self.DATADICT["Pulse 1"][ichan][ipm][istack] = DATA[idead:,int(ichan)+1] / float(self.MIDIGain[int(ichan)-1])
                    
                         # truncate after dead time  
 
@@ -2642,26 +2657,27 @@ class GMRDataProcessor(SNMRDataProcessor):
                         # truncate until dead time
                         ipulse = int(self.pulseLength[0] / self.dt)
                         self.DATADICT["Pulse 1"]["PULSE_TIMES"] = DATA[0:ipulse,0]
-                        self.DATADICT["Pulse 1"]["CURRENT"][iq][istack] = DATA[0:ipulse,4]
+                        self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] = DATA[0:ipulse,4]
 
                         if plot: 
                             canvas.softClear()                           
 
                             for ichan in chan:
-                                canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][iq][istack] , color='black')
-                                canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][iq][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
+                                canvas.ax1.plot(self.DATADICT["Pulse 1"]["PULSE_TIMES"], self.DATADICT["Pulse 1"]["CURRENT"][ipm][istack] , color='black')
+                                canvas.ax3.plot(self.DATADICT["Pulse 1"]["TIMES"],       self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID data ch. "+str(ichan)) #, color='blue')
 
                             for ichan in rchan:
-                                canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][iq][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
+                                canvas.ax2.plot(self.DATADICT["Pulse 1"]["TIMES"], self.DATADICT["Pulse 1"][ichan][ipm][istack], label="Pulse 1 FID ref ch. "+str(ichan)) #, color='blue')
 
                             # reference axis
-                            canvas.ax2.tick_params(axis='both', which='major', labelsize=10)
-                            canvas.ax2.tick_params(axis='both', which='minor', labelsize=10)
-                            #canvas.ax2.xaxis.set_ticklabels([])
-                            plt.setp(canvas.ax2.get_xticklabels(), visible=False)
-                            canvas.ax2.legend(prop={'size':10}, loc='upper right')
-                            canvas.ax2.set_title("stack "+str(istack)+" pulse index " + str(iq), fontsize=10)
-                            canvas.ax2.set_ylabel("RAW signal [V]", fontsize=10)
+                            if len(rchan) > 0:
+                                canvas.ax2.legend(prop={'size':10}, loc='upper right')
+                                canvas.ax2.tick_params(axis='both', which='major', labelsize=10)
+                                canvas.ax2.tick_params(axis='both', which='minor', labelsize=10)
+                                #canvas.ax2.xaxis.set_ticklabels([])
+                                plt.setp(canvas.ax2.get_xticklabels(), visible=False)
+                                canvas.ax2.set_title("stack "+str(istack)+" pulse index " + str(iq), fontsize=10)
+                                canvas.ax2.set_ylabel("RAW signal [V]", fontsize=10)
 
                             canvas.ax1.set_ylabel("Current (A)", fontsize=10) 
                             canvas.ax1.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 

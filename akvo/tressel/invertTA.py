@@ -125,6 +125,7 @@ def main():
             cont = (yaml.load(stream, Loader=yaml.Loader))
         except yaml.YAMLError as exc:
             print(exc)
+            exit(1)
 
     ###############################################
     # Load in data
@@ -185,7 +186,7 @@ def main():
     # Linear Inversion 
     ############################################### 
     print("Calling inversion", flush=True)
-    inv, ibreak, errn, phim, phid, mkappa, Wd, Wm, alphastar = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e6, smooth="Smallest" ) 
+    inv, ibreak, errn, phim, phid, mkappa, Wd, Wm, alphastar = logBarrier(KQT, np.ravel(V), T2Bins, "lcurve", MAXITER=150, sigma=np.ravel(VS), alpha=1e7, smooth="Smallest" ) 
 
 
     ################################
@@ -295,6 +296,8 @@ def main():
                 PREc = np.reshape( prec, np.shape(V)  )
                 print("PHID linear=", errn, "PHID nonlinear=", phidc/len(np.ravel(V)))
             else:
+                nonLinearRefinement = False
+                print("Non-linear inversion failed, results will not be shown")
                 break
 
             if phidc_old - phidc/len(np.ravel(V)) < 0.005:
@@ -553,9 +556,10 @@ def main():
     # Only show ticks on the left and bottom spines
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')   
+    plt.legend()  
  
     plt.savefig("akvoInversionWC.pdf")
-    plt.legend()  
+
     
     fr = pd.DataFrame( INV, columns=T2Bins ) #[0:-1] )
     fr.insert(0, "layer top", ifaces[0:-1] )

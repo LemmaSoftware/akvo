@@ -1058,9 +1058,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         INFO = {}
         INFO["headerstr"] = str(self.headerstr)
         INFO["pulseType"] = self.RAWDataProc.pulseType
-        INFO["transFreq"] = self.RAWDataProc.transFreq.tolist()
-        INFO["pulseLength"] = self.RAWDataProc.pulseLength.tolist()
-        INFO["TuneCapacitance"] = self.RAWDataProc.TuneCapacitance.tolist()
+        INFO["transFreq"] = np.array(self.RAWDataProc.transFreq).tolist()  # numpy is for MIDI datasets
+        INFO["pulseLength"] = np.array(self.RAWDataProc.pulseLength).tolist()
+        INFO["TuneCapacitance"] = np.array(self.RAWDataProc.TuneCapacitance).tolist()
         #INFO["samp"] = self.RAWDataProc.samp
         INFO["nPulseMoments"] = self.RAWDataProc.nPulseMoments
         #INFO["deadTime"] = self.RAWDataProc.deadTime
@@ -1072,6 +1072,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             qq = []
             qv = []
             for ipm in range(self.RAWDataProc.DATADICT["nPulseMoments"]):     
+            #for ipm in self.pulseMoments: 
                 #for istack in self.RAWDataProc.DATADICT["stacks"]:
                 #    print ("stack q", self.RAWDataProc.DATADICT[pulse]["Q"][ipm,istack-1])
                 qq.append(np.mean(    self.RAWDataProc.DATADICT[pulse]["Q"][ipm,:]) )
@@ -1101,6 +1102,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                     #INFO["Gated"][pulse]["Chan. " + str(ichan)]["STD"] =  VectorXr(   np.std(self.RAWDataProc.GATED[ichan]["NR"], axis=0) )
                     INFO["Gated"][pulse]["Chan. " + str(ichan)]["STD"] = VectorXr( np.average(self.RAWDataProc.GATED[ichan]["BN"], axis=0) )
                     for ipm in range(self.RAWDataProc.DATADICT["nPulseMoments"]):     
+                    #for ipm in self.pulseMoments: 
                         INFO["Gated"][pulse]["Chan. " + str(ichan)]["Q-"+str(ipm) + " CA"] = VectorXr(self.RAWDataProc.GATED[ichan]["CA"][ipm])   
                         INFO["Gated"][pulse]["Chan. " + str(ichan)]["Q-"+str(ipm) + " RE"] = VectorXr(self.RAWDataProc.GATED[ichan]["RE"][ipm])   
                         INFO["Gated"][pulse]["Chan. " + str(ichan)]["Q-"+str(ipm) + " IM"] = VectorXr(self.RAWDataProc.GATED[ichan]["IM"][ipm])   
@@ -1409,8 +1411,25 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
             return
 
+        ######################
+        # Qs
+        #####################
+        print("text",  self.ui.QLineEdit.text()) 
+        if  self.ui.QLineEdit.text() == "":
+            self.pulseMoments = [-1]  
+            print("Setting pulse moments to [-1]") 
+        else:
+            try:
+                self.pulseMoments = np.array(eval(str("np.r_["+self.ui.QLineEdit.text())+"]"))
+            except:
+                err_msg = "You need to set your pulse moments correctly.\n" + \
+                      "This should be a Python Numpy interpretable list\n" + \
+                      "of stack indices. For example 1:24 or 1:4,8:24"
+                QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
+
+        ###################
         # Data Channels
-        #Chan = np.arange(0,9,1)
+        ###################
         try:
             self.dataChan = np.array(eval(str("np.r_["+self.ui.dataChanLineEdit.text())+"]"))
         except:
@@ -1428,6 +1447,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             reply = QtWidgets.QMessageBox.critical(self, 'Error', 
                 err_msg) #, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             return
+
         #############################
         # Reference Channels
         # TODO make sure no overlap between data and ref channels
@@ -1451,7 +1471,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.procThread = thread.start_new_thread(self.RAWDataProc.loadMIDI2, \
                 (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
                  str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
-                1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
+                1e-3 * self.ui.DeadTimeSpinBox.value( ), self.pulseMoments,
+                self.ui.plotImportCheckBox.isChecked() )) #, self)) 
 
         self.YamlNode.Import["MIDI Header"] = self.headerstr
         self.YamlNode.Import["opened"] = datetime.datetime.now().isoformat() 
@@ -1511,6 +1532,18 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
             return
 
+        # Qs
+        if  self.ui.QLineEdit.text() == "Optional":
+            self.pulseMoments = [-1] 
+        else:
+            try:
+                self.pulseMoments = np.array(eval(str("np.r_["+self.ui.QLineEdit.text())+"]"))
+            except:
+                err_msg = "You need to set your pulse moments correctly.\n" + \
+                      "This should be a Python Numpy interpretable list\n" + \
+                      "of stack indices. For example 1:24 or 1:4,8:24"
+                QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
+
         # Data Channels
         #Chan = np.arange(0,9,1)
         try:
@@ -1555,7 +1588,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self.procThread = thread.start_new_thread(self.RAWDataProc.loadFIDData, \
                 (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \
                  str(self.ui.FIDProcComboBox.currentText()), self.ui.mplwidget, \
-                1e-3 * self.ui.DeadTimeSpinBox.value( ), self.ui.plotImportCheckBox.isChecked() )) #, self)) 
+                1e-3 * self.ui.DeadTimeSpinBox.value( ), 
+                self.ui.plotImportCheckBox.isChecked() )) #, self)) 
         elif self.RAWDataProc.pulseType == "4PhaseT1":
             self.procThread = thread.start_new_thread(self.RAWDataProc.load4PhaseT1Data, \
                 (str(self.headerstr), self.procStacks, self.dataChan, self.refChan, \

@@ -99,8 +99,9 @@ def plotQt( akvo ):
 
     #plt.matshow(RE)
     #plt.matshow(IM)
-    plt.savefig("data.pdf")
-    plt.show()
+    plt.savefig("data.pgf")
+    plt.savefig("data.png", dpi=300)
+    #plt.show()
 
 if __name__ == "__main__":
     akvo = loadAkvoData( sys.argv[1] ) #, "Chan. 1")

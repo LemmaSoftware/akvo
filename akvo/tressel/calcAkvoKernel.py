@@ -152,7 +152,9 @@ def main():
         print( str(kparams["Lspacing"]) )
         exit()
 
-    iface = np.cumsum(thick)
+    print( np.array(kparams["origin_d"]) )
+    print( np.cumsum(thick)[0:-1] ) 
+    iface = np.concatenate( (np.array( [kparams["origin_d"]] ), kparams["origin_d"]+np.cumsum(thick)[0:-1]) )
     Kern.SetDepthLayerInterfaces(iface)
     #Kern.SetDepthLayerInterfaces(np.geomspace(1, 110, num=40))
     #Kern.SetDepthLayerInterfaces(np.linspace(1, 110, num=50))
