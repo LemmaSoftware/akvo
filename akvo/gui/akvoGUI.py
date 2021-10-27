@@ -1242,6 +1242,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.RAWDataProc.dt = 1./self.RAWDataProc.samp 
         
 
+        self.RAWDataProc.Instrument = self.RAWDataProc.DATADICT["INFO"]["Instrument"]
+
         if self.RAWDataProc.DATADICT["INFO"]["Instrument"] == "MIDI 2":
             self.RAWDataProc.Instrument = "MIDI 2"
             self.RAWDataProc.MIDIGain = self.RAWDataProc.DATADICT["INFO"]["MIDIGain"] 
@@ -1414,7 +1416,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         ######################
         # Qs
         #####################
-        print("text",  self.ui.QLineEdit.text()) 
+        #print("text",  self.ui.QLineEdit.text()) 
         if  self.ui.QLineEdit.text() == "":
             self.pulseMoments = [-1]  
             print("Setting pulse moments to [-1]") 
@@ -1533,7 +1535,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             return
 
         # Qs
-        if  self.ui.QLineEdit.text() == "Optional":
+        #print("pulse moment text",  len(self.ui.QLineEdit.text())) 
+        if  self.ui.QLineEdit.text() == "":
             self.pulseMoments = [-1] 
         else:
             try:
@@ -1541,7 +1544,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             except:
                 err_msg = "You need to set your pulse moments correctly.\n" + \
                       "This should be a Python Numpy interpretable list\n" + \
-                      "of stack indices. For example 1:24 or 1:4,8:24"
+                      "of stack indices. For example 1:24 or 1:4,8:25"
                 QtWidgets.QMessageBox.critical(self, 'Error', err_msg) 
 
         # Data Channels
