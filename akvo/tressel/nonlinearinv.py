@@ -21,7 +21,7 @@ def phim(Wm, m):
 def PHI(m, Wd, K, d_obs, Wm, alphastar):
     """
         Global objective function 
-        x = model to be fit 
+        m = model to be fit, unknown 'x' 
         Wd = data weighting matrix 
         K = complex forward modelling kernel 
         d_obs = observed data (modulus)

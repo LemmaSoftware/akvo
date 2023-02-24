@@ -29,12 +29,15 @@ if __name__ == "__main__":
     K = 1e9*catLayers(K0.K0)
     q = np.array(K0.PulseI.data)* (float)(K0.Taup)
 
+    centres = (np.array(K0.Interfaces.data[0:-1]) + np.array(K0.Interfaces.data[1::])) / 2
+
     fig = plt.figure( figsize=(pc2in(20),pc2in(20)) )
     fig.add_axes((.2,.2,.65,.7))
     #plt.pcolor(K0.Interfaces.data, K0.PulseI.data, np.abs(K))
     #plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.gray_r)
     #plt.contourf(q, K0.Interfaces.data[0:-1], np.abs(K), cmap=cmocean.cm.tempo)
-    plt.pcolor(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.tempo)
+    #plt.pcolormesh(q, K0.Interfaces.data, np.abs(K), cmap=cmocean.cm.tempo, shading='nearest')
+    plt.pcolormesh(q, centres, np.abs(K), cmap=cmocean.cm.tempo, shading='nearest')
     plt.colorbar(label=r"$\left| \overline{\mathcal{V}_N}(0) \right|$ (nV)")
 
     ax1 = plt.gca()
@@ -53,13 +56,10 @@ if __name__ == "__main__":
     plt.gca().set_ylabel("depth (m)")
     plt.savefig("kernel.pdf")
 
-    sound = np.sum(K, axis=0)
-    plt.figure()
-    plt.plot(q, np.abs(sound))
-
-    
-
-    plt.savefig("sound.pdf")
+    #sound = np.sum(K, axis=0)
+    #plt.figure()
+    #plt.plot(q, np.abs(sound))
+    #plt.savefig("sound.pdf")
 
     plt.show()
     #print(yaml.dump(K0))

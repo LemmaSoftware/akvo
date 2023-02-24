@@ -28,6 +28,9 @@ from akvo.tressel import nonlinearinv as nl
 
 import pandas as pd
 
+# For Mihai, but consider letting fonts be user selected. 
+#import matplotlib.pyplot as plt
+#plt.rcParams["font.family"] = "arial"
 
 import matplotlib.colors as colors
 
@@ -84,8 +87,9 @@ def loadAkvoData(fnamein, chan):
     #Z *= 1e-9 
     #ZS *= 1e-9 
 
-    J = AKVO.Pulses["Pulse 1"]["current"].data 
-    J = np.append(J,J[-1]+(J[-1]-J[-2]))
+    J = np.array(AKVO.Pulses["Pulse 1"]["current"].data) 
+    #J = np.append(J,J[-1]+(J[-1]-J[-2])) # This was a pcolor hack, get rid of this
+    #print("J", J)
     Q = AKVO.pulseLength[0]*J
     return Z, ZS, AKVO.Gated["Pulse 1"]["abscissa"].data, Q
 
@@ -223,13 +227,13 @@ def main():
         ax3.set_xlabel("time (s)")
 
         #TT, QQQ = np.meshgrid(tg, np.ravel(QQ))
-        
         TT, QQQ = np.meshgrid(tg, np.ravel(QQ[ich]))
-        nq = np.shape(QQ[ich])[0] - 1 # to account for padding in pcolor 
+
+        nq = np.shape(QQ[ich])[0] #- 1               # -1 to account for padding in pcolor, but this was changed 
         nt = np.shape(tg)[0]
         ntq = nt*nq
         
-        VV = V[ich*nq:ich*nq+nq,:]   # slice this channel
+        VV  =  V[ich*nq:ich*nq+nq,:] # slice this channel
         VVS = VS[ich*nq:ich*nq+nq,:] # slice this channel
 
         mmax = np.max(np.abs(VV))
@@ -351,7 +355,7 @@ def main():
             #TT, QQQ = np.meshgrid(tg, np.ravel(QQ))
         
             TT, QQQ = np.meshgrid(tg, np.ravel(QQ[ich]))
-            nq = np.shape(QQ[ich])[0] - 1 # to account for padding in pcolor 
+            nq = np.shape(QQ[ich])[0]  # to account for padding in pcolor, this changed 
             nt = np.shape(tg)[0]
             ntq = nt*nq
         

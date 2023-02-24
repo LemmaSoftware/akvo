@@ -1408,16 +1408,16 @@ class GMRDataProcessor(SNMRDataProcessor):
                 ax2 = axes[2*ichan+1] 
                 
                 if phase == 0:
-                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["RE"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
-                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IM"], cmap=dcmap, vmin=-vmax2, vmax=vmax2)
+                    im1 = ax1.pcolormesh(self.GATED[chan]["GT"], self.GATED[chan]["QQ"], self.GATED[chan]["RE"], shading='nearest', cmap=dcmap, vmin=-vmax1, vmax=vmax1)
+                    im2 = ax2.pcolormesh(self.GATED[chan]["GT"], self.GATED[chan]["QQ"], self.GATED[chan]["IM"], shading='nearest', cmap=dcmap, vmin=-vmax2, vmax=vmax2)
                     #im1 = ax1.matshow(self.GATED[chan]["RE"], cmap=dcmap, vmin=-vmax1, vmax=vmax1, aspect='auto')
                     #im2 = ax2.matshow(self.GATED[chan]["IM"], cmap=dcmap, vmin=-vmax2, vmax=vmax2, aspect='auto')
                 elif phase == 1:
-                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
-                    im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.delta, vmin=-vmax2, vmax=vmax2)
+                    im1 = ax1.pcolormesh(self.GATED[chan]["GT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], shading='nearest', cmap=dcmap, vmin=-vmax1, vmax=vmax1)
+                    im2 = ax2.pcolormesh(self.GATED[chan]["GT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], shading='nearest', cmap=cmocean.cm.delta, vmin=-vmax2, vmax=vmax2)
                     #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["IP"], cmap=cmocean.cm.phase, vmin=-vmax2, vmax=vmax2)
                 elif phase == 2:
-                    im1 = ax1.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], cmap=dcmap, vmin=-vmax1, vmax=vmax1)
+                    im1 = ax1.pcolormesh(self.GATED[chan]["GT"], self.GATED[chan]["QQ"], self.GATED[chan]["CA"], shading='nearest', cmap=dcmap, vmin=-vmax1, vmax=vmax1)
                     #XS = self.bootstrap_sigma(pulse, chan)
                     #im2 = ax2.pcolormesh(self.GATED[chan]["GTT"], self.GATED[chan]["QQ"], self.GATED[chan]["NR"], cmap=cmap, vmin=-vmax2, vmax=vmax2)
                     # bootstrap resample

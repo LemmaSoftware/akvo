@@ -1,6 +1,10 @@
 from __future__ import division
 import numpy as np
-from scipy.sparse.linalg import iterative  as iter
+try:
+    from scipy.sparse.linalg import iterative  as iter
+except:  # newer python gets rid of iterative module
+    import scipy.sparse.linalg as iter 
+
 from scipy.sparse import eye as seye
 import pylab 
 import pprint 

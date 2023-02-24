@@ -67,8 +67,10 @@ def main():
         print ("usage  akvoKO   AkvoDataset.yaml   kparams.yaml  SaveString.yaml " )
         exit()
 
+    print("Loading data")
     AKVO = loadAkvoData(sys.argv[1])
 
+    print("Building Kernel")
     B_inc = AKVO.META["B_0"]["inc"]  
     B_dec = AKVO.META["B_0"]["dec"]  
     B0    = AKVO.META["B_0"]["intensity"]  
@@ -107,6 +109,7 @@ def main():
 
     ## TODO 
     # pass this in...
+    print("Building layered earth model")
     lmod = em1d.LayeredEarthEM() 
 
     nlay = len(kparams["sigs"])

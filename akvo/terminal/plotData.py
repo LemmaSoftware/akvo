@@ -3,8 +3,10 @@ import os, sys
 import numpy as np
 
 import matplotlib.pyplot as plt
+
 import seaborn as sns
 sns.set(style="ticks")
+
 import cmocean 
 from SEGPlot import *
 from matplotlib.ticker import FormatStrFormatter
@@ -70,13 +72,17 @@ def plotQt( akvo ):
                     IM[q] = akvo.Gated[pulse][chan]["Q-" + str(q)+" IM"].data
                     #X[q] = akvo.Gated[pulse][chan]["Q-" + str(q)+" RE"].data
             Windows = akvo.Gated[pulse]["windows"].data
+            Centres = akvo.Gated[pulse]["abscissa"].data
+            
+
             Q = np.array(akvo.Pulses[pulse]["current"].data)
             print("pulse length ", akvo.pulseLength[0])
             Q *= akvo.pulseLength[0]
        
             fig = plt.figure( figsize=( pc2in(20), pc2in(26) ) ) 
             ax1 = fig.add_axes([.25,.05,.6,.9])
-            im = ax1.pcolormesh(Windows,Q,CA, cmap=cmocean.cm.curl_r, vmin=-np.max(np.abs(CA)), vmax=(np.max(np.abs(CA))))
+            #im = ax1.pcolormesh(Windows, Q, CA, cmap=cmocean.cm.curl_r, vmin=-np.max(np.abs(CA)), vmax=(np.max(np.abs(CA))))
+            im = ax1.pcolormesh(Centres, Q, CA, cmap=cmocean.cm.curl_r, vmin=-np.max(np.abs(CA)), vmax=(np.max(np.abs(CA))))
             cb = plt.colorbar( im, orientation='horizontal', pad=.175,  )
             cb.set_label("FID (nV)", fontsize=10)
             cb.ax.tick_params(labelsize=10) 
@@ -101,7 +107,7 @@ def plotQt( akvo ):
     #plt.matshow(IM)
     plt.savefig("data.pgf")
     plt.savefig("data.png", dpi=300)
-    #plt.show()
+    plt.show()
 
 if __name__ == "__main__":
     akvo = loadAkvoData( sys.argv[1] ) #, "Chan. 1")

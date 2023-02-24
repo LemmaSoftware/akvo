@@ -760,7 +760,7 @@ background: dark grey;
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideLeft</enum>
@@ -4215,8 +4215,8 @@ background: dark grey;
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>411</width>
+               <height>67</height>
               </rect>
              </property>
              <attribute name="label">

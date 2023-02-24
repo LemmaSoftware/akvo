@@ -476,7 +476,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             print("txCoil", txCoil.text())
             txCoils.append(txCoil.text())
         
-        rxCoilList = self.ui.txListWidget.selectedItems() #currentItem().text() 
+        rxCoilList = self.ui.rxListWidget.selectedItems() #currentItem().text() 
         rxCoils = []
         for rxCoil in rxCoilList:
             print("rxCoil", rxCoil.text())
@@ -1510,7 +1510,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         #self.ui.lcdNumberResampFreq.display( self.RAWDataProc.samp )
  
         self.mpl_toolbar = NavigationToolbar2QT(self.ui.mplwidget, self.ui.mplwidget)
-        self.ui.mplwidget.draw()
+        #self.ui.mplwidget.draw() # this was crashing? 
 
     def loadRAW(self):
 
